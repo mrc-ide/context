@@ -86,3 +86,7 @@ Sys_time <- function() {
   on.exit(options(op))
   as.character(Sys.time())
 }
+
+is_dir <- function(x) {
+  file.info(x)[["isdir"]]
+}

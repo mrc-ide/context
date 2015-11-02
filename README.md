@@ -32,6 +32,17 @@ Local and global environments may be saved by the contexts when using `auto=TRUE
 
 This may do slightly weird things with complicated interactions between local and global objects and their environments, in which cases users should not use the automatic context generation.  Things like C/C++ pointers, Rcpp/RcppR6 reference objects will also be badly affected.
 
+# Packages
+
+Coordinating package installation on remote machines turns out to be a bit horrible, especially when you only want packages installed if they are not already there (hence all the constructs like `if (!require(pkg)) install.packages(pkg)...` that tend to litter scripts.  This situation is compounded if some packages are to come from non-CRAN repositories (e.g., unstable versions, research code, etc).  To help this, `context` allows specifying a `package_sources` object that can include packages from:
+
+* `drat` repositories
+* github (using the devtools `user/repo[/subdir][@ref]` syntax
+* bitbucket
+* local packages (useful for private reposoitories as there's no need to deal with access rights)
+
+This is done by creating a local, ad-hoc, drat repository that the target machine can use.
+
 # Generalising
 
 Come up with a general way of specifying all the required bits so that we can reuse this in different contexts; `callr`, `rrqueue`, `experimentr`, `remake` all do variants of this but all store things in different ways.  Something that generalised all of them would be great.  This probably just requires store/retrieve methods for the classed objects that are returned.

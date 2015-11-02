@@ -15,6 +15,9 @@
 ##' @param auto Attempt to create the context automatically.  In this
 ##'   case, do not specify either \code{packages} or \code{sources}.
 ##'
+##' @param package_sources Optional information about where to find
+##'   non-CRAN packages.  See \code{\link{package_sources}}.
+##'
 ##' @param envir The current environment.  This is used to copy
 ##'   \emph{local} enviroments around, as these are needed even in the
 ##'   case of non-automatic contexts.  For \code{load_context} this
@@ -37,6 +40,7 @@
 ##' @export
 ##' @rdname context
 save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
+                         package_sources=NULL,
                          envir=parent.frame(), root=tempdir()) {
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
@@ -65,6 +69,14 @@ save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
     ## to take a little work to get that all happy, and requires some
     ## of the things in pathr that aren't done yet.
   }
+
+  if (!is.null(package_sources)) {
+    if (!inherits(package_sources, "package_sources")) {
+      stop("Expected a package_sources object")
+    }
+    build_local_drat(package_sources, root)
+  }
+
   ret$local <- save_object(envir, path_environments(root))
   ret$auto <- auto
   class(ret) <- "context"

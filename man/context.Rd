@@ -6,7 +6,7 @@
 \title{Save and reload contexts}
 \usage{
 save_context(packages = NULL, sources = NULL, auto = FALSE,
-  envir = parent.frame(), root = tempdir())
+  package_sources = NULL, envir = parent.frame(), root = tempdir())
 
 load_context(handle, envir = .GlobalEnv)
 }
@@ -18,6 +18,9 @@ no packages are to be loaded.}
 
 \item{auto}{Attempt to create the context automatically.  In this
 case, do not specify either \code{packages} or \code{sources}.}
+
+\item{package_sources}{Optional information about where to find
+non-CRAN packages.  See \code{\link{package_sources}}.}
 
 \item{envir}{The current environment.  This is used to copy
 \emph{local} enviroments around, as these are needed even in the

@@ -14,3 +14,6 @@ path_environments <- function(root, id=NULL) {
 path_results <- function(root, id=NULL) {
   file_path(root, "results", id)
 }
+path_drat <- function(root) {
+  file.path(root, "drat")
+}
