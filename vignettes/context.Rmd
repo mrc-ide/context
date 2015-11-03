@@ -70,7 +70,7 @@ ctx
 ```
 ## <context_handle>
 ##  - id: 2e479f151b961bb3bbbfb12e7e0fa316
-##  - root: /tmp/Rtmpug4zjm
+##  - root: /tmp/RtmpdpCiWt
 ```
 
 This will save all the required metadata at the path `root` (by
@@ -119,7 +119,7 @@ ctx$id
 ```
 
 ```
-## [1] "43f0de028d56b6f97e95b3bce072a629"
+## [1] "1b4ea25dd84e81539099d20e61002287"
 ```
 
 ```r
@@ -130,8 +130,8 @@ read_task(t)
 ```
 ## <task>
 ##  - expr: sin(1)
-##  - context_id: 43f0de028d56b6f97e95b3bce072a629
-##  - id: ad340867f5e2f313ffc31e58f8f102b6
+##  - context_id: 1b4ea25dd84e81539099d20e61002287
+##  - id: 28f40715dec6b9560f76fd8106a95b29
 ```
 
 These tasks are loaded using the function `load_task` but this
@@ -143,18 +143,18 @@ res <- run_task(t)
 ```
 
 ```
-## [ root     ]  /tmp/Rtmpug4zjm
-## [ task     ]  ad340867f5e2f313ffc31e58f8f102b6
-## [ context  ]  43f0de028d56b6f97e95b3bce072a629
-## [ lib      ]  /tmp/Rtmpug4zjm/R/x86_64-pc-linux-gnu/3.2
+## [ root     ]  /tmp/RtmpdpCiWt
+## [ task     ]  28f40715dec6b9560f76fd8106a95b29
+## [ context  ]  1b4ea25dd84e81539099d20e61002287
+## [ lib      ]  /tmp/RtmpdpCiWt/R/x86_64-pc-linux-gnu/3.2
 ## [ library  ]  context
 ## [ loadns   ]  magrittr, formatR, stringi, knitr, stringr, evaluate
 ## [ source   ]
-## [ global   ]  f6523de36bd6d916fe5bddd675b2e5b3
+## [ global   ]  564af2eda6c403f056aded2f866551cb
 ## [ expr     ]  sin(1)
-## [ start    ]  2015-11-03 15:40:30.763
-## [ result   ]  /tmp/Rtmpug4zjm/results/ad340867f5e2f313ffc31e58f8f102b6
-## [ end      ]  2015-11-03 15:40:30.764
+## [ start    ]  2015-11-03 16:24:35.431
+## [ result   ]  /tmp/RtmpdpCiWt/results/28f40715dec6b9560f76fd8106a95b29
+## [ end      ]  2015-11-03 16:24:35.431
 ```
 
 This prints the result of restoring the context and running the task:
@@ -212,20 +212,20 @@ system2(context, c(t$id, t$root))
 ```
 
 ```
-## [ init     ]  2015-11-03 15:40:30.879
+## [ init     ]  2015-11-03 16:24:35.550
 ## [ version  ]  0.0.1
-## [ root     ]  /tmp/Rtmpug4zjm
-## [ task     ]  ad340867f5e2f313ffc31e58f8f102b6
-## [ context  ]  43f0de028d56b6f97e95b3bce072a629
-## [ lib      ]  /tmp/Rtmpug4zjm/R/x86_64-pc-linux-gnu/3.2
+## [ root     ]  /tmp/RtmpdpCiWt
+## [ task     ]  28f40715dec6b9560f76fd8106a95b29
+## [ context  ]  1b4ea25dd84e81539099d20e61002287
+## [ lib      ]  /tmp/RtmpdpCiWt/R/x86_64-pc-linux-gnu/3.2
 ## [ library  ]  context
 ## [ loadns   ]  magrittr, formatR, stringi, knitr, stringr, evaluate
 ## [ source   ]
-## [ global   ]  f6523de36bd6d916fe5bddd675b2e5b3
+## [ global   ]  564af2eda6c403f056aded2f866551cb
 ## [ expr     ]  sin(1)
-## [ start    ]  2015-11-03 15:40:30.951
-## [ result   ]  /tmp/Rtmpug4zjm/results/ad340867f5e2f313ffc31e58f8f102b6
-## [ end      ]  2015-11-03 15:40:30.953
+## [ start    ]  2015-11-03 16:24:35.620
+## [ result   ]  /tmp/RtmpdpCiWt/results/28f40715dec6b9560f76fd8106a95b29
+## [ end      ]  2015-11-03 16:24:35.622
 ```
 
 which looks rather like the above, but has the additional lines
@@ -260,7 +260,7 @@ ctx <- save_context(packages="remake", package_sources=src)
 ## [ download ]  traitecoevo/callr
 ## [ download ]  richfitz/remake
 ## [ download ]  richfitz/storr
-## [ drat     ]  /tmp/Rtmpug4zjm/drat
+## [ drat     ]  /tmp/RtmpdpCiWt/drat
 ```
 
 This takes a little while (though subsequent calls to the same root

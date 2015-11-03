@@ -8,9 +8,12 @@ License: MIT + file LICENSE
 LazyData: true
 URL: https://github.com/dide-tools/context
 BugReports: https://github.com/dide-tools/context/issues
-Imports: drat
-Suggests: testthat,
+Imports:
+    downloader,
+    drat
+Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 RoxygenNote: 5.0.0
 VignetteBuilder: knitr

@@ -241,7 +241,7 @@ build_remote <- function(url, subdir, quiet=FALSE, str=url) {
   dir.create(path)
   dest <- file.path(path, "context.zip")
   context_log("download", str)
-  download.file(url, dest, method="libcurl", quiet=quiet)
+  download_file(url, dest, quiet=quiet)
   unzip(dest, exdir=path)
   file.remove(dest)
   target <- dir(path, full.names=TRUE)
