@@ -70,7 +70,7 @@ ctx
 ```
 ## <context_handle>
 ##  - id: 2e479f151b961bb3bbbfb12e7e0fa316
-##  - root: /tmp/RtmpoVEFsG
+##  - root: /tmp/Rtmpug4zjm
 ```
 
 This will save all the required metadata at the path `root` (by
@@ -90,6 +90,7 @@ read_context(ctx)
 
 Even more simple, contexts can be made _automatically_
 
+
 ```r
 ctx <- save_context(auto=TRUE)
 read_context(ctx)
@@ -98,7 +99,7 @@ read_context(ctx)
 ```
 ## <context>
 ##  - packages: list(loaded = c("magrittr", "formatR", "stringi", "knitr", "stringr", "evaluate"), attached = "context")
-##  - global: ca44cd7107e8fb707cb49fe645626433
+##  - global: 67476fb38df558e4acd0e6b7bad89282
 ##  - auto: TRUE
 ```
 
@@ -118,7 +119,7 @@ ctx$id
 ```
 
 ```
-## [1] "5f30f80caae9ca95cbba270670f37b8d"
+## [1] "43f0de028d56b6f97e95b3bce072a629"
 ```
 
 ```r
@@ -129,8 +130,8 @@ read_task(t)
 ```
 ## <task>
 ##  - expr: sin(1)
-##  - context_id: 5f30f80caae9ca95cbba270670f37b8d
-##  - id: b2c3322e06bc6ee2bcb9f905e4adf9e6
+##  - context_id: 43f0de028d56b6f97e95b3bce072a629
+##  - id: ad340867f5e2f313ffc31e58f8f102b6
 ```
 
 These tasks are loaded using the function `load_task` but this
@@ -142,18 +143,18 @@ res <- run_task(t)
 ```
 
 ```
-## [ root     ]  /tmp/RtmpoVEFsG
-## [ task     ]  b2c3322e06bc6ee2bcb9f905e4adf9e6
-## [ context  ]  5f30f80caae9ca95cbba270670f37b8d
-## [ lib      ]  /tmp/RtmpoVEFsG/R/x86_64-pc-linux-gnu/3.2
+## [ root     ]  /tmp/Rtmpug4zjm
+## [ task     ]  ad340867f5e2f313ffc31e58f8f102b6
+## [ context  ]  43f0de028d56b6f97e95b3bce072a629
+## [ lib      ]  /tmp/Rtmpug4zjm/R/x86_64-pc-linux-gnu/3.2
 ## [ library  ]  context
 ## [ loadns   ]  magrittr, formatR, stringi, knitr, stringr, evaluate
 ## [ source   ]
-## [ global   ]  c0f13424c2a4028e88c38b86bc2e6cea
+## [ global   ]  f6523de36bd6d916fe5bddd675b2e5b3
 ## [ expr     ]  sin(1)
-## [ start    ]  2015-11-03 15:12:24.519
-## [ result   ]  /tmp/RtmpoVEFsG/results/b2c3322e06bc6ee2bcb9f905e4adf9e6
-## [ end      ]  2015-11-03 15:12:24.520
+## [ start    ]  2015-11-03 15:40:30.763
+## [ result   ]  /tmp/Rtmpug4zjm/results/ad340867f5e2f313ffc31e58f8f102b6
+## [ end      ]  2015-11-03 15:40:30.764
 ```
 
 This prints the result of restoring the context and running the task:
@@ -211,20 +212,20 @@ system2(context, c(t$id, t$root))
 ```
 
 ```
-## [ init     ]  2015-11-03 15:12:24.638
+## [ init     ]  2015-11-03 15:40:30.879
 ## [ version  ]  0.0.1
-## [ root     ]  /tmp/RtmpoVEFsG
-## [ task     ]  b2c3322e06bc6ee2bcb9f905e4adf9e6
-## [ context  ]  5f30f80caae9ca95cbba270670f37b8d
-## [ lib      ]  /tmp/RtmpoVEFsG/R/x86_64-pc-linux-gnu/3.2
+## [ root     ]  /tmp/Rtmpug4zjm
+## [ task     ]  ad340867f5e2f313ffc31e58f8f102b6
+## [ context  ]  43f0de028d56b6f97e95b3bce072a629
+## [ lib      ]  /tmp/Rtmpug4zjm/R/x86_64-pc-linux-gnu/3.2
 ## [ library  ]  context
 ## [ loadns   ]  magrittr, formatR, stringi, knitr, stringr, evaluate
 ## [ source   ]
-## [ global   ]  c0f13424c2a4028e88c38b86bc2e6cea
+## [ global   ]  f6523de36bd6d916fe5bddd675b2e5b3
 ## [ expr     ]  sin(1)
-## [ start    ]  2015-11-03 15:12:24.709
-## [ result   ]  /tmp/RtmpoVEFsG/results/b2c3322e06bc6ee2bcb9f905e4adf9e6
-## [ end      ]  2015-11-03 15:12:24.711
+## [ start    ]  2015-11-03 15:40:30.951
+## [ result   ]  /tmp/Rtmpug4zjm/results/ad340867f5e2f313ffc31e58f8f102b6
+## [ end      ]  2015-11-03 15:40:30.953
 ```
 
 which looks rather like the above, but has the additional lines
@@ -259,7 +260,7 @@ ctx <- save_context(packages="remake", package_sources=src)
 ## [ download ]  traitecoevo/callr
 ## [ download ]  richfitz/remake
 ## [ download ]  richfitz/storr
-## [ drat     ]  /tmp/RtmpoVEFsG/drat
+## [ drat     ]  /tmp/Rtmpug4zjm/drat
 ```
 
 This takes a little while (though subsequent calls to the same root

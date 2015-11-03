@@ -68,6 +68,9 @@ ctx
 read_context(ctx)
 
 ## Even more simple, contexts can be made _automatically_
+##+ echo=FALSE
+rm(ctx)
+##+ echo=TRUE
 ctx <- save_context(auto=TRUE)
 read_context(ctx)
 
