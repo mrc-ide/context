@@ -12,16 +12,14 @@ test_that("parse_args", {
 })
 
 test_that("install", {
-  install_context(tempdir())
-  full <- file.path(tempdir(), "context")
+  full <- install_context(tempdir())
   expect_true(file.exists(full))
   expect_equal(as.character(file.info(full)[["mode"]]), "755")
 })
 
 test_that("run", {
   handle <- save_task(quote(sin(1)), root=tempfile("cluster_"))
-  install_context(tempdir())
-  full <- file.path(tempdir(), "context")
+  full <- install_context(tempdir())
 
   Sys.setenv(R_TESTS="")
   ## can use call_system here as I set it up to work.  Unfortunately
@@ -42,13 +40,12 @@ test_that("install", {
 
   ## Picking this package just because it's fairly light and unlikely
   ## to be installed.
-  src <- package_sources(github="richfitz/sowsear")
-  context <- save_context(packages="sowsear", package_sources=src, root=root)
+  src <- package_sources(github="richfitz/kitten")
+  context <- save_context(packages="kitten", package_sources=src, root=root)
   handle <- save_task(quote(sin(1)),
                       context=context,
                       root=root)
-  install_context(tempdir())
-  full <- file.path(tempdir(), "context")
+  full <- install_context(tempdir())
 
   res <- system2(full, c(handle$id, handle$root), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))

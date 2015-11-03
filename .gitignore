@@ -4,3 +4,4 @@
 context.Rcheck
 context_*tar.gz
 TODO.md
+inst/doc

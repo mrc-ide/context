@@ -2,12 +2,15 @@
 % Please edit documentation in R/task.R
 \name{save_task}
 \alias{load_task}
+\alias{read_task}
 \alias{save_task}
 \title{Sve and reload tasks}
 \usage{
 save_task(expr, context = NULL, envir = parent.frame(), root = tempdir())
 
 load_task(handle, install = TRUE, envir = .GlobalEnv)
+
+read_task(handle)
 }
 \arguments{
 \item{expr}{An expression to save}

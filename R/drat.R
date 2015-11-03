@@ -104,6 +104,7 @@ build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
                   vcapply(src$bitbucket, build_bitbucket, quiet),
                   vcapply(src$local,     build_local))
     if (length(packages) > 0L) {
+      context_log("drat", path)
       repo_init(path)
       for (p in packages) {
         drat::insertPackage(p, path, commit=FALSE)
@@ -208,18 +209,19 @@ R_build <- function(path) {
   owd <- setwd(dirname(path))
   on.exit(setwd(owd))
   prev <- dir(full.names=TRUE)
+  opts <- "--no-build-vignettes"
   cmd <- call_system(file.path(R.home("bin"), "R"),
-                     c("--vanilla", "CMD", "build", basename(path)))
+                     c("--vanilla", "CMD", "build", opts, basename(path)))
   ## The normalizePath here should not be needed according to ?dir
   ## (with full.names=TRUE) but it does seem to be which is sad.
   normalizePath(setdiff(dir(full.names=TRUE), prev))
 }
 
 build_github <- function(x, quiet=FALSE) {
-  build_remote(github_url(x$user, x$repo, x$ref), x$subdir, quiet)
+  build_remote(github_url(x$user, x$repo, x$ref), x$subdir, quiet, x$str)
 }
 build_bitbucket <- function(x, quiet=FALSE) {
-  build_remote(bitbucket_url(x$user, x$repo, x$ref), x$subdir, quiet)
+  build_remote(bitbucket_url(x$user, x$repo, x$ref), x$subdir, quiet, x$str)
 }
 build_local <- function(x) {
   if (grepl("\\.tar\\.gz", x)) {
@@ -234,10 +236,11 @@ build_local <- function(x) {
   }
 }
 
-build_remote <- function(url, subdir, quiet=FALSE) {
+build_remote <- function(url, subdir, quiet=FALSE, str=url) {
   path <- tempfile("context_sources_")
   dir.create(path)
   dest <- file.path(path, "context.zip")
+  context_log("download", str)
   download.file(url, dest, method="libcurl", quiet=quiet)
   unzip(dest, exdir=path)
   file.remove(dest)

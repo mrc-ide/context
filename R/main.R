@@ -19,9 +19,18 @@ main_parse_args <- function(args) {
 
 ## This won't work on windows; need to find out how to get this to
 ## work there; probably just have to write a batch file I suspect.
+
+##' Install a script that runs the context.  This won't work on
+##' windows, but I'll get that sorted soon.
+##'
+##' @title Install script
+##' @param path Path to install the script, ideally on your \code{$PATH}.
+##'   This directory must exist.
+##' @export
 install_context <- function(path) {
   code <- c("#!/usr/bin/env Rscript", "library(methods)", "context:::main()")
   dest <- file.path(path, "context")
   writeLines(code, dest)
   Sys.chmod(dest, "0755")
+  invisible(dest)
 }

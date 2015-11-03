@@ -45,16 +45,48 @@ test_that("package_sources", {
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
 
-  src <- package_sources(github="richfitz/sowsear")
-  handle <- save_context(root=root, packages="sowsear",
+  src <- package_sources(github="richfitz/kitten")
+  handle <- save_context(root=root, packages="kitten",
                          package_sources=src)
 
   obj <- read_context(handle)
   expect_true(obj$package_sources$use_local_drat)
   expect_equal(obj$package_sources$local_drat, path_drat(handle$root))
-  expect_equal(obj$packages, list(attached="sowsear", loaded=character(0)))
+  expect_equal(obj$packages, list(attached="kitten", loaded=character(0)))
 
   tmp <- load_context(handle, quiet=TRUE)
-  on.exit(unloadNamespace("sowsear"), add=TRUE)
-  expect_true("sowsear" %in% .packages())
+  on.exit(unloadNamespace("kitten"), add=TRUE)
+  expect_true("kitten" %in% .packages())
+})
+
+## Issues saving global environments: This does not tickle the problem
+## unfortunately.
+test_that("globals", {
+  path <- tempfile()
+  on.exit(cleanup(path))
+  vars <- setdiff(names(.GlobalEnv), ".Random.seed")
+
+  .GlobalEnv$t <- 1
+  on.exit(rm(list="t", envir=.GlobalEnv), add=TRUE)
+  id <- save_image(path)
+  expect_true(file.exists(path))
+  expect_true(is_dir(path))
+  filename <- file.path(path, id)
+
+  e <- new.env()
+  v <- load(filename, e)
+  expect_equal(sort(v), sort(c("t", vars)))
+  expect_equal(e$t, 1)
+
+  ## But this *should* do badly in the buggy version I'm looking at
+  ## but does not seem to right now:
+  f <- function(path) {
+    save_image(path)
+  }
+  environment(f) <- environment(save_image)
+  id2 <- f(path)
+  expect_equal(id2, id)
+
+  ctx <- save_context(auto=TRUE, root=path)
+  expect_equal(read_context(ctx)$global, id)
 })

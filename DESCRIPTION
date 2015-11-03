@@ -9,5 +9,8 @@ LazyData: true
 URL: https://github.com/dide-tools/context
 BugReports: https://github.com/dide-tools/context/issues
 Imports: drat
-Suggests: testthat
+Suggests: testthat,
+    knitr,
+    rmarkdown
 RoxygenNote: 5.0.0
+VignetteBuilder: knitr

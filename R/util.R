@@ -40,7 +40,7 @@ is.GlobalEnv <- function(x) {
 save_image <- function(path) {
   exclude <- ".Random.seed"
   tmp <- tempfile()
-  save(list=setdiff(names(.GlobalEnv), exclude),
+  save(list=setdiff(names(.GlobalEnv), exclude), envir=.GlobalEnv,
        file=tmp)
   rename_to_md5(tmp, path)
 }

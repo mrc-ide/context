@@ -5,6 +5,9 @@
 ##' will probably alter the search path by loading any number of
 ##' packages.
 ##'
+##' The \code{read_context} function simply reads the context, but
+##' does not load it.  It is mostly useful for debugging.
+##'
 ##' @title Save and reload contexts
 ##'
 ##' @param packages A character vector of packages (or \code{NULL}) if
@@ -106,7 +109,7 @@ load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   }
 
   context_log("library", paste0(obj$packages$attached, collapse=", "))
-  for (p in rev(obj$packages$attached)) {
+  for (p in rev(setdiff(obj$packages$attached, .packages()))) {
     library(p, character.only=TRUE)
   }
   context_log("loadns", paste0(obj$packages$loaded, collapse=", "))
@@ -131,7 +134,10 @@ load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   }
 }
 
+##' @export
+##' @rdname context
 read_context <- function(handle) {
+  ## TODO: same treatment as read_task where read_task(task) -> task
   ret <- readRDS(path_contexts(handle$root, handle$id))
   ## We'll take responsibility here for setting up the local drat
   ## links because install_packages does not know about ideas of

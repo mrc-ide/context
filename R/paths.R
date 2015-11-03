@@ -1,6 +1,6 @@
 ## Helpers for paths
 path_library <- function(root) {
-  file.path(root, "R", r_version(2))
+  file.path(root, "R", R.version[["platform"]], r_version(2))
 }
 path_tasks <- function(root, id=NULL) {
   file_path(root, "tasks", id)

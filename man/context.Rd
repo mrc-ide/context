@@ -2,6 +2,7 @@
 % Please edit documentation in R/context.R
 \name{save_context}
 \alias{load_context}
+\alias{read_context}
 \alias{save_context}
 \title{Save and reload contexts}
 \usage{
@@ -9,6 +10,8 @@ save_context(packages = NULL, sources = NULL, auto = FALSE,
   package_sources = NULL, envir = parent.frame(), root = tempdir())
 
 load_context(handle, install = TRUE, envir = .GlobalEnv, ...)
+
+read_context(handle)
 }
 \arguments{
 \item{packages}{A character vector of packages (or \code{NULL}) if
@@ -53,5 +56,9 @@ global environment.  Environments saved with \code{save_context}
 can be reloaded with \code{load_context}; note that doing this
 will probably alter the search path by loading any number of
 packages.
+}
+\details{
+The \code{read_context} function simply reads the context, but
+does not load it.  It is mostly useful for debugging.
 }
 

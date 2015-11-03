@@ -22,17 +22,21 @@ save_task <- function(expr, context=NULL, envir=parent.frame(),
     context <- save_context(auto=TRUE, envir=envir, root=root)
   } else if (!is.context_handle(context) || is.context(context)) {
     stop("Invalid context")
+  } else {
+    if (missing(root)) {
+      root <- context$root
+    } else if (!identical(root, context$root)) {
+      stop("Disagreement about the root")
+    }
   }
-  ## TODO: might be worth warning if root and context$root (iff
-  ## context is a context handle) differ.  Otherwise restoring may not
-  ## go as expected.  More generally, we might want to check that the
-  ## context *exists* in the given root.
+  ## TODO: we might want to check that the context *exists* in the given root.
   ##   if (!context_exists(context$id, root)) {
   ##     stop("Context not found")
   ##   }
   dat <- store_expression(expr, envir)
   dat$context_id <- context$id
   dat$id <- random_id()
+  class(dat) <- "task"
   dir.create(path_tasks(root), FALSE, TRUE)
   saveRDS(dat, path_tasks(root, dat[["id"]]))
   task_handle(dat$id, root)
@@ -43,19 +47,36 @@ save_task <- function(expr, context=NULL, envir=parent.frame(),
 ##' @param handle A handle to load the task
 ##' @export
 load_task <- function(handle, install=TRUE, envir=.GlobalEnv) {
-  if (!is.task_handle(handle)) {
-    stop("handle must be a task_handle")
-  }
-  id <- handle$id
-  root <- handle$root
-  dat <- readRDS(path_tasks(root, id))
-
+  dat <- read_task(handle)
   ## This approch has worked well for rrqueue, so keeping it going here.
-  context <- context_handle(dat$context_id, root)
+  context <- context_handle(dat$context_id, handle$root)
   dat$envir_context <- load_context(context, install, envir)
   dat$envir <- restore_locals(dat, dat$envir_context)
-
   dat
+}
+
+##' @rdname task
+##' @export
+read_task <- function(handle) {
+  if (is.task(handle)) {
+    handle
+  } else if (is.task_handle(handle)) {
+    readRDS(path_tasks(handle$root, handle$id))
+  } else {
+    stop("handle must be a task or task_handle")
+  }
+}
+
+##' Fetch result from completed task.
+##' @title Fetch task result
+##' @param handle A task handle
+##' @export
+task_result <- function(handle) {
+  filename <- path_results(handle$root, handle$id)
+  if (!file.exists(filename)) {
+    stop("Task does not have results")
+  }
+  readRDS(filename)
 }
 
 save_task_results <- function(handle, value) {
@@ -70,14 +91,28 @@ task_handle <- function(id, root) {
 is.task_handle <- function(x) {
   inherits(x, "task_handle")
 }
+is.task <- function(x) {
+  inherits(x, "task")
+}
 
 ##' @export
 print.task_handle <- function(x, ...) {
   print_ad_hoc(x)
 }
+##' @export
+print.task <- function(x, ...) {
+  print_ad_hoc(x)
+}
 
+##' Run a task
+##' @title Run a task
+##' @param handle Task handle
+##' @param install Install packages when constructing context?
+##' @param envir Environment to load global variables into.
+##' @export
 run_task <- function(handle, install=FALSE, envir=.GlobalEnv) {
   context_log("root", handle$root)
+  context_log("task", handle$id)
   dat <- load_task(handle, install, envir)
   context_log("expr", capture.output(print(dat$expr)))
   dir.create(path_results(handle$root), FALSE, TRUE)
