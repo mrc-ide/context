@@ -7,7 +7,7 @@ context("contexts")
 ## to work with R's `R CMD check` tools.
 test_that("simplest case", {
   root <- tempfile("cluster_")
-  on.exit(unlink(root, recursive=TRUE))
+  on.exit(cleanup(root))
   handle <- save_context(root=root)
   expect_is(handle, "context_handle")
 
@@ -22,11 +22,14 @@ test_that("simplest case", {
   res <- load_context(handle, envir=e)
   expect_identical(names(e), character(0))
   expect_identical(names(res), "root")
+
+  obj <- read_context(handle)
+  expect_is(obj, "context")
 })
 
 test_that("auto", {
   root <- tempfile("cluster_")
-  on.exit(unlink(root, recursive=TRUE))
+  on.exit(cleanup(root))
 
   handle <- save_context(root=root, auto=TRUE)
   expect_true(file.exists(file.path(root, "contexts", handle$id)))
@@ -35,4 +38,23 @@ test_that("auto", {
   dat <- readRDS(file.path(root, "contexts", handle$id))
   expect_true(file.exists(file.path(root, "environments", dat$global)))
   expect_true(file.exists(file.path(root, "environments", dat$local)))
+})
+
+test_that("package_sources", {
+  Sys.setenv(R_TESTS="")
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+
+  src <- package_sources(github="richfitz/sowsear")
+  handle <- save_context(root=root, packages="sowsear",
+                         package_sources=src)
+
+  obj <- read_context(handle)
+  expect_true(obj$package_sources$use_local_drat)
+  expect_equal(obj$package_sources$local_drat, path_drat(handle$root))
+  expect_equal(obj$packages, list(attached="sowsear", loaded=character(0)))
+
+  tmp <- load_context(handle, quiet=TRUE)
+  on.exit(unloadNamespace("sowsear"), add=TRUE)
+  expect_true("sowsear" %in% .packages())
 })

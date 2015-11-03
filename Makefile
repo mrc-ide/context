@@ -32,4 +32,9 @@ README.md: README.Rmd
 	sed -i.bak 's/[[:space:]]*$$//' README.md
 	rm -f $@.bak myfile.json
 
+clean:
+	rm -f ${PACKAGE}_*.tar.gz
+	rm -rf ${PACKAGE}.Rcheck
+
+
 .PHONY: all test document install

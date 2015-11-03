@@ -75,6 +75,7 @@ save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
       stop("Expected a package_sources object")
     }
     build_local_drat(package_sources, root)
+    ret$package_sources <- package_sources
   }
 
   ret$local <- save_object(envir, path_environments(root))
@@ -85,39 +86,66 @@ save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
 }
 
 ##' @rdname context
+##' @param install Install missing packages?
+##'
+##' @param ... Additional arguments passed through to
+##'   \code{install_packages} if it is used.
+##'
 ##' @export
-load_context <- function(handle, envir=.GlobalEnv) {
+load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   if (!is.context_handle(handle)) {
     stop("handle must be a context_handle")
   }
-  id <- handle$id
-  root <- handle$root
-  context_log("context", id)
-  obj <- readRDS(path_contexts(root, id))
-  ## Consider filtering against loaded, suppressing messages, doing
-  ## install, etc; this function probably splits into two pieces.
+  context_log("context", handle$id)
+  obj <- read_context(handle)
+
+  use_local_library(handle$root)
+  if (install) {
+    install_packages_missing(c(obj$packages$attached, obj$packages$loaded),
+                             package_sources=obj$package_sources, ...)
+  }
+
   context_log("library", paste0(obj$packages$attached, collapse=", "))
   for (p in rev(obj$packages$attached)) {
     library(p, character.only=TRUE)
   }
   context_log("loadns", paste0(obj$packages$loaded, collapse=", "))
-  for (p in setdiff(obj$packages$loaded, loadedNamespaces())) {
+  for (p in rev(setdiff(obj$packages$loaded, loadedNamespaces()))) {
     loadNamespace(p)
   }
+
   context_log("source", paste0(obj$sources, collapse=", "))
   for (s in obj$sources) {
     source(s, envir)
   }
+
   if (!is.null(obj$global)) {
     context_log("global", obj$global)
-    load(path_environments(root, obj$global), envir=envir)
+    load(path_environments(handle$root, obj$global), envir=envir)
   }
   if (!is.null(obj$local)) {
     context_log("local", obj$local)
-    readRDS(path_environments(root, obj$local))
+    readRDS(path_environments(handle$root, obj$local))
   } else {
     envir
   }
+}
+
+read_context <- function(handle) {
+  ret <- readRDS(path_contexts(handle$root, handle$id))
+  ## We'll take responsibility here for setting up the local drat
+  ## links because install_packages does not know about ideas of
+  ## roots; it just has the set of sources (which by this point has
+  ## basically whittled down to a set of repositories which is kind
+  ## of cool).
+  ##
+  ## Because the final drat link needs to be an absolute path, this
+  ## means that wherever the context is read will get the correct
+  ## local path.
+  if (isTRUE(ret$package_sources$use_local_drat)) {
+    ret$package_sources$local_drat <- path_drat(handle$root)
+  }
+  ret
 }
 
 ## This is going to be horrid to test because it really requires
@@ -156,10 +184,23 @@ is.context_handle <- function(x) {
 
 ##' @export
 print.context_handle <- function(x, ...) {
-  cat(sprintf("<context_handle>\n - id: %s\n - root: %s\n", x$id, x$root))
-  invisible(x)
+  print_ad_hoc(x)
+}
+##' @export
+print.context <- function(x, ...) {
+  print_ad_hoc(x)
 }
 
 context_exists <- function(id, root) {
   file.exists(path_contexts(root, id))
+}
+
+use_local_library <- function(root) {
+  lib <- path_library(root)
+  context_log("lib", lib)
+  dir.create(lib, FALSE, TRUE)
+  ## This preserves all the previous libPaths; .libPaths(lib) would
+  ## nuke all but the system libraries.
+  .libPaths(union(lib, .libPaths()))
+  invisible(lib)
 }

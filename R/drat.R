@@ -111,8 +111,10 @@ build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
       saveRDS(timestamp_merge(timestamp, timestamp_create(src)),
               timestamp_file)
     }
+    ## This is needed outside.
+    sources$local_drat <- path
   }
-  invisible()
+  sources
 }
 
 ## A pretty rubbish attempt at making the package source bits a little

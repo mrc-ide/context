@@ -4,18 +4,13 @@
 \alias{install_packages}
 \title{Install packages}
 \usage{
-install_packages(packages, sources, root, local = TRUE, ...)
+install_packages(packages, package_sources, ...)
 }
 \arguments{
 \item{packages}{A character vector of packages to install}
 
-\item{sources}{Source information from \code{\link{package_sources}}}
-
-\item{root}{The context root path; used for constructing drat and
-library directories.}
-
-\item{local}{Install packages in a local library (under
-\code{root}) rather than in whatever the system library is?}
+\item{package_sources}{Source information from
+\code{\link{package_sources}}.}
 
 \item{...}{Additional arguments passed through to
 \code{\link{install.packages}}.}

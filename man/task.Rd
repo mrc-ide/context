@@ -7,7 +7,7 @@
 \usage{
 save_task(expr, context = NULL, envir = parent.frame(), root = tempdir())
 
-load_task(handle, envir = .GlobalEnv)
+load_task(handle, install = TRUE, envir = .GlobalEnv)
 }
 \arguments{
 \item{expr}{An expression to save}
@@ -23,6 +23,8 @@ contexts automatically.}
 \item{root}{Root directory to store and retrieve files.}
 
 \item{handle}{A handle to load the task}
+
+\item{install}{Should missing packages be installed?}
 }
 \description{
 Save and reload tasks.  Tasks consist of an expression bound to a

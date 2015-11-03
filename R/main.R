@@ -3,7 +3,7 @@ main <- function(args=commandArgs(TRUE)) {
   context_log("init", Sys_time())
   context_log("version", packageVersion(.packageName))
   args <- main_parse_args(args)
-  run_task(task_handle(args$id, args$root), .GlobalEnv)
+  run_task(task_handle(args$id, args$root), install=TRUE, envir=.GlobalEnv)
   invisible()
 }
 

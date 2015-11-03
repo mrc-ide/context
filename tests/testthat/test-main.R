@@ -24,6 +24,32 @@ test_that("run", {
   full <- file.path(tempdir(), "context")
 
   Sys.setenv(R_TESTS="")
+  ## can use call_system here as I set it up to work.  Unfortunately
+  ## that does rather create a potential circular dependency if I ever
+  ## wanted to get callr to use context.
+
+  res <- system2(full, c(handle$id, handle$root), stdout=TRUE, stderr=TRUE)
+  expect_null(attr(res, "status", exact=TRUE))
+
+  result_file <- path_results(handle$root, handle$id)
+  expect_true(file.exists(result_file))
+  expect_equal(readRDS(result_file), sin(1))
+})
+
+test_that("install", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+
+  ## Picking this package just because it's fairly light and unlikely
+  ## to be installed.
+  src <- package_sources(github="richfitz/sowsear")
+  context <- save_context(packages="sowsear", package_sources=src, root=root)
+  handle <- save_task(quote(sin(1)),
+                      context=context,
+                      root=root)
+  install_context(tempdir())
+  full <- file.path(tempdir(), "context")
+
   res <- system2(full, c(handle$id, handle$root), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))
 

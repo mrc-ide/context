@@ -15,49 +15,34 @@
 ##'
 ##' @title Install packages
 ##' @param packages A character vector of packages to install
-##' @param sources Source information from \code{\link{package_sources}}
 ##'
-##' @param root The context root path; used for constructing drat and
-##'   library directories.
-##'
-##' @param local Install packages in a local library (under
-##'   \code{root}) rather than in whatever the system library is?
+##' @param package_sources Source information from
+##'   \code{\link{package_sources}}.
 ##'
 ##' @param ... Additional arguments passed through to
 ##'   \code{\link{install.packages}}.
 ##'
 ##' @export
-install_packages <- function(packages, sources, root, local=TRUE, ...) {
+install_packages <- function(packages, package_sources, ...) {
+  if (length(packages) == 0L) {
+    return()
+  }
   ## This attempts to avoid listing CRAN twice which makes
   ## available.packages quite slow.
   r <- getOption("repos")
-  r <- r[r != sources$cran]
-  r["CRAN"] <- sources$cran
-  if (!is.null(sources$repos)) {
-    r <- c(r, sources$repos)
+  r <- r[r != package_sources$cran]
+  r["CRAN"] <- package_sources$cran
+  if (!is.null(package_sources$repos)) {
+    r <- c(r, package_sources$repos)
   }
-  if (!is.null(sources$use_local_drat)) {
-    build_local_drat(sources, root)
-    local_drat <- normalizePath(path_drat(root), winslash="/")
-    r <- c(r, "local_packages"=paste0("file://", local_drat))
+  if (!is.null(package_sources$local_drat)) {
+    r <- c(r, "local_drat"=file_url(package_sources$local_drat))
   }
-  if (local) {
-    lib <- path_library(root)
-    library_init(lib)
-  } else {
-    lib <- .libPaths()[[1]]
-  }
-
   context_log("install", paste(packages, collapse=", "))
-  install.packages(packages, lib=lib, repos=r, ...)
-  invisible(lib)
+  install.packages(packages, repos=r, ...)
+  invisible()
 }
 
 install_packages_missing <- function(packages, ...) {
   install_packages(setdiff(packages, .packages(TRUE)), ...)
-}
-
-library_init <- function(path) {
-  dir.create(path, FALSE, TRUE)
-  .libPaths(path)
 }

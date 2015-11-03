@@ -8,7 +8,7 @@
 save_context(packages = NULL, sources = NULL, auto = FALSE,
   package_sources = NULL, envir = parent.frame(), root = tempdir())
 
-load_context(handle, envir = .GlobalEnv)
+load_context(handle, install = TRUE, envir = .GlobalEnv, ...)
 }
 \arguments{
 \item{packages}{A character vector of packages (or \code{NULL}) if
@@ -40,6 +40,11 @@ later use.}
 
 \item{handle}{A \code{context_handle} object returned by
 \code{save_context}.}
+
+\item{install}{Install missing packages?}
+
+\item{...}{Additional arguments passed through to
+\code{install_packages} if it is used.}
 }
 \description{
 Save and reload contexts.  Contexts consist of packages and

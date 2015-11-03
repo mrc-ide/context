@@ -75,9 +75,8 @@ random_id <- function() {
 }
 
 print_ad_hoc <- function(x) {
-  paste(sprintf(" - %s: %s\n", names(x), unname(x)), collapse="")
-
-  cat(sprintf("<%s>\n - id: %s\n - root: %s\n", class(x)[[1]], x$id, x$root))
+  members <- paste(sprintf(" - %s: %s\n", names(x), unname(x)), collapse="")
+  cat(sprintf("<%s>\n%s", class(x)[[1]], members))
   invisible(x)
 }
 
@@ -89,4 +88,8 @@ Sys_time <- function() {
 
 is_dir <- function(x) {
   file.info(x)[["isdir"]]
+}
+
+file_url <- function(path) {
+  paste0("file://", normalizePath(path, winslash="/"))
 }

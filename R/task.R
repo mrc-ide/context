@@ -39,9 +39,10 @@ save_task <- function(expr, context=NULL, envir=parent.frame(),
 }
 
 ##' @rdname task
+##' @param install Should missing packages be installed?
 ##' @param handle A handle to load the task
 ##' @export
-load_task <- function(handle, envir=.GlobalEnv) {
+load_task <- function(handle, install=TRUE, envir=.GlobalEnv) {
   if (!is.task_handle(handle)) {
     stop("handle must be a task_handle")
   }
@@ -51,7 +52,7 @@ load_task <- function(handle, envir=.GlobalEnv) {
 
   ## This approch has worked well for rrqueue, so keeping it going here.
   context <- context_handle(dat$context_id, root)
-  dat$envir_context <- load_context(context, envir)
+  dat$envir_context <- load_context(context, install, envir)
   dat$envir <- restore_locals(dat, dat$envir_context)
 
   dat
@@ -70,9 +71,14 @@ is.task_handle <- function(x) {
   inherits(x, "task_handle")
 }
 
-run_task <- function(handle, envir=.GlobalEnv) {
+##' @export
+print.task_handle <- function(x, ...) {
+  print_ad_hoc(x)
+}
+
+run_task <- function(handle, install=FALSE, envir=.GlobalEnv) {
   context_log("root", handle$root)
-  dat <- load_task(handle, envir)
+  dat <- load_task(handle, install, envir)
   context_log("expr", capture.output(print(dat$expr)))
   dir.create(path_results(handle$root), FALSE, TRUE)
   context_log("start", Sys_time())
