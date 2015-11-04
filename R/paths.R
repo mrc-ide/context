@@ -17,3 +17,9 @@ path_results <- function(root, id=NULL) {
 path_drat <- function(root) {
   file.path(root, "drat")
 }
+path_bootstrap <- function(root) {
+  file.path(root, "context_bootstrap.R")
+}
+path_version <- function(root) {
+  file.path(root, "context_version")
+}
