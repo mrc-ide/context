@@ -18,5 +18,5 @@ test_that("install.packages2", {
   expect_null(suppressWarnings(install.packages("asdfa", repos=repos)))
 
   expect_error(suppressWarnings(install.packages2("asdfa", repos=repos)),
-               "Failure in install.packages")
+               "is not available")
 })

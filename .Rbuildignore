@@ -6,3 +6,4 @@
 ^appveyor.yml$
 ^context_.*\.tar\.gz$
 ^TODO\.md$
+docker

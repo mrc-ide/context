@@ -68,17 +68,17 @@ install_packages_missing <- function(packages, ...) {
 ## Geting the withCallingHandlers bit correct is super difficult to
 ## make sure that the warnings are preseved.
 install.packages2 <- function(pkgs, ..., error=TRUE) {
-  ## capture <- function(e) {
-  ##   if (error && grepl("package.*(is|are) not available", e$message)) {
-  ##     stop(e) # or stop(e, call.=FALSE)
-  ##   }# else clause here should restart so that other messages make it out.
-  ## }
-  ## withCallingHandlers(install.packages(pkgs), warning=capture)
-  ## This is a little extra check that will behave poorly if lib is
-  ## passed explicitly to install.packages, or if the packages were
-  ## already installed.
-  install.packages(pkgs, ...)
-  if (!all(pkgs %in% .packages(TRUE))) {
-    stop("Failure in install.packages (see above)")
+  e <- NULL
+  capture <- function(e) {
+    if (error && grepl("package.*(is|are) not available", e$message)) {
+      e <<- e
+    }
   }
+  withCallingHandlers(install.packages(pkgs, ...), warning=capture)
+  if (!is.null(e)) {
+    stop(e$message, call.=FALSE)
+  }
+  ## Here we *could* check that the package name is installed but for
+  ## local packages (e.g., repos=NULL) we need to go into the archive
+  ## and get the correct package name!
 }
