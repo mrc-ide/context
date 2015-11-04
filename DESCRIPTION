@@ -9,7 +9,7 @@ LazyData: true
 URL: https://github.com/dide-tools/context
 BugReports: https://github.com/dide-tools/context/issues
 Imports:
-    downloader,
+    curl,
     drat
 Suggests:
     knitr,

@@ -4,7 +4,7 @@
 \alias{install_packages}
 \title{Install packages}
 \usage{
-install_packages(packages, package_sources, ...)
+install_packages(packages, package_sources, ..., error = TRUE)
 }
 \arguments{
 \item{packages}{A character vector of packages to install}
@@ -14,6 +14,8 @@ install_packages(packages, package_sources, ...)
 
 \item{...}{Additional arguments passed through to
 \code{\link{install.packages}}.}
+
+\item{error}{Throw an error if package installation fails.}
 }
 \description{
 Install packages, using source information from
@@ -23,7 +25,9 @@ new local repository (used to isolate packages from the rest of
 the system) and can install packages originally found on github
 and bitbucket by creating a transient drat repository.  In
 addition, \code{install_packages_missing} only installs
-\emph{missing} packages only.
+\emph{missing} packages only.  Also in contrast with
+\code{install.packages}, these function will throw an error if
+package installation fails (unless error=FALSE is set).
 }
 \section{Warning}{
 
