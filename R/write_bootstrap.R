@@ -53,7 +53,7 @@ write_bootstrap <- function(root) {
   }
   main <- function() {
     if (exists("CONTEXT_ROOT")) {
-      root <- CONTEXT_ROOT
+      root <- get("CONTEXT_ROOT")
     } else {
       args <- commandArgs(TRUE)
       if (length(args) != 1L) {
