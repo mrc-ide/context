@@ -55,6 +55,23 @@ save_object <- function(envir, path) {
   }
 }
 
+## file.remame: "This is subject to the limitations of the OS's
+## corresponding system call (see something like ‘man 2 rename’ on a
+## Unix-alike): in particular in the interpretation of ‘file’: most
+## platforms will not rename files across file systems."
+##
+## similar issues affect python's os.rename rather than shutil.move
+##
+## Note that this is no longer atomic, and may do slightly weird
+## things to directories; need to check that this is all reasonable
+## with some tests.  However, for the main use here (rename_to_md5)
+## this is guaranteed to be a file (and actually won't copy if dest
+## exists).
+file_rename <- function(from, to) {
+  file.copy(from, to, overwrite=TRUE)
+  unlink(from, recursive=TRUE)
+}
+
 rename_to_md5 <- function(filename, path, ext="") {
   md5 <- tools::md5sum(filename)
   dest <- file.path(path, paste0(md5, ext))
@@ -62,7 +79,7 @@ rename_to_md5 <- function(filename, path, ext="") {
   if (file.exists(dest)) {
     file.remove(filename)
   } else {
-    file.rename(filename, dest)
+    file_rename(filename, dest)
   }
   unname(md5)
 }
