@@ -117,7 +117,7 @@ This prints the result of restoring the context and running the task:
   increase the chance that packages will load successfully and not
   interfere with other environments).
 * `library`: calls to `library()` to load packages and attach namespaces
-* `loadns`: calls to `loadNamespace()`; these packages were present
+* `namespace`: calls to `loadNamespace()`; these packages were present
    but not attached in the context.
 * `source`: There was nothing to `source()` here so this is blank,
   otherwise it would be a list of filenames.
@@ -145,16 +145,26 @@ context <- context::install_context(tempdir())
 ```
 
 ``` {r eval=FALSE}
-system2(context, c(t$id, t$root))
+system2(context, c(t$root, t$id))
 ```
 ``` {r echo=FALSE}
-res <- context:::call_system(context, c(t$id, t$root))
-writeLines(res)
+writeLines(context:::call_system(context, c(t$root, t$id)))
 ```
 
 which looks rather like the above, but has the additional lines
 `init` and `version`.  This is run in an entirely separate R
 process.
+
+This is a bit fragile though as it requires that `context` is
+already installed on the target machine.  So `context` also writes
+some bootstrap scripts that can set itself and its dependencies up.
+``` {r eval=FALSE}
+system2(file.path(t$root, "context_runner"), c(t$root, t$id))
+```
+``` {r echo=FALSE}
+writeLines(context:::call_system(file.path(t$root, "context_runner"),
+                                 c(t$root, t$id)))
+```
 
 # Non-CRAN packages
 

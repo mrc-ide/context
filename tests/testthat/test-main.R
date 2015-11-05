@@ -8,7 +8,7 @@ test_that("parse_args", {
   expect_error(main_parse_args(c("a", "b", "c")),
                "Exactly two arguments required")
   expect_that(main_parse_args(c("foo", "bar")),
-              equals(list(id="foo", root="bar")))
+              equals(list(root="foo", id="bar")))
 })
 
 test_that("install", {
@@ -26,7 +26,7 @@ test_that("run", {
   ## that does rather create a potential circular dependency if I ever
   ## wanted to get callr to use context.
 
-  res <- system2(full, c(handle$id, handle$root), stdout=TRUE, stderr=TRUE)
+  res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))
 
   result_file <- path_results(handle$root, handle$id)
@@ -47,7 +47,7 @@ test_that("install", {
                       root=root)
   full <- install_context(tempdir())
 
-  res <- system2(full, c(handle$id, handle$root), stdout=TRUE, stderr=TRUE)
+  res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))
 
   result_file <- path_results(handle$root, handle$id)

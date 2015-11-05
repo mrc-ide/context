@@ -9,12 +9,13 @@ main <- function(args=commandArgs(TRUE)) {
 
 main_parse_args <- function(args) {
   nargs <- length(args)
-  usage <- "context <id> <root>"
+  usage <- "context <root> <task_id>"
   if (nargs != 2L) {
     stop("Exactly two arguments required\nUsage: ", usage,
+         "(given: ", paste(args), ")",
          call.=FALSE)
   }
-  list(id=args[[1]], root=args[[2]])
+  list(root=args[[1]], id=args[[2]])
 }
 
 ## This won't work on windows; need to find out how to get this to

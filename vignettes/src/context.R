@@ -126,14 +126,22 @@ task_result(t)
 context <- context::install_context(tempdir())
 
 ##+ eval=FALSE
-system2(context, c(t$id, t$root))
+system2(context, c(t$root, t$id))
 ##+ echo=FALSE
-res <- context:::call_system(context, c(t$id, t$root))
-writeLines(res)
+writeLines(context:::call_system(context, c(t$root, t$id)))
 
 ## which looks rather like the above, but has the additional lines
 ## `init` and `version`.  This is run in an entirely separate R
 ## process.
+
+## This is a bit fragile though as it requires that `context` is
+## already installed on the target machine.  So `context` also writes
+## some bootstrap scripts that can set itself and its dependencies up.
+##+ eval=FALSE
+system2(file.path(t$root, "context_runner"), c(t$root, t$id))
+##+ echo=FALSE
+writeLines(context:::call_system(file.path(t$root, "context_runner"),
+                                 c(t$root, t$id)))
 
 ## # Non-CRAN packages
 

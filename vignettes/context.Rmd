@@ -1,7 +1,7 @@
 ---
 title: "context"
 author: "Rich FitzJohn"
-date: "2015-11-03"
+date: "2015-11-05"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{context}
@@ -69,8 +69,8 @@ ctx
 
 ```
 ## <context_handle>
-##  - id: 2e479f151b961bb3bbbfb12e7e0fa316
-##  - root: /tmp/RtmpdpCiWt
+##  - id: f2325ff966da2430c20c8551340f6dc7
+##  - root: /tmp/RtmpvonAoL
 ```
 
 This will save all the required metadata at the path `root` (by
@@ -85,6 +85,7 @@ read_context(ctx)
 ## <context>
 ##  - packages: list(attached = c("pkg1", "pkg2"), loaded = character(0))
 ##  - sources: file.R
+##  - package_sources: list(cran = "http://cran.rstudio.com", repos = NULL, github = NULL, bitbucket = NULL, local = NULL, use_local_drat = FALSE, expire = 1)
 ##  - auto: FALSE
 ```
 
@@ -98,8 +99,9 @@ read_context(ctx)
 
 ```
 ## <context>
-##  - packages: list(loaded = c("magrittr", "formatR", "stringi", "knitr", "stringr", "evaluate"), attached = "context")
+##  - packages: list(loaded = c("magrittr", "formatR", "codetools", "stringi", "knitr", "stringr", "evaluate"), attached = "context")
 ##  - global: 67476fb38df558e4acd0e6b7bad89282
+##  - package_sources: list(cran = "http://cran.rstudio.com", repos = NULL, github = NULL, bitbucket = NULL, local = NULL, use_local_drat = FALSE, expire = 1)
 ##  - auto: TRUE
 ```
 
@@ -119,7 +121,7 @@ ctx$id
 ```
 
 ```
-## [1] "1b4ea25dd84e81539099d20e61002287"
+## [1] "07ba0a797cceaf00ba09cad1ad352b93"
 ```
 
 ```r
@@ -130,8 +132,8 @@ read_task(t)
 ```
 ## <task>
 ##  - expr: sin(1)
-##  - context_id: 1b4ea25dd84e81539099d20e61002287
-##  - id: 28f40715dec6b9560f76fd8106a95b29
+##  - context_id: 07ba0a797cceaf00ba09cad1ad352b93
+##  - id: 58239d0ccf8e55994877cd1d66c07b48
 ```
 
 These tasks are loaded using the function `load_task` but this
@@ -143,18 +145,18 @@ res <- run_task(t)
 ```
 
 ```
-## [ root     ]  /tmp/RtmpdpCiWt
-## [ task     ]  28f40715dec6b9560f76fd8106a95b29
-## [ context  ]  1b4ea25dd84e81539099d20e61002287
-## [ lib      ]  /tmp/RtmpdpCiWt/R/x86_64-pc-linux-gnu/3.2
-## [ library  ]  context
-## [ loadns   ]  magrittr, formatR, stringi, knitr, stringr, evaluate
-## [ source   ]
-## [ global   ]  564af2eda6c403f056aded2f866551cb
-## [ expr     ]  sin(1)
-## [ start    ]  2015-11-03 16:24:35.431
-## [ result   ]  /tmp/RtmpdpCiWt/results/28f40715dec6b9560f76fd8106a95b29
-## [ end      ]  2015-11-03 16:24:35.431
+## [ root      ]  /tmp/RtmpvonAoL
+## [ task      ]  58239d0ccf8e55994877cd1d66c07b48
+## [ context   ]  07ba0a797cceaf00ba09cad1ad352b93
+## [ lib       ]  /tmp/RtmpvonAoL/R/x86_64-pc-linux-gnu/3.2
+## [ library   ]  context
+## [ namespace ]  magrittr, formatR, codetools, stringi, knitr, stringr, evaluate
+## [ source    ]
+## [ global    ]  2ba042de0af7b9932d6868d4f400e908
+## [ expr      ]  sin(1)
+## [ start     ]  2015-11-05 15:54:08.140
+## [ result    ]  /tmp/RtmpvonAoL/results/58239d0ccf8e55994877cd1d66c07b48
+## [ end       ]  2015-11-05 15:54:08.141
 ```
 
 This prints the result of restoring the context and running the task:
@@ -168,7 +170,7 @@ This prints the result of restoring the context and running the task:
   increase the chance that packages will load successfully and not
   interfere with other environments).
 * `library`: calls to `library()` to load packages and attach namespaces
-* `loadns`: calls to `loadNamespace()`; these packages were present
+* `namespace`: calls to `loadNamespace()`; these packages were present
    but not attached in the context.
 * `source`: There was nothing to `source()` here so this is blank,
   otherwise it would be a list of filenames.
@@ -208,29 +210,59 @@ context <- context::install_context(tempdir())
 
 
 ```r
-system2(context, c(t$id, t$root))
+system2(context, c(t$root, t$id))
 ```
 
 ```
-## [ init     ]  2015-11-03 16:24:35.550
-## [ version  ]  0.0.1
-## [ root     ]  /tmp/RtmpdpCiWt
-## [ task     ]  28f40715dec6b9560f76fd8106a95b29
-## [ context  ]  1b4ea25dd84e81539099d20e61002287
-## [ lib      ]  /tmp/RtmpdpCiWt/R/x86_64-pc-linux-gnu/3.2
-## [ library  ]  context
-## [ loadns   ]  magrittr, formatR, stringi, knitr, stringr, evaluate
-## [ source   ]
-## [ global   ]  564af2eda6c403f056aded2f866551cb
-## [ expr     ]  sin(1)
-## [ start    ]  2015-11-03 16:24:35.620
-## [ result   ]  /tmp/RtmpdpCiWt/results/28f40715dec6b9560f76fd8106a95b29
-## [ end      ]  2015-11-03 16:24:35.622
+## [ init      ]  2015-11-05 15:54:08.259
+## [ version   ]  0.0.1
+## [ root      ]  /tmp/RtmpvonAoL
+## [ task      ]  58239d0ccf8e55994877cd1d66c07b48
+## [ context   ]  07ba0a797cceaf00ba09cad1ad352b93
+## [ lib       ]  /tmp/RtmpvonAoL/R/x86_64-pc-linux-gnu/3.2
+## [ library   ]  context
+## [ namespace ]  magrittr, formatR, codetools, stringi, knitr, stringr, evaluate
+## [ source    ]
+## [ global    ]  2ba042de0af7b9932d6868d4f400e908
+## [ expr      ]  sin(1)
+## [ start     ]  2015-11-05 15:54:08.336
+## [ result    ]  /tmp/RtmpvonAoL/results/58239d0ccf8e55994877cd1d66c07b48
+## [ end       ]  2015-11-05 15:54:08.337
 ```
 
 which looks rather like the above, but has the additional lines
 `init` and `version`.  This is run in an entirely separate R
 process.
+
+This is a bit fragile though as it requires that `context` is
+already installed on the target machine.  So `context` also writes
+some bootstrap scripts that can set itself and its dependencies up.
+
+```r
+system2(file.path(t$root, "context_runner"), c(t$root, t$id))
+```
+
+```
+## args:
+## /usr/lib/R/bin/exec/R, --slave, --no-restore, --file=/tmp/RtmpvonAoL/context_runner, --args, /tmp/RtmpvonAoL, 58239d0ccf8e55994877cd1d66c07b48
+## [ bootstrap ]  /tmp/RtmpvonAoL
+## [ lib       ]  /tmp/RtmpvonAoL/R/x86_64-pc-linux-gnu/3.2
+## [ ok        ]
+## [ init      ]  2015-11-05 15:54:08.454
+## [ version   ]  0.0.1
+## [ root      ]  /tmp/RtmpvonAoL
+## [ task      ]  58239d0ccf8e55994877cd1d66c07b48
+## [ context   ]  07ba0a797cceaf00ba09cad1ad352b93
+## [ lib       ]  /tmp/RtmpvonAoL/R/x86_64-pc-linux-gnu/3.2
+## [ library   ]  context
+## [ namespace ]  magrittr, formatR, codetools, stringi, knitr, stringr, evaluate
+## [ source    ]
+## [ global    ]  2ba042de0af7b9932d6868d4f400e908
+## [ expr      ]  sin(1)
+## [ start     ]  2015-11-05 15:54:08.529
+## [ result    ]  /tmp/RtmpvonAoL/results/58239d0ccf8e55994877cd1d66c07b48
+## [ end       ]  2015-11-05 15:54:08.531
+```
 
 # Non-CRAN packages
 
@@ -257,10 +289,10 @@ ctx <- save_context(packages="remake", package_sources=src)
 ```
 
 ```
-## [ download ]  traitecoevo/callr
-## [ download ]  richfitz/remake
-## [ download ]  richfitz/storr
-## [ drat     ]  /tmp/RtmpdpCiWt/drat
+## [ download  ]  traitecoevo/callr
+## [ download  ]  richfitz/remake
+## [ download  ]  richfitz/storr
+## [ drat      ]  /tmp/RtmpvonAoL/drat
 ```
 
 This takes a little while (though subsequent calls to the same root
