@@ -73,13 +73,14 @@ save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
     ## of the things in pathr that aren't done yet.
   }
 
-  if (!is.null(package_sources)) {
-    if (!inherits(package_sources, "package_sources")) {
-      stop("Expected a package_sources object")
-    }
+  if (is.null(package_sources)) {
+    package_sources <- package_sources()
+  } else if (inherits(package_sources, "package_sources")) {
     build_local_drat(package_sources, root)
-    ret$package_sources <- package_sources
+  } else {
+    stop("Expected a package_sources object (or NULL)")
   }
+  ret$package_sources <- package_sources
 
   ret$local <- save_object(envir, path_environments(root))
   ret$auto <- auto
