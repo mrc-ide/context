@@ -14,4 +14,9 @@ This directory must exist.}
 Install a script that runs the context.  This won't work on
 windows, but I'll get that sorted soon.
 }
+\details{
+This script requires that context (and its dependencies are
+installed in a library that is readable on startup (e.g., the user
+or site lib).  If it is not installed, then this script will fail.
+}
 

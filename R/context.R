@@ -45,6 +45,7 @@
 save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
                          package_sources=NULL,
                          envir=parent.frame(), root=tempdir()) {
+  setup_bootstrap(root)
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
       stop("Do not specify 'packages' or 'sources' if using auto")

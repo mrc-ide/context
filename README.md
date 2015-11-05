@@ -34,7 +34,9 @@ This may do slightly weird things with complicated interactions between local an
 
 # Packages
 
-Coordinating package installation on remote machines turns out to be a bit horrible, especially when you only want packages installed if they are not already there (hence all the constructs like `if (!require(pkg)) install.packages(pkg)...` that tend to litter scripts.  This situation is compounded if some packages are to come from non-CRAN repositories (e.g., unstable versions, research code, etc).  To help this, `context` allows specifying a `package_sources` object that can include packages from:
+Coordinating package installation on remote machines turns out to be a bit horrible, especially when you only want packages installed if they are not already there (hence all the constructs like `if (!require(pkg)) install.packages(pkg)...` that tend to litter scripts.  This situation is compounded if some packages are to come from non-CRAN repositories (e.g., unstable versions, research code, etc).
+
+To help this, `context` allows specifying a `package_sources` object that can include packages from:
 
 * `drat` repositories
 * github (using the devtools `user/repo[/subdir][@ref]` syntax
@@ -42,6 +44,8 @@ Coordinating package installation on remote machines turns out to be a bit horri
 * local packages (useful for private reposoitories as there's no need to deal with access rights)
 
 This is done by creating a local, ad-hoc, drat repository that the target machine can use.
+
+There is some overlap here between `context` and tools like [`packrat`](https://rstudio.github.io/packrat/) and [`rbundler`](https://github.com/opower/rbundler) but the focus here is less on constructing exact versioned environments and more on a lightweight way of bootstrapping an environment and dealing with the possibility of packages from different architectures or R versions coexsting within a common filesystem tree with a minimal amount of reinstalling.
 
 # Generalising
 
