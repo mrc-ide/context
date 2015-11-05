@@ -43,7 +43,7 @@ install_packages <- function(packages, package_sources, ..., error=TRUE) {
     r <- c(r, "local_drat"=file_url(package_sources$local_drat))
   }
   context_log("install", paste(packages, collapse=", "))
-  install.packages(packages, repos=r, ..., error=error)
+  install.packages2(packages, repos=r, ..., error=error)
   invisible()
 }
 
