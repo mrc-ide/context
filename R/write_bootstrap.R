@@ -30,6 +30,7 @@ write_bootstrap <- function(root) {
   bootstrap <- function(root, version) {
     options(context.log=TRUE)
     context_log("bootstrap", normalizePath(root))
+    use_local_library(root)
     if ("context" %in% .packages(TRUE)) {
       version <- package_version(readLines(file.path(root, "context_version")))
       if (packageVersion("context") >= version) {
@@ -37,7 +38,6 @@ write_bootstrap <- function(root) {
         return()
       }
     }
-    use_local_library(root)
     deps <- c("curl", "drat")
     packages <- setdiff(deps, .packages(TRUE))
     if (length(packages) > 0L) {
@@ -51,17 +51,19 @@ write_bootstrap <- function(root) {
     path <- dir(path, full.names=TRUE)
     install.packages2(path, repos=NULL)
   }
-  main <- function(args=commandArgs(TRUE)) {
-    if (length(args) != 1L) {
-      stop("Usage: context_bootstrap.R <root>")
+  main <- function() {
+    if (exists("CONTEXT_ROOT")) {
+      root <- CONTEXT_ROOT
+    } else {
+      args <- commandArgs(TRUE)
+      if (length(args) != 1L) {
+        stop("Usage: context_bootstrap.R <root>")
+      }
+      root <- args[[1]]
     }
-    bootstrap(args[[1]])
+    bootstrap(root)
   }
 
-  fun_to_str <- function(x, env) {
-    paste0(x, " <- ",
-           paste(deparse(get(x, env, inherits=FALSE)), collapse="\n"))
-  }
   env <- environment(write_bootstrap)
   funs_context <- vcapply(find_funcs(bootstrap, env),
                           fun_to_str, env, USE.NAMES=FALSE)
@@ -81,16 +83,4 @@ write_bootstrap <- function(root) {
   writeLines(code, dest)
   Sys.chmod(dest, "0755")
   invisible(dest)
-}
-
-find_funcs <- function(fun, env) {
-  ours <- names(env)
-  seen <- character(0)
-  test <- list(fun)
-  while (length(test) > 0L) {
-    new <- setdiff(intersect(codetools::findGlobals(test[[1]]), ours), seen)
-    seen <- c(seen, new)
-    test <- c(test[-1], lapply(new, get, env, inherits=FALSE))
-  }
-  sort(seen)
 }

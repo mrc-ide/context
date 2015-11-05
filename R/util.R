@@ -110,3 +110,20 @@ is_dir <- function(x) {
 file_url <- function(path) {
   paste0("file://", normalizePath(path, winslash="/"))
 }
+
+find_funcs <- function(fun, env) {
+  ours <- names(env)
+  seen <- character(0)
+  test <- list(fun)
+  while (length(test) > 0L) {
+    new <- setdiff(intersect(codetools::findGlobals(test[[1]]), ours), seen)
+    seen <- c(seen, new)
+    test <- c(test[-1], lapply(new, get, env, inherits=FALSE))
+  }
+  sort(seen)
+}
+
+fun_to_str <- function(x, env) {
+  paste0(x, " <- ",
+         paste(deparse(get(x, env, inherits=FALSE)), collapse="\n"))
+}
