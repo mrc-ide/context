@@ -57,6 +57,8 @@ read_version <- function(root) {
 write_bootstrap <- function(root) {
   bootstrap <- function(root, version) {
     options(context.log=TRUE)
+    oo <- options(repos=c(CRAN="http://cran.rstudio.com"))
+    on.exit(options(oo))
     context_log("bootstrap", normalizePath(root))
     use_local_library(root)
     if ("context" %in% .packages(TRUE)) {
@@ -76,7 +78,7 @@ write_bootstrap <- function(root) {
     path <- tempfile("path")
     unzip(filename, exdir=path)
     path <- dir(path, full.names=TRUE)
-    install.packages2(path, repos=NULL)
+    install.packages2(path, repos=NULL, type="source")
   }
   main <- function() {
     if (exists("CONTEXT_ROOT")) {
