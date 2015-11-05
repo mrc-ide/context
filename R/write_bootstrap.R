@@ -29,7 +29,7 @@
 write_bootstrap <- function(root) {
   bootstrap <- function(root, version) {
     options(context.log=TRUE)
-    context_log("bootstrap", "")
+    context_log("bootstrap", normalizePath(root))
     if ("context" %in% .packages(TRUE)) {
       version <- package_version(readLines(file.path(root, "context_version")))
       if (packageVersion("context") >= version) {
@@ -39,7 +39,7 @@ write_bootstrap <- function(root) {
     }
     use_local_library(root)
     deps <- c("curl", "drat")
-    packages <- setdiff(deps, .packages())
+    packages <- setdiff(deps, .packages(TRUE))
     if (length(packages) > 0L) {
       context_log("install", paste(packages, collapse=", "))
       install.packages2(packages)

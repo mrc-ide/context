@@ -104,7 +104,7 @@ res <- run_task(t)
 ##   increase the chance that packages will load successfully and not
 ##   interfere with other environments).
 ## * `library`: calls to `library()` to load packages and attach namespaces
-## * `loadns`: calls to `loadNamespace()`; these packages were present
+## * `namespace`: calls to `loadNamespace()`; these packages were present
 ##    but not attached in the context.
 ## * `source`: There was nothing to `source()` here so this is blank,
 ##   otherwise it would be a list of filenames.

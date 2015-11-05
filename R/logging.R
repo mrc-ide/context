@@ -22,6 +22,6 @@ context_log_stop <- function() {
 }
 context_log <- function(topic, value) {
   if (isTRUE(getOption("context.log"))) {
-    message(trimws(sprintf("[ %-8s ]  %s", topic, value)))
+    message(trimws(sprintf("[ %-9s ]  %s", topic, value)))
   }
 }

@@ -112,7 +112,7 @@ load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   for (p in rev(setdiff(obj$packages$attached, .packages()))) {
     library(p, character.only=TRUE)
   }
-  context_log("loadns", paste0(obj$packages$loaded, collapse=", "))
+  context_log("namespace", paste0(obj$packages$loaded, collapse=", "))
   for (p in rev(setdiff(obj$packages$loaded, loadedNamespaces()))) {
     loadNamespace(p)
   }
