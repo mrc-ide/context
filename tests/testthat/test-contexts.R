@@ -59,6 +59,26 @@ test_that("package_sources", {
   expect_true("kitten" %in% .packages())
 })
 
+test_that("source files", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+  src <- c("example-foo.R", "example-bar.R")
+  expect_error(save_context(root=root, sources=src),
+               "files do not exist")
+  expect_error(save_context(root=root, sources="../testthat.R"),
+               "files above working directory")
+  expect_error(save_context(root=root, sources=normalizePath("../testthat.R")),
+               "files above working directory")
+
+  writeLines(character(0), src[[1]])
+  writeLines(character(0), src[[2]])
+  on.exit(file.remove(src), add=TRUE)
+
+  ctx <- save_context(root=root, sources=src)
+  dat <- read_context(ctx)
+  expect_equal(dat$sources, src)
+})
+
 ## Issues saving global environments: This does not tickle the problem
 ## unfortunately.
 test_that("globals", {

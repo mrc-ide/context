@@ -66,12 +66,18 @@ save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
     } else {
       stop("Incorrect type for packages")
     }
-    ret <- list(packages=packages, sources=sources)
-    ## Here, we _do_ need to check that all source files are
-    ## *relative* paths, and we'll need to arrange to copy things
-    ## around as approriate.  I'll punt on that for now as it's going
-    ## to take a little work to get that all happy, and requires some
-    ## of the things in pathr that aren't done yet.
+    ret <- list(packages=packages)
+    if (!is.null(sources)) {
+      ## Here, we _do_ need to check that all source files are
+      ## *relative* paths, and we'll need to arrange to copy things
+      ## around as approriate.  I'll punt on that for now as it's going
+      ## to take a little work to get that all happy, and requires some
+      ## of the things in pathr that aren't done yet.
+      ##
+      ## Files must be relative to R's working directory for this to
+      ## have any chance of working.
+      ret$sources <- relative_paths(sources)
+    }
   }
 
   if (is.null(package_sources)) {

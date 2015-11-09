@@ -127,3 +127,41 @@ fun_to_str <- function(x, env) {
   paste0(x, " <- ",
          paste(deparse(get(x, env, inherits=FALSE)), collapse="\n"))
 }
+
+clean_path <- function(x) {
+  sub("/+$", "", gsub("\\", "/", x, fixed=TRUE))
+}
+string_starts_with <- function(x, y) {
+  substr(x, 1, nchar(y)) == y
+}
+
+file_exists_under_wd <- function(filename) {
+  ok <- file.exists(filename)
+  nok <- !ok
+  if (any(ok)) {
+    ok[ok] <- string_starts_with(normalizePath(filename[ok]),
+                                 normalizePath(getwd()))
+  }
+  ok[nok] <- NA
+  ok
+}
+
+## This does not handle the case of a file /a/b/c and working
+## directory of the same.
+relative_paths <- function(filename, dir=getwd()) {
+  msg <- !file.exists(filename)
+  if (any(msg)) {
+    stop("files do not exist: ", paste(filename[msg], collapse=", "))
+  }
+
+  filename_abs <- clean_path(normalizePath(filename))
+  dir <- clean_path(normalizePath(dir))
+
+  ok <- string_starts_with(filename_abs, paste0(dir, "/"))
+  if (!all(ok)) {
+    stop("files above working directory: ",
+         paste(filename[!ok], collapse=", "))
+  }
+
+  substr(filename_abs, nchar(dir) + 2L, nchar(filename_abs))
+}
