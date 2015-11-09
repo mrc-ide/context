@@ -18,7 +18,8 @@ test_that("install", {
 })
 
 test_that("run", {
-  handle <- save_task(quote(sin(1)), root=tempfile("cluster_"))
+  ctx <- save_context(auto=TRUE, root=tempfile("cluster_"))
+  handle <- save_task(quote(sin(1)), ctx)
   full <- install_context(tempdir())
 
   Sys.setenv(R_TESTS="")
@@ -43,8 +44,7 @@ test_that("install", {
   src <- package_sources(github="richfitz/kitten")
   context <- save_context(packages="kitten", package_sources=src, root=root)
   handle <- save_task(quote(sin(1)),
-                      context=context,
-                      root=root)
+                      context=context)
   full <- install_context(tempdir())
 
   res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)

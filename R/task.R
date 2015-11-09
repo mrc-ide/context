@@ -10,36 +10,26 @@
 ##'   generated, using \code{envir} and \code{root}.  See
 ##'   \code{\link{save_context}}.
 ##'
-##' @param envir Passed through to \code{save_context} when creating
-##'   contexts automatically.
+##' @param envir Passed through to \code{save_context} when locating
+##'   local variables.
 ##'
-##' @param root Root directory to store and retrieve files.
 ##' @export
 ##' @rdname task
-save_task <- function(expr, context=NULL, envir=parent.frame(),
-                      root=tempdir()) {
-  save_task_list(list(expr), context, envir, root)[[1]]
+save_task <- function(expr, context, envir=parent.frame()) {
+  save_task_list(list(expr), context, envir)[[1]]
 }
 
 ##' @export
 ##' @rdname task
 ##' @param list a \code{list} of tasks, all to be evaluted in the same context.
-save_task_list <- function(list, context=NULL, envir=parent.frame(),
-                           root=tempdir()) {
+save_task_list <- function(list, context, envir=parent.frame()) {
   if (!is.list(list)) {
     stop("Expected a list")
   }
-  if (is.null(context)) {
-    context <- save_context(auto=TRUE, envir=envir, root=root)
-  } else if (!is.context_handle(context) || is.context(context)) {
+  if (!is.context_handle(context)) {
     stop("Invalid context")
-  } else {
-    if (missing(root)) {
-      root <- context$root
-    } else if (!identical(root, context$root)) {
-      stop("Disagreement about the root")
-    }
   }
+  root <- context$root
   ## TODO: we might want to check that the context *exists* in the given root.
   ##   if (!context_exists(context$id, root)) {
   ##     stop("Context not found")
@@ -53,7 +43,6 @@ save_task_list <- function(list, context=NULL, envir=parent.frame(),
     saveRDS(dat, path_tasks(root, dat[["id"]]))
     task_handle(dat$id, root)
   }
-
   structure(lapply(list, f), class="task_list")
 }
 

@@ -7,10 +7,9 @@
 \alias{save_task_list}
 \title{Save and reload tasks}
 \usage{
-save_task(expr, context = NULL, envir = parent.frame(), root = tempdir())
+save_task(expr, context, envir = parent.frame())
 
-save_task_list(list, context = NULL, envir = parent.frame(),
-  root = tempdir())
+save_task_list(list, context, envir = parent.frame())
 
 load_task(handle, install = TRUE, envir = .GlobalEnv)
 
@@ -24,10 +23,8 @@ object.  If missing (or NULL) one will be automatically
 generated, using \code{envir} and \code{root}.  See
 \code{\link{save_context}}.}
 
-\item{envir}{Passed through to \code{save_context} when creating
-contexts automatically.}
-
-\item{root}{Root directory to store and retrieve files.}
+\item{envir}{Passed through to \code{save_context} when locating
+local variables.}
 
 \item{list}{a \code{list} of tasks, all to be evaluted in the same context.}
 

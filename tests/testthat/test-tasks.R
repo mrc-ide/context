@@ -5,7 +5,8 @@ test_that("tasks", {
   on.exit(cleanup(root))
 
   expr <- quote(sin(1))
-  handle <- save_task(expr, root=root)
+  ctx <- save_context(auto=TRUE, root=root)
+  handle <- save_task(expr, ctx)
 
   expect_is(handle, "task_handle")
   expect_equal(nchar(handle$id), 32)
@@ -28,7 +29,8 @@ test_that("tasks", {
 test_that("task_list", {
   root <- tempfile("cluster_")
   x <- list(quote(sin(1)), quote(sin(2)))
-  obj <- save_task_list(x, root=root)
+  ctx <- save_context(auto=TRUE, root=root)
+  obj <- save_task_list(x, ctx)
   expect_is(obj, "task_list")
   expect_true(all(vlapply(obj, is.task_handle)))
 
