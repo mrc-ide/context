@@ -4,9 +4,13 @@
 \alias{load_task}
 \alias{read_task}
 \alias{save_task}
-\title{Sve and reload tasks}
+\alias{save_task_list}
+\title{Save and reload tasks}
 \usage{
 save_task(expr, context = NULL, envir = parent.frame(), root = tempdir())
+
+save_task_list(list, context = NULL, envir = parent.frame(),
+  root = tempdir())
 
 load_task(handle, install = TRUE, envir = .GlobalEnv)
 
@@ -24,6 +28,8 @@ generated, using \code{envir} and \code{root}.  See
 contexts automatically.}
 
 \item{root}{Root directory to store and retrieve files.}
+
+\item{list}{a \code{list} of tasks, all to be evaluted in the same context.}
 
 \item{handle}{A handle to load the task}
 

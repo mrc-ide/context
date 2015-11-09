@@ -1,7 +1,7 @@
 ##' Save and reload tasks.  Tasks consist of an expression bound to a
 ##' \code{context}.
 ##'
-##' @title Sve and reload tasks
+##' @title Save and reload tasks
 ##'
 ##' @param expr An expression to save
 ##'
@@ -18,6 +18,17 @@
 ##' @rdname task
 save_task <- function(expr, context=NULL, envir=parent.frame(),
                       root=tempdir()) {
+  save_task_list(list(expr), context, envir, root)[[1]]
+}
+
+##' @export
+##' @rdname task
+##' @param list a \code{list} of tasks, all to be evaluted in the same context.
+save_task_list <- function(list, context=NULL, envir=parent.frame(),
+                           root=tempdir()) {
+  if (!is.list(list)) {
+    stop("Expected a list")
+  }
   if (is.null(context)) {
     context <- save_context(auto=TRUE, envir=envir, root=root)
   } else if (!is.context_handle(context) || is.context(context)) {
@@ -33,13 +44,17 @@ save_task <- function(expr, context=NULL, envir=parent.frame(),
   ##   if (!context_exists(context$id, root)) {
   ##     stop("Context not found")
   ##   }
-  dat <- store_expression(expr, envir)
-  dat$context_id <- context$id
-  dat$id <- random_id()
-  class(dat) <- "task"
-  dir.create(path_tasks(root), FALSE, TRUE)
-  saveRDS(dat, path_tasks(root, dat[["id"]]))
-  task_handle(dat$id, root)
+  f <- function(x) {
+    dat <- store_expression(x, envir)
+    dat$context_id <- context$id
+    dat$id <- random_id()
+    class(dat) <- "task"
+    dir.create(path_tasks(root), FALSE, TRUE)
+    saveRDS(dat, path_tasks(root, dat[["id"]]))
+    task_handle(dat$id, root)
+  }
+
+  structure(lapply(list, f), class="task_list")
 }
 
 ##' @rdname task
@@ -88,6 +103,7 @@ save_task_results <- function(handle, value) {
 task_handle <- function(id, root) {
   structure(list(id=id, root=root), class="task_handle")
 }
+## Not yet exported:
 is.task_handle <- function(x) {
   inherits(x, "task_handle")
 }

@@ -24,3 +24,15 @@ test_that("tasks", {
   expect_equal(dat$expr, expr)
   expect_equal(eval(dat$expr, dat$envir), eval(expr))
 })
+
+test_that("task_list", {
+  root <- tempfile("cluster_")
+  x <- list(quote(sin(1)), quote(sin(2)))
+  obj <- save_task_list(x, root=root)
+  expect_is(obj, "task_list")
+  expect_true(all(vlapply(obj, is.task_handle)))
+
+  tmp <- lapply(obj, read_task)
+  ctx <- vcapply(tmp, "[[", "context_id")
+  expect_identical(ctx[[1]], ctx[[2]])
+})
