@@ -50,7 +50,7 @@ test_that("local drat creation", {
   expect_false(file.exists(path_library(root)))
 
   ## A local library:
-  lib <- use_local_library(root)
+  lib <- use_local_library(path_library(root))
   expect_equal(lib, path_library(root))
   expect_true(file.exists(lib))
   expect_equal(.libPaths()[[1]], lib)
@@ -59,4 +59,47 @@ test_that("local drat creation", {
 
   install_packages("context", src, quiet=TRUE)
   expect_true(file.exists(file.path(lib, "context")))
+})
+
+test_that("package installation in parallel", {
+  skip_if_no_fork()
+  lib <- use_local_library(tempfile("context_"))
+  on.exit(cleanup(lib))
+
+  f <- function() {
+    capture_messages({
+      install_packages("digest", quiet=TRUE)
+      packageVersion("digest", lib)
+    })
+  }
+
+  ## Sanity check:
+  expect_error(packageVersion("digest", lib),
+               "not found")
+
+  context_log_start()
+  on.exit(context_log_stop(), add=TRUE)
+  t1 <- parallel::mcparallel(f(), "i1")
+  t2 <- parallel::mcparallel(f(), "i2")
+  res <- parallel::mccollect(list(t1, t2))
+
+  ## Both packages did install so that's nice:
+  val <- lapply(res, attr, "result", exact=TRUE)
+  expect_true(all(vlapply(val, inherits, "package_version")))
+
+  ## Messages are turned off, but can expect this:
+  n <- viapply(res, length)
+  expect_true(sum(n == 1L) == 1L)
+  expect_true(sum(n > 1L) == 1L)
+
+  res_installed <- res[[which(n == 1)]]
+  res_waited <- res[[which(n > 1)]]
+
+  re_install <- "^\\[\\s+install\\s+\\]\\s+digest"
+  re_wait <- "^\\[\\s+\\(waiting\\)\\s+\\]\\s+"
+  re_resume <- "^\\[\\s+\\(resuming\\)\\s+\\]\\s+"
+  expect_true(grepl(re_install, res_installed[[1]]))
+  expect_true(grepl(re_install, res_waited[[1]]))
+  expect_true(grepl(re_wait, res_waited[[2]]))
+  expect_true(grepl(re_resume, res_waited[[length(res_waited)]]))
 })

@@ -165,3 +165,10 @@ relative_paths <- function(filename, dir=getwd()) {
 
   substr(filename_abs, nchar(dir) + 2L, nchar(filename_abs))
 }
+
+hostname <- function() {
+  Sys.info()[["nodename"]]
+}
+process_id <- function() {
+  Sys.getpid()
+}

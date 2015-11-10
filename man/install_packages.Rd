@@ -4,18 +4,27 @@
 \alias{install_packages}
 \title{Install packages}
 \usage{
-install_packages(packages, package_sources, ..., error = TRUE)
+install_packages(packages, sources = package_sources(), ..., error = TRUE,
+  lock_wait = TRUE)
 }
 \arguments{
 \item{packages}{A character vector of packages to install}
 
-\item{package_sources}{Source information from
+\item{sources}{Source information from
 \code{\link{package_sources}}.}
 
 \item{...}{Additional arguments passed through to
 \code{\link{install.packages}}.}
 
 \item{error}{Throw an error if package installation fails.}
+
+\item{lock_wait}{Lock the directory while installing, or wait for
+a second installation to complete.  In contrast with
+\code{\link{install.packages}}, the lock is always library-wide.
+Catastrophoic failure (e.g., out of memory error during package
+installation) could leave a lockfile present.  In that case,
+delete the file \code{.lock_context} from the first entry in
+\code{.libPaths()}.}
 }
 \description{
 Install packages, using source information from

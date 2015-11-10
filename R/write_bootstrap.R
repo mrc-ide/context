@@ -60,7 +60,7 @@ write_bootstrap <- function(root) {
     oo <- options(repos=c(CRAN="http://cran.rstudio.com"))
     on.exit(options(oo))
     context_log("bootstrap", normalizePath(root))
-    use_local_library(root)
+    use_local_library(path_library(root))
     if ("context" %in% .packages(TRUE)) {
       if (isTRUE(packageVersion("context") >= read_version(root))) {
         context_log("ok", "")

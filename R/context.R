@@ -110,10 +110,10 @@ load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   context_log("context", handle$id)
   obj <- read_context(handle)
 
-  use_local_library(handle$root)
+  use_local_library(path_library(handle$root))
   if (install) {
     install_packages_missing(c(obj$packages$attached, obj$packages$loaded),
-                             package_sources=obj$package_sources, ...)
+                             sources=obj$package_sources, ...)
   }
 
   context_log("library", paste0(obj$packages$attached, collapse=", "))
@@ -209,8 +209,7 @@ context_exists <- function(id, root) {
   file.exists(path_contexts(root, id))
 }
 
-use_local_library <- function(root) {
-  lib <- path_library(root)
+use_local_library <- function(lib) {
   context_log("lib", lib)
   dir.create(lib, FALSE, TRUE)
   ## This preserves all the previous libPaths; .libPaths(lib) would
