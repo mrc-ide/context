@@ -1,3 +1,12 @@
+TASK_PENDING  <- "PENDING"
+TASK_RUNNING  <- "RUNNING"
+TASK_COMPLETE <- "COMPLETE"
+TASK_ERROR    <- "ERROR"
+
+TASK_ORPHAN   <- "ORPHAN"
+TASK_REDIRECT <- "REDIRECT"
+TASK_MISSING  <- "MISSING"
+
 ##' Save and reload tasks.  Tasks consist of an expression bound to a
 ##' \code{context}.
 ##'
@@ -8,21 +17,21 @@
 ##' @param context Either a \code{context} or a \code{context_handle}
 ##'   object.  If missing (or NULL) one will be automatically
 ##'   generated, using \code{envir} and \code{root}.  See
-##'   \code{\link{save_context}}.
+##'   \code{\link{context_save}}.
 ##'
-##' @param envir Passed through to \code{save_context} when locating
+##' @param envir Passed through to \code{context_save} when locating
 ##'   local variables.
 ##'
 ##' @export
 ##' @rdname task
-save_task <- function(expr, context, envir=parent.frame()) {
-  save_task_list(list(expr), context, envir)[[1]]
+task_save <- function(expr, context, envir=parent.frame()) {
+  task_save_list(list(expr), context, envir)[[1]]
 }
 
 ##' @export
 ##' @rdname task
 ##' @param list a \code{list} of tasks, all to be evaluted in the same context.
-save_task_list <- function(list, context, envir=parent.frame()) {
+task_save_list <- function(list, context, envir=parent.frame()) {
   if (!is.list(list)) {
     stop("Expected a list")
   }
@@ -38,30 +47,33 @@ save_task_list <- function(list, context, envir=parent.frame()) {
     dat <- store_expression(x, envir)
     dat$context_id <- context$id
     dat$id <- random_id()
+    dat$root <- root
     class(dat) <- "task"
     dir.create(path_tasks(root), FALSE, TRUE)
+    dir.create(path_task_status(root), FALSE, TRUE)
     saveRDS(dat, path_tasks(root, dat[["id"]]))
-    task_handle(dat$id, root)
+    task_status_set(dat, TASK_PENDING)
+    dat$id
   }
-  structure(lapply(list, f), class="task_list")
+  task_handle(root, vcapply(list, f), FALSE)
 }
 
 ##' @rdname task
 ##' @param install Should missing packages be installed?
 ##' @param handle A handle to load the task
 ##' @export
-load_task <- function(handle, install=TRUE, envir=.GlobalEnv) {
-  dat <- read_task(handle)
+task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
+  dat <- task_read(handle)
   ## This approch has worked well for rrqueue, so keeping it going here.
   context <- context_handle(dat$context_id, handle$root)
-  dat$envir_context <- load_context(context, install, envir)
+  dat$envir_context <- context_load(context, install, envir)
   dat$envir <- restore_locals(dat, dat$envir_context)
   dat
 }
 
 ##' @rdname task
 ##' @export
-read_task <- function(handle) {
+task_read <- function(handle) {
   if (is.task(handle)) {
     handle
   } else if (is.task_handle(handle)) {
@@ -71,33 +83,74 @@ read_task <- function(handle) {
   }
 }
 
+##' @rdname task
+##' @export
+##' @param root root
+tasks_list <- function(root) {
+  ## TODO: this becomes way easier with storr
+  dir(path_tasks(root))
+}
+
 ##' Fetch result from completed task.
 ##' @title Fetch task result
 ##' @param handle A task handle
 ##' @export
 task_result <- function(handle) {
-  filename <- path_results(handle$root, handle$id)
+  filename <- path_task_results(handle$root, handle$id)
   if (!file.exists(filename)) {
     stop("Task does not have results")
   }
   readRDS(filename)
 }
 
-save_task_results <- function(handle, value) {
-  path_result <- path_results(handle$root, handle$id)
-  context_log("result", path_result)
+task_save_results <- function(handle, value) {
+  path_result <- path_task_results(handle$root, handle$id)
+  err <- is_error(value)
+  context_log(if (err) "error" else "result", path_result)
+  task_status_set(handle, if (err) TASK_ERROR else TASK_COMPLETE)
   saveRDS(value, path_result)
 }
 
-task_handle <- function(id, root) {
+##' Create a handle to a task
+##' @title Create task handle
+##' @param root Context root
+##' @param id Task identifier
+##' @param check_exists Check that the task exists as the handle is created?  If
+##'  \code{TRUE} then \code{task_handle} throws if creating a nonexistant task.
+##' @export
+task_handle <- function(root, id, check_exists=TRUE) {
+  if (check_exists) {
+    ok <- file.exists(path_tasks(root, id))
+    if (!all(ok)) {
+      stop("tasks do not exist: ", id[!ok])
+    }
+  }
   structure(list(id=id, root=root), class="task_handle")
 }
+
 ## Not yet exported:
 is.task_handle <- function(x) {
   inherits(x, "task_handle")
 }
 is.task <- function(x) {
   inherits(x, "task")
+}
+
+##' @export
+length.task_handle <- function(x) {
+  length(x$id)
+}
+
+##' @export
+`[.task_handle` <- function(x, i, ...) {
+  x$id <- x$id[i]
+  x
+}
+
+##' @export
+`[[.task_handle` <- function(x, i, ...) {
+  x$id <- x$id[[i]]
+  x
 }
 
 ##' @export
@@ -115,15 +168,43 @@ print.task <- function(x, ...) {
 ##' @param install Install packages when constructing context?
 ##' @param envir Environment to load global variables into.
 ##' @export
-run_task <- function(handle, install=FALSE, envir=.GlobalEnv) {
+task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
   context_log("root", handle$root)
   context_log("task", handle$id)
-  dat <- load_task(handle, install, envir)
+  dat <- task_load(handle, install, envir)
   context_log("expr", capture.output(print(dat$expr)))
-  dir.create(path_results(handle$root), FALSE, TRUE)
+  dir.create(path_task_results(handle$root), FALSE, TRUE)
   context_log("start", Sys_time())
-  value <- eval(dat$expr, dat$envir)
-  save_task_results(handle, value)
+  task_status_set(handle, TASK_RUNNING)
+  value <- try(eval(dat$expr, dat$envir))
+  task_save_results(handle, value)
   context_log("end", Sys_time())
   invisible(value)
+}
+
+## TODO: need to write a status object too (after porting to storr) so
+## that SUCCESS/FAILED is OK.
+##
+## At the same time, this actually needs adding to the context so that
+## on failure:
+##
+##   - write out the failed task by running with try().  Consider
+##     dumping frames.
+##   - throw on exit so system still registers the failure.
+
+##' Task status
+##' @title Task status
+##' @param handle Task handle
+##' @export
+task_status_read <- function(handle) {
+  path <- path_task_status(handle$root, handle$id)
+  ok <- file.exists(path)
+  res <- character(length(path))
+  res[ok] <- vapply(path[ok], readLines, character(1))
+  res[!ok] <- TASK_MISSING
+  res
+}
+
+task_status_set <- function(handle, status) {
+  writeLines(status, path_task_status(handle$root, handle$id))
 }

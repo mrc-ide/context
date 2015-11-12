@@ -1,11 +1,11 @@
 ##' Save and reload contexts.  Contexts consist of packages and
 ##' sources, or (if \code{auto}) is \code{TRUE}) a copy of the current
-##' global environment.  Environments saved with \code{save_context}
-##' can be reloaded with \code{load_context}; note that doing this
+##' global environment.  Environments saved with \code{context_save}
+##' can be reloaded with \code{context_load}; note that doing this
 ##' will probably alter the search path by loading any number of
 ##' packages.
 ##'
-##' The \code{read_context} function simply reads the context, but
+##' The \code{context_read} function simply reads the context, but
 ##' does not load it.  It is mostly useful for debugging.
 ##'
 ##' @title Save and reload contexts
@@ -23,7 +23,7 @@
 ##'
 ##' @param envir The current environment.  This is used to copy
 ##'   \emph{local} enviroments around, as these are needed even in the
-##'   case of non-automatic contexts.  For \code{load_context} this
+##'   case of non-automatic contexts.  For \code{context_load} this
 ##'   is the environment into which the global environment is copied.
 ##'   Specify a non-global environment here to avoid clobbering the
 ##'   workspace, but at the risk that some environments may not
@@ -38,11 +38,11 @@
 ##'   later use.
 ##'
 ##' @param handle A \code{context_handle} object returned by
-##'   \code{save_context}.
+##'   \code{context_save}.
 ##'
 ##' @export
 ##' @rdname context
-save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
+context_save <- function(packages=NULL, sources=NULL, auto=FALSE,
                          package_sources=NULL,
                          envir=parent.frame(), root=tempdir()) {
   setup_bootstrap(root)
@@ -103,12 +103,12 @@ save_context <- function(packages=NULL, sources=NULL, auto=FALSE,
 ##'   \code{install_packages} if it is used.
 ##'
 ##' @export
-load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
+context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   if (!is.context_handle(handle)) {
     stop("handle must be a context_handle")
   }
   context_log("context", handle$id)
-  obj <- read_context(handle)
+  obj <- context_read(handle)
 
   use_local_library(path_library(handle$root))
   if (install) {
@@ -144,8 +144,8 @@ load_context <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
 
 ##' @export
 ##' @rdname context
-read_context <- function(handle) {
-  ## TODO: same treatment as read_task where read_task(task) -> task
+context_read <- function(handle) {
+  ## TODO: same treatment as task_read where task_read(task) -> task
   ret <- readRDS(path_contexts(handle$root, handle$id))
   ## We'll take responsibility here for setting up the local drat
   ## links because install_packages does not know about ideas of

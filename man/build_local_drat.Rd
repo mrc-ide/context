@@ -26,7 +26,7 @@ Build a local ad-hoc drat from a set of package sources.  This
 downloads the zipball from github, bitbucket, or locates it
 locally, builds a \emph{source} package and adds it to an ad-hoc
 drat repository within \code{root}.  This is designed to be used
-within \code{install_packages} and \code{save_context}, but can be
+within \code{install_packages} and \code{context_save}, but can be
 called directly.
 }
 

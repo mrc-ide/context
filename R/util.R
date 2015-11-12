@@ -172,3 +172,7 @@ hostname <- function() {
 process_id <- function() {
   Sys.getpid()
 }
+
+is_error <- function(x) {
+  inherits(x, "try-error")
+}

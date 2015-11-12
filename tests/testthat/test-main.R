@@ -18,8 +18,8 @@ test_that("install", {
 })
 
 test_that("run", {
-  ctx <- save_context(auto=TRUE, root=tempfile("cluster_"))
-  handle <- save_task(quote(sin(1)), ctx)
+  ctx <- context_save(auto=TRUE, root=tempfile("cluster_"))
+  handle <- task_save(quote(sin(1)), ctx)
   full <- install_context(tempdir())
 
   Sys.setenv(R_TESTS="")
@@ -30,7 +30,7 @@ test_that("run", {
   res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))
 
-  result_file <- path_results(handle$root, handle$id)
+  result_file <- path_task_results(handle$root, handle$id)
   expect_true(file.exists(result_file))
   expect_equal(readRDS(result_file), sin(1))
 })
@@ -42,15 +42,15 @@ test_that("install", {
   ## Picking this package just because it's fairly light and unlikely
   ## to be installed.
   src <- package_sources(github="richfitz/kitten")
-  context <- save_context(packages="kitten", package_sources=src, root=root)
-  handle <- save_task(quote(sin(1)),
+  context <- context_save(packages="kitten", package_sources=src, root=root)
+  handle <- task_save(quote(sin(1)),
                       context=context)
   full <- install_context(tempdir())
 
   res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))
 
-  result_file <- path_results(handle$root, handle$id)
+  result_file <- path_task_results(handle$root, handle$id)
   expect_true(file.exists(result_file))
   expect_equal(readRDS(result_file), sin(1))
 })

@@ -5,15 +5,18 @@ test_that("tasks", {
   on.exit(cleanup(root))
 
   expr <- quote(sin(1))
-  ctx <- save_context(auto=TRUE, root=root)
-  handle <- save_task(expr, ctx)
+  ctx <- context_save(auto=TRUE, root=root)
+  handle <- task_save(expr, ctx)
 
   expect_is(handle, "task_handle")
   expect_equal(nchar(handle$id), 32)
   expect_identical(handle$root, root)
 
+  expect_identical(task_status_read(handle), TASK_PENDING)
+
   e <- new.env()
-  dat <- load_task(handle, FALSE, e)
+  dat <- task_load(handle, FALSE, e)
+  expect_is(dat, "task")
   ## OK, this is nasty.  If we have a local environment, like in this
   ## situation, then unserialising that environment is going to create
   ## a situation where our *globals* aren't in the right place.  Such
@@ -29,12 +32,21 @@ test_that("tasks", {
 test_that("task_list", {
   root <- tempfile("cluster_")
   x <- list(quote(sin(1)), quote(sin(2)))
-  ctx <- save_context(auto=TRUE, root=root)
-  obj <- save_task_list(x, ctx)
-  expect_is(obj, "task_list")
-  expect_true(all(vlapply(obj, is.task_handle)))
+  ctx <- context_save(auto=TRUE, root=root)
+  obj <- task_save_list(x, ctx)
+  expect_is(obj, "task_handle")
+  expect_equal(length(obj), length(x))
 
-  tmp <- lapply(obj, read_task)
+  expect_identical(task_status_read(obj),
+                   rep(TASK_PENDING, length(x)))
+
+  ## subsetting:
+  el <- obj[[1]]
+  expect_is(el, "task_handle")
+  expect_equal(el$id, obj$id[[1]])
+  expect_identical(obj[1:2], obj)
+
+  tmp <- lapply(obj, task_read)
   ctx <- vcapply(tmp, "[[", "context_id")
   expect_identical(ctx[[1]], ctx[[2]])
 })

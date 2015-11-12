@@ -59,20 +59,20 @@ library(context)
 context_log_start()
 
 ## A simple context might look like this:
-ctx <- save_context(packages=c("pkg1", "pkg2"), sources="file.R")
+ctx <- context_save(packages=c("pkg1", "pkg2"), sources="file.R")
 ctx
 
 ## This will save all the required metadata at the path `root` (by
 ## default within the temporary directory).  The context information
 ## in this case is pretty simple:
-read_context(ctx)
+context_read(ctx)
 
 ## Even more simple, contexts can be made _automatically_
 ##+ echo=FALSE
 rm(ctx)
 ##+ echo=TRUE
-ctx <- save_context(auto=TRUE)
-read_context(ctx)
+ctx <- context_save(auto=TRUE)
+context_read(ctx)
 
 ## which will look at the packages you currently have attached and
 ## loaded, plus save a copy of all the objects in the global
@@ -83,10 +83,10 @@ read_context(ctx)
 ## Once a context is defined, *tasks* can be defined in the context.
 ## These are simply R expressions associated with the identifier of a
 ## context.
-ctx <- save_context(auto=TRUE)
+ctx <- context_save(auto=TRUE)
 ctx$id
 t <- save_task(quote(sin(1)), context=ctx)
-read_task(t)
+task_read(t)
 
 ## These tasks are loaded using the function `load_task` but this
 ## doesn't need to be done manually often.  Instead, to run this task,
@@ -158,13 +158,13 @@ src <- package_sources(github=c("traitecoevo/callr",
                                 "richfitz/remake",
                                 "richfitz/storr"))
 
-## This can then be passed through to the `save_context` function above:
-ctx <- save_context(packages="remake", package_sources=src)
+## This can then be passed through to the `context_save` function above:
+ctx <- context_save(packages="remake", package_sources=src)
 
 ## This takes a little while (though subsequent calls to the same root
 ## will be faster) as it downloads the required packages from github
 ## and builds a local `drat` repository.
-dir(file.path(read_context(ctx)$package_sources$local_drat, "src", "contrib"))
+dir(file.path(context_read(ctx)$package_sources$local_drat, "src", "contrib"))
 
 ## This repository will be made available to the computer that runs
 ## the context.

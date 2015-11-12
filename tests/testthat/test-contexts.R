@@ -8,7 +8,7 @@ context("contexts")
 test_that("simplest case", {
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
-  handle <- save_context(root=root)
+  handle <- context_save(root=root)
   expect_is(handle, "context_handle")
 
   expect_is(handle$id, "character")
@@ -19,11 +19,11 @@ test_that("simplest case", {
   expect_true(file.exists(file.path(root, "contexts", handle$id)))
 
   e <- new.env()
-  res <- load_context(handle, envir=e)
+  res <- context_load(handle, envir=e)
   expect_identical(names(e), character(0))
   expect_identical(names(res), "root")
 
-  obj <- read_context(handle)
+  obj <- context_read(handle)
   expect_is(obj, "context")
 })
 
@@ -31,7 +31,7 @@ test_that("auto", {
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
 
-  handle <- save_context(root=root, auto=TRUE)
+  handle <- context_save(root=root, auto=TRUE)
   expect_true(file.exists(file.path(root, "contexts", handle$id)))
   expect_true(file.exists(file.path(root, "environments")))
 
@@ -46,15 +46,15 @@ test_that("package_sources", {
   on.exit(cleanup(root))
 
   src <- package_sources(github="richfitz/kitten")
-  handle <- save_context(root=root, packages="kitten",
+  handle <- context_save(root=root, packages="kitten",
                          package_sources=src)
 
-  obj <- read_context(handle)
+  obj <- context_read(handle)
   expect_true(obj$package_sources$use_local_drat)
   expect_equal(obj$package_sources$local_drat, path_drat(handle$root))
   expect_equal(obj$packages, list(attached="kitten", loaded=character(0)))
 
-  tmp <- load_context(handle, quiet=TRUE)
+  tmp <- context_load(handle, quiet=TRUE)
   on.exit(unloadNamespace("kitten"), add=TRUE)
   expect_true("kitten" %in% .packages())
 })
@@ -63,19 +63,19 @@ test_that("source files", {
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
   src <- c("example-foo.R", "example-bar.R")
-  expect_error(save_context(root=root, sources=src),
+  expect_error(context_save(root=root, sources=src),
                "files do not exist")
-  expect_error(save_context(root=root, sources="../testthat.R"),
+  expect_error(context_save(root=root, sources="../testthat.R"),
                "files above working directory")
-  expect_error(save_context(root=root, sources=normalizePath("../testthat.R")),
+  expect_error(context_save(root=root, sources=normalizePath("../testthat.R")),
                "files above working directory")
 
   writeLines(character(0), src[[1]])
   writeLines(character(0), src[[2]])
   on.exit(file.remove(src), add=TRUE)
 
-  ctx <- save_context(root=root, sources=src)
-  dat <- read_context(ctx)
+  ctx <- context_save(root=root, sources=src)
+  dat <- context_read(ctx)
   expect_equal(dat$sources, src)
 })
 
@@ -107,6 +107,6 @@ test_that("globals", {
   id2 <- f(path)
   expect_equal(id2, id)
 
-  ctx <- save_context(auto=TRUE, root=path)
-  expect_equal(read_context(ctx)$global, id)
+  ctx <- context_save(auto=TRUE, root=path)
+  expect_equal(context_read(ctx)$global, id)
 })
