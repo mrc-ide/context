@@ -208,3 +208,15 @@ task_status_read <- function(handle) {
 task_status_set <- function(handle, status) {
   writeLines(status, path_task_status(handle$root, handle$id))
 }
+
+## TODO: decide if this triggers gc.  In general this is a dangerous
+## operation because non-filesystem things could depend on the context
+## (e.g. a queue object that hasn't written any tasks yet).  The
+## solution here is for contexts to exist in memory too, which we'll
+## get for free with storr.
+task_delete <- function(handle) {
+  file.remove(path_tasks(handle$root, handle$id))
+  file.remove(path_task_status(handle$root, handle$id))
+  file.remove(path_task_results(handle$root, handle$id))
+  invisible(handle$id)
+}

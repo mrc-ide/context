@@ -135,8 +135,13 @@ install_packages_missing <- function(packages, ...) {
 install.packages2 <- function(pkgs, ..., error=TRUE) {
   e <- NULL
   capture <- function(e) {
-    if (error && grepl("package.*(is|are) not available", e$message)) {
-      e <<- e
+    if (error) {
+      catch <-
+        grepl("package.*(is|are) not available", e$message) ||
+        grepl("installation of package.*had non-zero exit status", e$message)
+      if (catch) {
+        e <<- e
+      }
     }
   }
   withCallingHandlers(install.packages(pkgs, ...), warning=capture)

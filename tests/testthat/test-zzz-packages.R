@@ -5,10 +5,12 @@ test_that("no special packages", {
   on.exit(cleanup(root))
 
   src <- package_sources()
-  expect_false(src$use_local_drat)
 
   build_local_drat(src, root=root)
-  expect_equal(dir(root), character(0))
+  expect_equal(dir(root), "drat")
+  expect_equal(length(dir(file.path(root, "drat", "src", "contrib"),
+                          pattern="^context_.*tar.gz$")), 1L)
+
   expect_null(src$repos)
 })
 
@@ -36,7 +38,6 @@ test_that("local drat creation", {
                          local=callr)
 
   expect_is(src$expire, "difftime")
-  expect_true(src$use_local_drat)
 
   drat_src <- file.path(path_drat(root), "src", "contrib")
   src <- build_local_drat(src, root=root, quiet=TRUE)

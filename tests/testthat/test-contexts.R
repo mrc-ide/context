@@ -6,6 +6,7 @@ context("contexts")
 ## future versions will install packages) this becomes very difficult
 ## to work with R's `R CMD check` tools.
 test_that("simplest case", {
+  Sys.setenv(R_TESTS="")
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
   handle <- context_save(root=root)
@@ -28,6 +29,7 @@ test_that("simplest case", {
 })
 
 test_that("auto", {
+  Sys.setenv(R_TESTS="")
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
 
@@ -50,7 +52,6 @@ test_that("package_sources", {
                          package_sources=src)
 
   obj <- context_read(handle)
-  expect_true(obj$package_sources$use_local_drat)
   expect_equal(obj$package_sources$local_drat, path_drat(handle$root))
   expect_equal(obj$packages, list(attached="kitten", loaded=character(0)))
 

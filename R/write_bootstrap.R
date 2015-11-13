@@ -1,6 +1,8 @@
 ## TODO: context_bootstrap is referenced with a hardcoded name in a
 ## few places and should not be.
-
+##
+## TODO: bootstrap will not install fresh context if it's found in
+## surprising places; look *only* in lib.
 setup_bootstrap <- function(root) {
   path <- path_version(root)
   written <- read_version(root)
@@ -8,6 +10,17 @@ setup_bootstrap <- function(root) {
   if (is.na(installed) || written < installed) {
     write_bootstrap(root)
     write_runner(root)
+    ## Add ourself.  Soon, this will be
+    ##   dide-tools/context@ + paste0("v", packageVersion("context"))
+    ## which will make things a bit more stable.
+    self <- Sys.getenv("CONTEXT_SOURCE_PATH")
+    if (self == "") {
+      self <- "dide-tools/context@master"
+      sources <- package_sources(github=self)
+    } else {
+      sources <- package_sources(local=self)
+    }
+    build_local_drat(sources, root)
     invisible(TRUE)
   } else if (written > installed) {
     ## This might get relaxed.
@@ -55,32 +68,25 @@ read_version <- function(root) {
 ## separate local library.  Only downside is that during development
 ## it's then difficult to get the most recent version.
 write_bootstrap <- function(root) {
-  bootstrap <- function(root, version) {
+  bootstrap <- function(root) {
     options(context.log=TRUE)
-    oo <- options(repos=c(CRAN="http://cran.rstudio.com"))
-    on.exit(options(oo))
     context_log("bootstrap", normalizePath(root))
-    use_local_library(path_library(root))
-    if ("context" %in% .packages(TRUE)) {
-      if (isTRUE(packageVersion("context") >= read_version(root))) {
+    lib <- use_local_library(path_library(root))
+    if ("context" %in% .packages(TRUE, lib)) {
+      if (isTRUE(packageVersion("context", lib) >= read_version(root))) {
         context_log("ok", "")
         return()
       }
     }
-    deps <- c("curl", "drat")
-    packages <- setdiff(deps, .packages(TRUE))
-    if (length(packages) > 0L) {
-      context_log("install", paste(packages, collapse=", "))
-      install.packages2(packages)
-    }
-    url <- github_url("dide-tools", "context", "master")
-    filename <- download_file(url, tempfile("context_"))
-    path <- tempfile("path")
-    unzip(filename, exdir=path)
-    path <- dir(path, full.names=TRUE)
-    install.packages2(path, repos=NULL, type="source")
+    context_log("install", "context")
+    repos <- c(CRAN="http://cran.rstudio.com",
+               local_drat=file_url(path_drat(root)))
+    install.packages2("context", lib=lib, repos=repos)
+    context_log("done", "")
   }
   main <- function() {
+    ## The first clause here is used in the case where this file is
+    ## source()'d in.
     if (exists("CONTEXT_ROOT")) {
       root <- get("CONTEXT_ROOT")
     } else {

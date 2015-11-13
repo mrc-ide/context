@@ -82,11 +82,10 @@ context_save <- function(packages=NULL, sources=NULL, auto=FALSE,
 
   if (is.null(package_sources)) {
     package_sources <- package_sources()
-  } else if (inherits(package_sources, "package_sources")) {
-    build_local_drat(package_sources, root)
-  } else {
+  } else if (!inherits(package_sources, "package_sources")) {
     stop("Expected a package_sources object (or NULL)")
   }
+  build_local_drat(package_sources, root)
   ret$package_sources <- package_sources
 
   ret$local <- save_object(envir, path_environments(root))
@@ -156,10 +155,12 @@ context_read <- function(handle) {
   ## Because the final drat link needs to be an absolute path, this
   ## means that wherever the context is read will get the correct
   ## local path.
-  if (isTRUE(ret$package_sources$use_local_drat)) {
-    ret$package_sources$local_drat <- path_drat(handle$root)
-  }
+  ret$package_sources$local_drat <- path_drat(handle$root)
   ret
+}
+
+context_list <- function(root) {
+  dir(path_contexts(root))
 }
 
 ## This is going to be horrid to test because it really requires

@@ -60,13 +60,8 @@ package_sources <- function(cran=NULL, repos=NULL,
     local <- setNames(normalizePath(local, mustWork=TRUE), local)
   }
 
-  use_local_drat <- (length(github) > 0 ||
-                     length(bitbucket) > 0 ||
-                     length(local) > 0)
-
   structure(list(cran=cran, repos=repos,
                  github=github, bitbucket=bitbucket, local=local,
-                 use_local_drat=use_local_drat,
                  expire=as.difftime(1, units="days")),
             class="package_sources")
 }
@@ -91,30 +86,30 @@ package_sources <- function(cran=NULL, repos=NULL,
 ##' @param quiet Quieten the download progress (which can be quite messy)
 ##' @export
 build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
-  if (sources$use_local_drat) {
-    path <- path_drat(root)
-    timestamp_file <- file.path(path, "timestamp.rds")
-    if (file.exists(timestamp_file) && !force) {
-      src <- timestamp_filter(sources, readRDS(timestamp_file))
-    } else {
-      src <- sources
-      timestamp <- list()
-    }
-    packages <- c(vcapply(src$github,    build_github,    quiet),
-                  vcapply(src$bitbucket, build_bitbucket, quiet),
-                  vcapply(src$local,     build_local))
-    if (length(packages) > 0L) {
-      context_log("drat", path)
-      repo_init(path)
-      for (p in packages) {
-        drat::insertPackage(p, path, commit=FALSE)
-      }
-      saveRDS(timestamp_merge(timestamp, timestamp_create(src)),
-              timestamp_file)
-    }
-    ## This is needed outside.
-    sources$local_drat <- path
+  path <- path_drat(root)
+  timestamp_file <- file.path(path, "timestamp.rds")
+  if (file.exists(timestamp_file) && !force) {
+    src <- timestamp_filter(sources, readRDS(timestamp_file))
+  } else {
+    src <- sources
+    timestamp <- list()
   }
+
+  packages <- c(vcapply(src$github,    build_github,    quiet),
+                vcapply(src$bitbucket, build_bitbucket, quiet),
+                vcapply(src$local,     build_local))
+  if (length(packages) > 0L) {
+    context_log("drat", path)
+    repo_init(path)
+    for (p in packages) {
+      drat::insertPackage(p, path, commit=FALSE)
+    }
+    saveRDS(timestamp_merge(timestamp, timestamp_create(src)),
+            timestamp_file)
+  }
+
+  ## This is needed outside.
+  sources$local_drat <- path
   sources
 }
 
@@ -150,9 +145,13 @@ timestamp_merge <- function(x, y) {
 }
 
 timestamp_filter <- function(obj, t) {
-  dt <- obj$expire
+  ## Skip timestamping of versioned dependencies.  Bumping the version
+  ## will redownload the dependency because the times are stored
+  ## against the full string (so including @version).
+  re_version <- "^v([[:digit:]]+[.-]){1,}[[:digit:]]+$"
   for (i in timestamp_names()) {
-    drop <- names(which(t[[i]] > dt))
+    is_version <- vlapply(obj[[i]], function(x) grepl(re_version, x$ref))
+    drop <- names(which(!is_version & t[[i]] > obj$expire))
     obj[[i]] <- obj[[i]][setdiff(names(obj[[i]]), drop)]
   }
   obj
@@ -240,6 +239,7 @@ build_remote <- function(url, subdir, quiet=FALSE, str=url) {
   path <- tempfile("context_sources_")
   dir.create(path)
   dest <- file.path(path, "context.zip")
+  ## TODO: Consider always printing this.
   context_log("download", str)
   download_file(url, dest, quiet=quiet)
   unzip(dest, exdir=path)
