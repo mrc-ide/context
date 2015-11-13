@@ -7,10 +7,7 @@ test_that("no special packages", {
   src <- package_sources()
 
   build_local_drat(src, root=root)
-  expect_equal(dir(root), "drat")
-  expect_equal(length(dir(file.path(root, "drat", "src", "contrib"),
-                          pattern="^context_.*tar.gz$")), 1L)
-
+  expect_equal(dir(root), character(0))
   expect_null(src$repos)
 })
 

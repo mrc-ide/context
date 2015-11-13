@@ -89,7 +89,8 @@ build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
   path <- path_drat(root)
   timestamp_file <- file.path(path, "timestamp.rds")
   if (file.exists(timestamp_file) && !force) {
-    src <- timestamp_filter(sources, readRDS(timestamp_file))
+    timestamp <- readRDS(timestamp_file)
+    src <- timestamp_filter(sources, timestamp)
   } else {
     src <- sources
     timestamp <- list()
@@ -151,8 +152,10 @@ timestamp_filter <- function(obj, t) {
   re_version <- "^v([[:digit:]]+[.-]){1,}[[:digit:]]+$"
   for (i in timestamp_names()) {
     is_version <- vlapply(obj[[i]], function(x) grepl(re_version, x$ref))
-    drop <- names(which(!is_version & t[[i]] > obj$expire))
-    obj[[i]] <- obj[[i]][setdiff(names(obj[[i]]), drop)]
+    str <- vcapply(obj[[i]], "[[", "str")
+    last <- setNames(t[[i]][str], str)
+    ok <- !is.na(last) & (is_version | last < obj$expire)
+    obj[[i]] <- obj[[i]][setdiff(names(obj[[i]]), names(which(ok)))]
   }
   obj
 }
