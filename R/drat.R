@@ -203,6 +203,19 @@ parse_package_pointer <- function(x) {
   ret
 }
 
+## This is protection for the case where we read packages from a local
+## drat on windows but it tries to read the binary directory and
+## fails.  I'm not 100% sure that this should be needed, but it is at
+## least on R 3.2.2 windows.
+drat_add_empty_bin <- function(path) {
+  path <- contrib.url(path, "binary")
+  path_PACKAGES <- file.path(path, "PACKAGES")
+  if (!file.exists(path_PACKAGES)) {
+    dir.create(path, FALSE, TRUE)
+    writeLines(character(0), path_PACKAGES)
+  }
+}
+
 repo_init <- function(path) {
   dir.create(file.path(path, "src", "contrib"), FALSE, TRUE)
 }

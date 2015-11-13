@@ -79,8 +79,10 @@ write_bootstrap <- function(root) {
       }
     }
     context_log("install", "context")
+    path_local_drat <- path_drat(root)
     repos <- c(CRAN="http://cran.rstudio.com",
-               local_drat=file_url(path_drat(root)))
+               local_drat=file_url(path_local_drat))
+    drat_add_empty_bin(path_local_drat)
     install.packages2("context", lib=lib, repos=repos)
     context_log("done", "")
   }

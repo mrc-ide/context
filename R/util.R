@@ -107,8 +107,12 @@ is_dir <- function(x) {
   file.info(x)[["isdir"]]
 }
 
+## Convert a path to a file:// that R can understand.  Some care is
+## needed on windows.  This will create a path with *three* leading
+## slashes.
 file_url <- function(path) {
-  paste0("file://", normalizePath(path, winslash="/"))
+  full_path <- normalizePath(path, winslash="/")
+  paste0("file://", if (substr(full_path, 1, 1) == "/") "" else "/", full_path)
 }
 
 find_funcs <- function(fun, env) {

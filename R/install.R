@@ -49,6 +49,7 @@ install_packages <- function(packages, sources=package_sources(),
     r <- c(r, sources$repos)
   }
   if (!is.null(sources$local_drat)) {
+    drat_add_empty_bin(sources$local_drat)
     r <- c(r, "local_drat"=file_url(sources$local_drat))
   }
   context_log("install", paste(packages, collapse=", "))
