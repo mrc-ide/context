@@ -119,6 +119,9 @@ task_save_results <- function(handle, value) {
 ##'  \code{TRUE} then \code{task_handle} throws if creating a nonexistant task.
 ##' @export
 task_handle <- function(root, id, check_exists=TRUE) {
+  if (!is.character(id)) {
+    stop("id must be a character")
+  }
   if (check_exists) {
     ok <- file.exists(path_tasks(root, id))
     if (!all(ok)) {
@@ -155,10 +158,6 @@ length.task_handle <- function(x) {
 
 ##' @export
 print.task_handle <- function(x, ...) {
-  print_ad_hoc(x)
-}
-##' @export
-print.task <- function(x, ...) {
   print_ad_hoc(x)
 }
 

@@ -25,3 +25,38 @@ context_log <- function(topic, value) {
     message(trimws(sprintf("[ %-9s ]  %s", topic, value)))
   }
 }
+
+##' @export
+##' @rdname context_log
+##' @param x Vector of log output
+parse_context_log <- function(x) {
+  re <- "^\\[ (.{9}) \\](.*)$"
+  i <- grep(re, x)
+
+  title <- trimws(sub(re, "\\1", x[i]))
+  value <- sub(re, "\\2", x[i])
+
+  ## split the rest of the file up among these:
+  j <- c(i[-1], length(x))
+  tmp <- vector("list", length(i))
+  f <- function(idx) {
+    x[setdiff(i[[idx]]:j[[idx]], i)]
+  }
+  body <- lapply(seq_along(i), f)
+  ret <- list(str=x[i], title=title, value=value, body=body)
+  class(ret) <- "context_log"
+  ret
+}
+
+##' @export
+print.context_log <- function(x, ...) {
+  prep <- function(x) {
+    if (length(x) == 0) {
+      ""
+    } else {
+      paste0("\n", paste0("    ", x, collapse="\n"))
+    }
+  }
+  body <- vcapply(x$body, prep)
+  cat(paste0(paste(paste0(x$str, body), collapse="\n"), "\n"))
+}

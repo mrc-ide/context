@@ -3,11 +3,17 @@
 \name{context_log_start}
 \alias{context_log_start}
 \alias{context_log_stop}
+\alias{parse_context_log}
 \title{Start and stop log}
 \usage{
 context_log_start()
 
 context_log_stop()
+
+parse_context_log(x)
+}
+\arguments{
+\item{x}{Vector of log output}
 }
 \description{
 Start and stop the context log.  Soon this might swap out for
