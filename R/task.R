@@ -213,9 +213,15 @@ task_status_set <- function(handle, status) {
 ## (e.g. a queue object that hasn't written any tasks yet).  The
 ## solution here is for contexts to exist in memory too, which we'll
 ## get for free with storr.
+
+##' Delete a task, including its results.
+##' @title Delete a task
+##' @param handle A task handle
+##' @export
+##' @return \code{TRUE} if a task was actually deleted.
 task_delete <- function(handle) {
-  file.remove(path_tasks(handle$root, handle$id))
-  file.remove(path_task_status(handle$root, handle$id))
-  file.remove(path_task_results(handle$root, handle$id))
-  invisible(handle$id)
+  ok <- file_remove(path_tasks(handle$root, handle$id),
+                    path_task_status(handle$root, handle$id),
+                    path_task_results(handle$root, handle$id))
+  invisible(any(ok))
 }

@@ -31,3 +31,8 @@ skip_if_no_fork <- function() {
   }
   stop("Fork is not available")
 }
+
+## Don't download when we're running locally, please.
+if (Sys.info()[["user"]] == "rich" && file.exists("../../DESCRIPTION")) {
+  Sys.setenv("CONTEXT_SOURCE_PATH"=normalizePath("../../"))
+}

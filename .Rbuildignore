@@ -7,3 +7,5 @@
 ^context_.*\.tar\.gz$
 ^TODO\.md$
 docker
+^notes\.md$
+^update_web\.sh$

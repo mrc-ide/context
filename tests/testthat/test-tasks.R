@@ -50,3 +50,19 @@ test_that("task_list", {
   ctx <- vcapply(tmp, "[[", "context_id")
   expect_identical(ctx[[1]], ctx[[2]])
 })
+
+test_that("task_delete", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+
+  expr <- quote(sin(1))
+  ctx <- context_save(auto=TRUE, root=root)
+  handle <- task_save(expr, ctx)
+  expect_equal(tasks_list(root), handle$id)
+  expect_true(file.exists(path_tasks(handle$root, handle$id)))
+  expect_true(task_delete(handle))
+  expect_equal(tasks_list(root), character(0))
+
+  expect_false(file.exists(path_tasks(handle$root, handle$id)))
+  expect_false(task_delete(handle))
+})

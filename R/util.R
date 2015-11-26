@@ -72,6 +72,15 @@ file_rename <- function(from, to) {
   unlink(from, recursive=TRUE)
 }
 
+file_remove <- function(...) {
+  files <- c(...)
+  ok <- file.exists(files)
+  if (any(ok)) {
+    file.remove(files[ok])
+  }
+  ok
+}
+
 rename_to_md5 <- function(filename, path, ext="") {
   md5 <- tools::md5sum(filename)
   dest <- file.path(path, paste0(md5, ext))
