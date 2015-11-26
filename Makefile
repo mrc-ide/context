@@ -47,4 +47,12 @@ vignettes:
 	rm -f vignettes/context.Rmd
 	make vignettes_install
 
+staticdocs:
+	@mkdir -p inst/staticdocs
+	Rscript -e "library(methods); staticdocs::build_site()"
+	rm -f vignettes/*.html
+	@rmdir inst/staticdocs
+website: staticdocs
+	./update_web.sh
+
 .PHONY: all test document install vignettes

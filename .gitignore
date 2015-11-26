@@ -6,3 +6,5 @@ context_*tar.gz
 TODO.md
 inst/doc
 docker/context
+inst/staticdocs
+inst/web
