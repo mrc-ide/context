@@ -33,45 +33,6 @@ is.GlobalEnv <- function(x) {
   identical(x, .GlobalEnv)
 }
 
-## Functions for saving images and objects into files that are named
-## after their md5 hashes, giving some degree of content addressable
-## storage.  This will change if I can generalise the interface a
-## little.
-save_image <- function(path) {
-  exclude <- ".Random.seed"
-  tmp <- tempfile()
-  save(list=setdiff(names(.GlobalEnv), exclude), envir=.GlobalEnv,
-       file=tmp)
-  rename_to_md5(tmp, path)
-}
-
-save_object <- function(envir, path) {
-  if (is.GlobalEnv(envir)) {
-    NULL
-  } else {
-    tmp <- tempfile()
-    saveRDS(envir, tmp)
-    rename_to_md5(tmp, path)
-  }
-}
-
-## file.remame: "This is subject to the limitations of the OS's
-## corresponding system call (see something like ‘man 2 rename’ on a
-## Unix-alike): in particular in the interpretation of ‘file’: most
-## platforms will not rename files across file systems."
-##
-## similar issues affect python's os.rename rather than shutil.move
-##
-## Note that this is no longer atomic, and may do slightly weird
-## things to directories; need to check that this is all reasonable
-## with some tests.  However, for the main use here (rename_to_md5)
-## this is guaranteed to be a file (and actually won't copy if dest
-## exists).
-file_rename <- function(from, to) {
-  file.copy(from, to, overwrite=TRUE)
-  unlink(from, recursive=TRUE)
-}
-
 file_remove <- function(...) {
   files <- c(...)
   ok <- file.exists(files)
@@ -79,18 +40,6 @@ file_remove <- function(...) {
     file.remove(files[ok])
   }
   ok
-}
-
-rename_to_md5 <- function(filename, path, ext="") {
-  md5 <- tools::md5sum(filename)
-  dest <- file.path(path, paste0(md5, ext))
-  dir.create(dirname(dest), FALSE, TRUE)
-  if (file.exists(dest)) {
-    file.remove(filename)
-  } else {
-    file_rename(filename, dest)
-  }
-  unname(md5)
 }
 
 ## This should be swapped out for the uuid function, but let's see how
@@ -101,6 +50,10 @@ random_id <- function() {
 }
 
 print_ad_hoc <- function(x) {
+  i <- vlapply(unclass(x), is.raw)
+  if (any(i)) {
+    x[i] <- sprintf("raw <%d bytes>", lengths(x[i]))
+  }
   members <- paste(sprintf(" - %s: %s\n", names(x), unname(x)), collapse="")
   cat(sprintf("<%s>\n%s", class(x)[[1]], members))
   invisible(x)
@@ -188,4 +141,41 @@ process_id <- function() {
 
 is_error <- function(x) {
   inherits(x, "try-error")
+}
+
+## Like save.image but:
+##
+##   - save into a raw vector
+##   - exclude .Random.seed
+##
+## It does involve a potentially unnecessary disk round trip, but
+## based on wch's benchmarks that's probably the fastest thing anyway.
+serialise_image <- function() {
+  exclude <- ".Random.seed"
+  tmp <- tempfile()
+  on.exit(file_remove(tmp))
+  save(list=setdiff(names(.GlobalEnv), exclude), envir=.GlobalEnv,
+       file=tmp)
+  read_binary(tmp)
+}
+
+deserialise_image <- function(bin, ...) {
+  tmp <- tempfile()
+  on.exit(file_remove(tmp))
+  writeBin(bin, tmp)
+  load(tmp, ...)
+}
+
+read_binary <- function(filename) {
+  readBin(filename, raw(), file.size(filename))
+}
+
+write_script <- function(text, dest) {
+  dir.create(dirname(dest), FALSE, TRUE)
+  writeLines(text, dest)
+  Sys.chmod(dest, "0755")
+}
+
+invert_names <- function(x) {
+  setNames(names(x), x)
 }

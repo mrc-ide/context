@@ -8,7 +8,7 @@ env_chain <- function(e, stop_at=list(.GlobalEnv, emptyenv())) {
 }
 
 cleanup <- function(root) {
-  unlink(root, recursive=TRUE)
+  context_db(root)$driver$destroy()
   ## This prunes libPaths down to the set of files that exist, so with
   ## the above should do a reasonable job of trimming any additions
   ## because the actual directories will have been deleted.
@@ -33,6 +33,11 @@ skip_if_no_fork <- function() {
 }
 
 ## Don't download when we're running locally, please.
-if (Sys.info()[["user"]] == "rich" && file.exists("../../DESCRIPTION")) {
-  Sys.setenv("CONTEXT_SOURCE_PATH"=normalizePath("../../"))
+if (Sys.info()[["user"]] == "rich") {
+  if (file.exists("../../DESCRIPTION")) {
+    Sys.setenv("CONTEXT_SOURCE_PATH"=normalizePath("../../"))
+  }
+  if (file.exists("~/Documents/src/storr/DESCRIPTION")) {
+    Sys.setenv("STORR_SOURCE_PATH"=normalizePath("~/Documents/src/storr/"))
+  }
 }

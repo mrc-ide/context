@@ -57,7 +57,10 @@ package_sources <- function(cran=NULL, repos=NULL,
     if (!all(file.exists(local))) {
       stop("Missing local files")
     }
-    local <- setNames(normalizePath(local, mustWork=TRUE), local)
+    f <- function(x) {
+      list(str=x, path=normalizePath(x, mustWork=TRUE))
+    }
+    local <- setNames(lapply(local, f), local)
   }
 
   structure(list(cran=cran, repos=repos,
@@ -87,77 +90,35 @@ package_sources <- function(cran=NULL, repos=NULL,
 ##' @export
 build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
   path <- path_drat(root)
-  timestamp_file <- file.path(path, "timestamp.rds")
-  if (file.exists(timestamp_file) && !force) {
-    timestamp <- readRDS(timestamp_file)
-    src <- timestamp_filter(sources, timestamp)
-  } else {
-    src <- sources
-    timestamp <- list()
+  db <- storr::storr(context_db(root)$driver,
+                     default_namespace="drat_timestamp", mangle_key=TRUE)
+  drat_repo_init(path)
+
+  build <- function(t, x) {
+    switch(t,
+           github=build_github(x, quiet),
+           bitbucket=build_bitbucket(x, quiet),
+           local=build_local(x))
   }
 
-  packages <- c(vcapply(src$github,    build_github,    quiet),
-                vcapply(src$bitbucket, build_bitbucket, quiet),
-                vcapply(src$local,     build_local))
-  if (length(packages) > 0L) {
-    context_log("drat", path)
-    repo_init(path)
-    for (p in packages) {
-      drat::insertPackage(p, path, commit=FALSE)
+  now <- Sys.time()
+  for (t in c("github", "bitbucket", "local")) {
+    src <- sources[[t]]
+    for (i in seq_along(src)) {
+      key <- names(src)[[i]]
+      ok <- !force && db$exists(key) && db$get(key) - now < sources$expire
+      if (!ok) {
+        pkg <- build(t, src[[i]])
+        drat::insertPackage(pkg, path, commit=FALSE)
+        file.remove(pkg)
+        db$set(key, now)
+      }
     }
-    saveRDS(timestamp_merge(timestamp, timestamp_create(src)),
-            timestamp_file)
   }
 
   ## This is needed outside.
   sources$local_drat <- path
   sources
-}
-
-## A pretty rubbish attempt at making the package source bits a little
-## faster.  It's really tricky because there is no way of knowing if
-## upstream has changed; OTOH, if we're firing off lots of jobs then
-## this is probably a bit daft.  Better might be to check against the
-## *local* version and update if the stored version is behind the
-## local version.  That'd be nice and quick actually.  This will do
-## for now.
-##
-## This is mostly complicated because there's no way in general of
-## linking the string we are given with the actual package information
-## without unzipping the archive again and getting the DESCRIPTION
-## out.
-timestamp_names <- function() {
-  c("github", "bitbucket", "local")
-}
-
-timestamp_create <- function(sources) {
-  time <- Sys.time()
-  f <- function(x) {
-    setNames(rep(time, length.out=length(x)), names(x))
-  }
-  lapply(sources[timestamp_names()], f)
-}
-
-timestamp_merge <- function(x, y) {
-  for (i in timestamp_names()) {
-    x[[i]] <- c(x[[i]], y[[i]])
-  }
-  x
-}
-
-timestamp_filter <- function(obj, t) {
-  ## Skip timestamping of versioned dependencies.  Bumping the version
-  ## will redownload the dependency because the times are stored
-  ## against the full string (so including @version).
-  re_version <- "^v([[:digit:]]+[.-]){1,}[[:digit:]]+$"
-  for (i in timestamp_names()) {
-    is_version <- vlapply(obj[[i]], function(x) grepl(re_version, x$ref))
-    str <- vcapply(obj[[i]], "[[", "str")
-    last <- setNames(t[[i]][str], str)
-    ok <- !is.na(last) & (is_version | last < obj$expire)
-    obj[[i]] <- obj[[i]][setdiff(names(obj[[i]]), names(which(ok)))]
-  }
-  obj
 }
 
 ## This comes from drat.builder, and is _largely_ compatible with devtools
@@ -216,7 +177,7 @@ drat_add_empty_bin <- function(path) {
   }
 }
 
-repo_init <- function(path) {
+drat_repo_init <- function(path) {
   dir.create(file.path(path, "src", "contrib"), FALSE, TRUE)
 }
 
@@ -239,13 +200,17 @@ build_bitbucket <- function(x, quiet=FALSE) {
   build_remote(bitbucket_url(x$user, x$repo, x$ref), x$subdir, quiet, x$str)
 }
 build_local <- function(x) {
-  if (grepl("\\.tar\\.gz", x)) {
-    x
-  } else if (is_dir(x)) {
-    path <- tempfile("context_sources_")
-    dir.create(path)
-    file.copy(x, path, recursive=TRUE)
-    R_build(file.path(path, basename(x)))
+  path <- x$path
+  if (grepl("\\.tar\\.gz", path)) {
+    tmp <- tempfile("context_sources_")
+    dir.create(tmp)
+    file.copy(path, tmp)
+    file.path(tmp, basename(path))
+  } else if (is_dir(path)) {
+    tmp <- tempfile("context_sources_")
+    dir.create(tmp)
+    file.copy(path, tmp, recursive=TRUE)
+    R_build(file.path(tmp, basename(path)))
   } else {
     stop("Invalid local source")
   }

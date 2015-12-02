@@ -9,6 +9,9 @@ task_delete(handle)
 \arguments{
 \item{handle}{A task handle}
 }
+\value{
+\code{TRUE} if a task was actually deleted.
+}
 \description{
 Delete a task, including its results.
 }

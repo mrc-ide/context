@@ -5,9 +5,7 @@ test_that("no special packages", {
   on.exit(cleanup(root))
 
   src <- package_sources()
-
   build_local_drat(src, root=root)
-  expect_equal(dir(root), character(0))
   expect_null(src$repos)
 })
 
@@ -51,7 +49,7 @@ test_that("local drat creation", {
   lib <- use_local_library(path_library(root))
   expect_equal(lib, path_library(root))
   expect_true(file.exists(lib))
-  expect_equal(.libPaths()[[1]], lib)
+  expect_equal(normalizePath(.libPaths()[[1]]), normalizePath(lib))
   ## No previously enbled libraries have been removed
   expect_true(all(olp %in% .libPaths()))
 
@@ -60,6 +58,11 @@ test_that("local drat creation", {
 })
 
 test_that("package installation in parallel", {
+  ## NOTE: I have seen a segfault here and I do not know where it
+  ## could have come from.  My suspicion is that in inheriting RNG
+  ## seeds something nasty happened (or in the multiple read/write
+  ## issue).  Bit of a concern frankly...could try and get this one
+  ## working via shell.
   skip_if_no_fork()
   lib <- use_local_library(tempfile("context_"))
   on.exit(cleanup(lib))
@@ -78,6 +81,7 @@ test_that("package installation in parallel", {
   context_log_start()
   on.exit(context_log_stop(), add=TRUE)
   t1 <- parallel::mcparallel(f(), "i1")
+  runif(1) # advance the seed
   t2 <- parallel::mcparallel(f(), "i2")
   res <- parallel::mccollect(list(t1, t2))
 

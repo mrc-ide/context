@@ -10,17 +10,7 @@ setup_bootstrap <- function(root) {
   if (is.na(installed) || written < installed) {
     write_bootstrap(root)
     write_runner(root)
-    ## Add ourself.  Soon, this will be
-    ##   dide-tools/context@ + paste0("v", packageVersion("context"))
-    ## which will make things a bit more stable.
-    self <- Sys.getenv("CONTEXT_SOURCE_PATH")
-    if (self == "") {
-      self <- "dide-tools/context@master"
-      sources <- package_sources(github=self)
-    } else {
-      sources <- package_sources(local=self)
-    }
-    build_local_drat(sources, root)
+    build_local_drat(setup_bootstrap_self_sources(), root)
     invisible(TRUE)
   } else if (written > installed) {
     ## This might get relaxed.
@@ -28,6 +18,30 @@ setup_bootstrap <- function(root) {
   } else {
     invisible(FALSE)
   }
+}
+
+setup_bootstrap_self_sources <- function() {
+  ## Add ourself.  Soon, this will be
+  ##   dide-tools/context@ + paste0("v", packageVersion("context"))
+  ## which will make things a bit more stable.
+  ##
+  ## storr will go on CRAN and then this simplifies.
+  context <- Sys.getenv("CONTEXT_SOURCE_PATH")
+  storr <- Sys.getenv("STORR_SOURCE_PATH")
+
+  github <- local <- NULL
+  if (context == "") {
+    github <- c(github, "dide-tools/context@master")
+  } else {
+    local <- c(local, context)
+  }
+  if (storr == "") {
+    github <- c(github, "richfitz/storr@master")
+  } else {
+    local <- c(local, storr)
+  }
+
+  package_sources(github=github, local=local)
 }
 
 read_version <- function(root) {
@@ -117,10 +131,7 @@ write_bootstrap <- function(root) {
   dir.create(root, FALSE, TRUE)
   writeLines(as.character(packageVersion(.packageName)), path_version(root))
 
-  dest <- path_bootstrap(root)
-  writeLines(code, dest)
-  Sys.chmod(dest, "0755")
-  invisible(dest)
+  write_script(code, path_bin(root, "context_bootstrap"))
 }
 
 write_runner <- function(path) {
@@ -143,11 +154,9 @@ write_runner <- function(path) {
             funs,
             "args <- main_parse_args(commandArgs(TRUE))",
             "CONTEXT_ROOT <- args$root",
-            'source(file.path(CONTEXT_ROOT, "context_bootstrap"), TRUE)',
+            'source(file.path(CONTEXT_ROOT, "bin", "context_bootstrap"), TRUE)',
             "})",
             "context:::main()")
-  dest <- file.path(path, "context_runner")
-  writeLines(code, dest)
-  Sys.chmod(dest, "0755")
-  invisible(dest)
+
+  write_script(code, path_bin(path, "context_runner"))
 }

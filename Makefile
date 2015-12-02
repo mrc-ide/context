@@ -35,7 +35,7 @@ vignettes/src/context.Rmd: vignettes/src/context.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 
 vignettes/context.Rmd: vignettes/src/context.Rmd
-	cd vignettes/src && ${RSCRIPT} -e 'knitr::knit("context.Rmd")'
+	cd vignettes/src && CONTEXT_SOURCE_PATH=${CONTEXT_SOURCE_PATH} ${RSCRIPT} -e 'knitr::knit("context.Rmd")'
 	mv vignettes/src/context.md $@
 	sed -i.bak 's/[[:space:]]*$$//' $@
 	rm -f $@.bak

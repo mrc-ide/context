@@ -11,6 +11,7 @@
 
 ##+ echo=FALSE,results="hide"
 knitr::opts_chunk$set(error=FALSE)
+writeLines(character(0), "file.R")
 
 ## The idea here is that we want to describe how to build a "context"
 ## and then evalute one or more expressions in it.  This is a little
@@ -85,13 +86,13 @@ context_read(ctx)
 ## context.
 ctx <- context_save(auto=TRUE)
 ctx$id
-t <- save_task(quote(sin(1)), context=ctx)
+t <- task_save(quote(sin(1)), context=ctx)
 task_read(t)
 
-## These tasks are loaded using the function `load_task` but this
+## These tasks are loaded using the function `task_load` but this
 ## doesn't need to be done manually often.  Instead, to run this task,
-## use the `run_task` function.
-res <- run_task(t)
+## use the `task_run` function.
+res <- task_run(t)
 
 ## This prints the result of restoring the context and running the task:
 ##
@@ -138,9 +139,9 @@ writeLines(context:::call_system(context, c(t$root, t$id)))
 ## already installed on the target machine.  So `context` also writes
 ## some bootstrap scripts that can set itself and its dependencies up.
 ##+ eval=FALSE
-system2(file.path(t$root, "context_runner"), c(t$root, t$id))
+system2(file.path(t$root, "bin/context_runner"), c(t$root, t$id))
 ##+ echo=FALSE
-writeLines(context:::call_system(file.path(t$root, "context_runner"),
+writeLines(context:::call_system(file.path(t$root, "bin/context_runner"),
                                  c(t$root, t$id)))
 
 ## # Non-CRAN packages

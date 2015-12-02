@@ -16,8 +16,10 @@ test_that("simplest case", {
   expect_equal(nchar(handle$id), 32)
   expect_identical(handle$root, root)
 
-  expect_true(file.exists(file.path(root, "contexts")))
-  expect_true(file.exists(file.path(root, "contexts", handle$id)))
+  db <- context_db(root)
+  expect_true(db$exists(handle$id, "contexts"))
+  ## TODO: should be in storr
+  expect_true(db$driver$exists_hash(handle$id))
 
   e <- new.env()
   res <- context_load(handle, envir=e)
@@ -34,12 +36,13 @@ test_that("auto", {
   on.exit(cleanup(root))
 
   handle <- context_save(root=root, auto=TRUE)
-  expect_true(file.exists(file.path(root, "contexts", handle$id)))
-  expect_true(file.exists(file.path(root, "environments")))
+  db <- context_db(root)
+  expect_true(db$exists(handle$id, "contexts"))
+  expect_true(db$driver$exists_hash(handle$id))
 
-  dat <- readRDS(file.path(root, "contexts", handle$id))
-  expect_true(file.exists(file.path(root, "environments", dat$global)))
-  expect_true(file.exists(file.path(root, "environments", dat$local)))
+  obj <- context_read(handle)
+  expect_is(obj$local, "environment")
+  expect_is(obj$global, "raw")
 })
 
 test_that("package_sources", {
@@ -89,25 +92,22 @@ test_that("globals", {
 
   .GlobalEnv$t <- 1
   on.exit(rm(list="t", envir=.GlobalEnv), add=TRUE)
-  id <- save_image(path)
-  expect_true(file.exists(path))
-  expect_true(is_dir(path))
-  filename <- file.path(path, id)
+  dat <- serialise_image()
 
   e <- new.env()
-  v <- load(filename, e)
+  v <- deserialise_image(dat, envir=e)
   expect_equal(sort(v), sort(c("t", vars)))
   expect_equal(e$t, 1)
 
   ## But this *should* do badly in the buggy version I'm looking at
   ## but does not seem to right now:
-  f <- function(path) {
-    save_image(path)
+  f <- function() {
+    serialise_image()
   }
-  environment(f) <- environment(save_image)
-  id2 <- f(path)
-  expect_equal(id2, id)
+  environment(f) <- environment(serialise_image)
+  dat2 <- f()
+  expect_equal(dat2, dat)
 
   ctx <- context_save(auto=TRUE, root=path)
-  expect_equal(context_read(ctx)$global, id)
+  expect_equal(context_read(ctx)$global, dat)
 })

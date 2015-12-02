@@ -39,22 +39,24 @@ task_save_list <- function(list, context, envir=parent.frame()) {
     stop("Invalid context")
   }
   root <- context$root
-  ## TODO: we might want to check that the context *exists* in the given root.
-  ##   if (!context_exists(context$id, root)) {
-  ##     stop("Context not found")
-  ##   }
+  db <- context_db(root)
+
+  if (!db$exists(context$id, namespace="contexts")) {
+    stop(sprintf("Context %s does not exist", context$id))
+  }
+
   f <- function(x) {
     dat <- store_expression(x, envir)
+    ## Add some extra things:
     dat$context_id <- context$id
-    dat$id <- random_id()
     dat$root <- root
     class(dat) <- "task"
-    dir.create(path_tasks(root), FALSE, TRUE)
-    dir.create(path_task_status(root), FALSE, TRUE)
-    saveRDS(dat, path_tasks(root, dat[["id"]]))
-    task_status_set(dat, TASK_PENDING)
+
+    db$set(dat$id, dat, namespace="tasks")
+    db$set(dat$id, TASK_PENDING, namespace="task_status")
     dat$id
   }
+
   task_handle(root, vcapply(list, f), FALSE)
 }
 
@@ -64,9 +66,38 @@ task_save_list <- function(list, context, envir=parent.frame()) {
 ##' @export
 task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
   dat <- task_read(handle)
-  ## This approch has worked well for rrqueue, so keeping it going here.
+  ## OK, the handling of environments here is very confusing.  The
+  ## `envir` argument here is going to be the _parent_; we'll need to
+  ## source things into that though.
+  ##
+  ## The given environment will have things sourced into it by
+  ## context_load, returning an environment.
+  ##
+  ## If envir is .GlobalEnv this is the situation:
+  ##   <packages> --> <global> --> <local> --> <expression locals>
+  ##
+  ## If envir is not *and* we have a local environment, then we get a
+  ## mess where the local environment does not have the correct
+  ## parent.
+  ##
+  ##   <packages> --> <R global> --> <local> --> <expression locals>
+  ##       ???    --> <global>
+  ##
+  ## (NOTE: this is incorrect and incomplete above -- need to think
+  ## about this more).
+  ##
+  ## Basically, this is prone to being rewritten, but if envir is the
+  ## global environment and if local has the global environment as a
+  ## parent (before baseenv or emptyenv) then it should all work OK.
+  ##
+  ## The enclos environment to eval won't help because it's ignored if
+  ## the environment argument is an actual environment.
   context <- context_handle(dat$context_id, handle$root)
   dat$envir_context <- context_load(context, install, envir)
+
+  ## This approch has worked well for rrqueue, so keeping it going
+  ## here.  Based on rrqueue:::task_expr(), which might be worth
+  ## pulling out more cleanly for testing?
   dat$envir <- restore_locals(dat, dat$envir_context)
   dat
 }
@@ -77,7 +108,7 @@ task_read <- function(handle) {
   if (is.task(handle)) {
     handle
   } else if (is.task_handle(handle)) {
-    readRDS(path_tasks(handle$root, handle$id))
+    context_db(handle$root)$get(handle$id, namespace="tasks")
   } else {
     stop("handle must be a task or task_handle")
   }
@@ -87,8 +118,7 @@ task_read <- function(handle) {
 ##' @export
 ##' @param root root
 tasks_list <- function(root) {
-  ## TODO: this becomes way easier with storr
-  dir(path_tasks(root))
+  context_db(root)$list("tasks")
 }
 
 ##' Fetch result from completed task.
@@ -96,19 +126,9 @@ tasks_list <- function(root) {
 ##' @param handle A task handle
 ##' @export
 task_result <- function(handle) {
-  filename <- path_task_results(handle$root, handle$id)
-  if (!file.exists(filename)) {
-    stop("Task does not have results")
-  }
-  readRDS(filename)
-}
-
-task_save_results <- function(handle, value) {
-  path_result <- path_task_results(handle$root, handle$id)
-  err <- is_error(value)
-  context_log(if (err) "error" else "result", path_result)
-  task_status_set(handle, if (err) TASK_ERROR else TASK_COMPLETE)
-  saveRDS(value, path_result)
+  db <- context_db(handle$root)
+  tryCatch(db$get(handle$id, "task_results"),
+           HashError=function(e) stop("Task does not have results"))
 }
 
 ##' Create a handle to a task
@@ -123,7 +143,8 @@ task_handle <- function(root, id, check_exists=TRUE) {
     stop("id must be a character")
   }
   if (check_exists) {
-    ok <- file.exists(path_tasks(root, id))
+    db <- context_db(root)
+    ok <- vlapply(id, db$exists, "tasks")
     if (!all(ok)) {
       stop("tasks do not exist: ", id[!ok])
     }
@@ -168,15 +189,20 @@ print.task_handle <- function(x, ...) {
 ##' @param envir Environment to load global variables into.
 ##' @export
 task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
+  db <- context_db(handle$root)
   context_log("root", handle$root)
   context_log("task", handle$id)
   dat <- task_load(handle, install, envir)
   context_log("expr", capture.output(print(dat$expr)))
-  dir.create(path_task_results(handle$root), FALSE, TRUE)
   context_log("start", Sys_time())
-  task_status_set(handle, TASK_RUNNING)
+  db$set(handle$id, TASK_RUNNING, "task_status")
+
   value <- try(eval(dat$expr, dat$envir))
-  task_save_results(handle, value)
+  err <- is_error(value)
+  context_log(if (err) "error" else "result", "") # not sure here...
+  db$set(handle$id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
+  db$set(handle$id, value, "task_results")
+
   context_log("end", Sys_time())
   invisible(value)
 }
@@ -196,16 +222,14 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
 ##' @param handle Task handle
 ##' @export
 task_status_read <- function(handle) {
-  path <- path_task_status(handle$root, handle$id)
-  ok <- file.exists(path)
-  res <- character(length(path))
-  res[ok] <- vapply(path[ok], readLines, character(1))
-  res[!ok] <- TASK_MISSING
-  res
-}
-
-task_status_set <- function(handle, status) {
-  writeLines(status, path_task_status(handle$root, handle$id))
+  ## TODO: -> task_status
+  ## TODO: in storr, add a missing action wrapper here?
+  db <- context_db(handle$root)
+  f <- function(id) {
+    tryCatch(db$get(id, "task_status"),
+             KeyError=function(e) TASK_MISSING)
+  }
+  vcapply(handle$id, f, USE.NAMES=FALSE)
 }
 
 ## TODO: decide if this triggers gc.  In general this is a dangerous
@@ -220,8 +244,13 @@ task_status_set <- function(handle, status) {
 ##' @export
 ##' @return \code{TRUE} if a task was actually deleted.
 task_delete <- function(handle) {
-  ok <- file_remove(path_tasks(handle$root, handle$id),
-                    path_task_status(handle$root, handle$id),
-                    path_task_results(handle$root, handle$id))
-  invisible(any(ok))
+  db <- context_db(handle$root)
+  f <- function(id) {
+    ## NOTE: not short-circuiting 'OR' here because we want 'OR' of
+    ## the results but still to run all three commands.
+    db$del(handle$id, "tasks") |
+      db$del(handle$id, "task_status") |
+      db$del(handle$id, "task_results")
+  }
+  invisible(any(vlapply(handle$id, f, USE.NAMES=FALSE)))
 }

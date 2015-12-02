@@ -8,3 +8,6 @@ inst/doc
 docker/context
 inst/staticdocs
 inst/web
+vignettes/src/file.R
+vignettes/src/context.Rmd
+vignettes/context.Rmd

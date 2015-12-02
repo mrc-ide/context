@@ -9,3 +9,5 @@
 docker
 ^notes\.md$
 ^update_web\.sh$
+^inst/web$
+^inst/staticdocs$

@@ -46,13 +46,20 @@ context_save <- function(packages=NULL, sources=NULL, auto=FALSE,
                          package_sources=NULL,
                          envir=parent.frame(), root=tempdir()) {
   setup_bootstrap(root)
+  ret <- context_build(packages, sources, auto, package_sources, envir)
+  id <- context_db(root)$set_by_value(ret, namespace="contexts")
+  build_local_drat(package_sources, root)
+  context_handle(id, root)
+}
+
+context_build <- function(packages, sources, auto, package_sources, envir) {
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
       stop("Do not specify 'packages' or 'sources' if using auto")
     }
     ret <- list(
       packages=detect_packages(),
-      global=save_image(path_environments(root)))
+      global=serialise_image())
   } else {
     if (is.null(packages)) {
       packages <- character(0)
@@ -85,14 +92,11 @@ context_save <- function(packages=NULL, sources=NULL, auto=FALSE,
   } else if (!inherits(package_sources, "package_sources")) {
     stop("Expected a package_sources object (or NULL)")
   }
-  build_local_drat(package_sources, root)
-  ret$package_sources <- package_sources
 
-  ret$local <- save_object(envir, path_environments(root))
+  ret$local <- if (is.GlobalEnv(envir)) NULL else envir
   ret$auto <- auto
   class(ret) <- "context"
-  id <- save_object(ret, path_contexts(root))
-  context_handle(id, root)
+  ret
 }
 
 ##' @rdname context
@@ -130,12 +134,12 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   }
 
   if (!is.null(obj$global)) {
-    context_log("global", obj$global)
-    load(path_environments(handle$root, obj$global), envir=envir)
+    context_log("global", "")
+    deserialise_image(obj$global, envir=envir)
   }
   if (!is.null(obj$local)) {
-    context_log("local", obj$local)
-    readRDS(path_environments(handle$root, obj$local))
+    context_log("local", "")
+    obj$local
   } else {
     envir
   }
@@ -144,8 +148,9 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
 ##' @export
 ##' @rdname context
 context_read <- function(handle) {
+  ret <- context_db(handle$root)$get(handle$id, namespace="contexts")
   ## TODO: same treatment as task_read where task_read(task) -> task
-  ret <- readRDS(path_contexts(handle$root, handle$id))
+  ##
   ## We'll take responsibility here for setting up the local drat
   ## links because install_packages does not know about ideas of
   ## roots; it just has the set of sources (which by this point has
@@ -160,7 +165,7 @@ context_read <- function(handle) {
 }
 
 context_list <- function(root) {
-  dir(path_contexts(root))
+  context_db(root)$list(namespace="contexts")
 }
 
 ## This is going to be horrid to test because it really requires
@@ -207,7 +212,7 @@ print.context <- function(x, ...) {
 }
 
 context_exists <- function(id, root) {
-  file.exists(path_contexts(root, id))
+  context_db(root)$exists(id, namespace="contexts")
 }
 
 use_local_library <- function(lib) {

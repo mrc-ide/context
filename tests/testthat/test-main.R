@@ -7,8 +7,8 @@ test_that("parse_args", {
                "Exactly two arguments required")
   expect_error(main_parse_args(c("a", "b", "c")),
                "Exactly two arguments required")
-  expect_that(main_parse_args(c("foo", "bar")),
-              equals(list(root="foo", id="bar")))
+  expect_equal(main_parse_args(c("foo", "bar")),
+               list(root="foo", id="bar"))
 })
 
 test_that("install", {
@@ -23,16 +23,13 @@ test_that("run", {
   full <- install_context(tempdir())
 
   Sys.setenv(R_TESTS="")
-  ## can use call_system here as I set it up to work.  Unfortunately
-  ## that does rather create a potential circular dependency if I ever
-  ## wanted to get callr to use context.
-
-  res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)
+  res <- call_system(full, c(handle$root, handle$id))
   expect_null(attr(res, "status", exact=TRUE))
 
-  result_file <- path_task_results(handle$root, handle$id)
-  expect_true(file.exists(result_file))
-  expect_equal(readRDS(result_file), sin(1))
+  db <- context_db(handle$root)
+  expect_equal(db$get(handle$id, "task_status"), TASK_COMPLETE)
+  expect_true(db$exists(handle$id, "task_results"))
+  expect_equal(db$get(handle$id, "task_results"), sin(1))
 })
 
 test_that("install", {
@@ -50,7 +47,8 @@ test_that("install", {
   res <- system2(full, c(handle$root, handle$id), stdout=TRUE, stderr=TRUE)
   expect_null(attr(res, "status", exact=TRUE))
 
-  result_file <- path_task_results(handle$root, handle$id)
-  expect_true(file.exists(result_file))
-  expect_equal(readRDS(result_file), sin(1))
+  db <- context_db(handle$root)
+  expect_equal(db$get(handle$id, "task_status"), TASK_COMPLETE)
+  expect_true(db$exists(handle$id, "task_results"))
+  expect_equal(db$get(handle$id, "task_results"), sin(1))
 })

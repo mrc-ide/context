@@ -12,6 +12,8 @@ test_that("tasks", {
   expect_equal(nchar(handle$id), 32)
   expect_identical(handle$root, root)
 
+  expect_null(task_read(handle)$objects)
+
   expect_identical(task_status_read(handle), TASK_PENDING)
 
   e <- new.env()
@@ -59,10 +61,46 @@ test_that("task_delete", {
   ctx <- context_save(auto=TRUE, root=root)
   handle <- task_save(expr, ctx)
   expect_equal(tasks_list(root), handle$id)
-  expect_true(file.exists(path_tasks(handle$root, handle$id)))
+
+  expect_true(context_db(handle$root)$exists(handle$id, "tasks"))
   expect_true(task_delete(handle))
   expect_equal(tasks_list(root), character(0))
 
-  expect_false(file.exists(path_tasks(handle$root, handle$id)))
+  expect_false(context_db(handle$root)$exists(handle$id, "tasks"))
   expect_false(task_delete(handle))
+})
+
+test_that("local variables", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+
+  x <- 1
+  expr <- quote(sin(x))
+  ctx <- context_save(root=root)
+  handle <- task_save(expr, ctx)
+
+  res <- task_read(handle)
+  expect_equal(res$objects, list(x=x))
+
+  e <- new.env(parent=.GlobalEnv)
+  t <- task_load(handle, envir=e)
+
+  expect_identical(ls(t$envir), "x")
+  expect_identical(t$envir$x, x)
+  expect_identical(parent.env(t$envir), t$envir_context)
+})
+
+test_that("task_run", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+
+  x <- 1
+  y <- 2
+  expr <- quote(list(x, y))
+  ctx <- context_save(auto=TRUE, root=root)
+  handle <- task_save(expr, ctx)
+
+  e <- new.env(parent=environment())
+  res <- task_run(handle, envir=e)
+  expect_identical(res, list(x, y))
 })
