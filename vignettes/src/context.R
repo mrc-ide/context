@@ -60,19 +60,20 @@ library(context)
 context_log_start()
 
 ## A simple context might look like this:
-ctx <- context_save(packages=c("pkg1", "pkg2"), sources="file.R")
+ctx <- context_save(packages=c("pkg1", "pkg2"), sources="file.R",
+                    root=tempfile())
 ctx
 
-## This will save all the required metadata at the path `root` (by
-## default within the temporary directory).  The context information
-## in this case is pretty simple:
+## This will save all the required metadata at the path `root` (here,
+## within the temporary directory).  The context information in this
+## case is pretty simple:
 context_read(ctx)
 
 ## Even more simple, contexts can be made _automatically_
 ##+ echo=FALSE
 rm(ctx)
 ##+ echo=TRUE
-ctx <- context_save(auto=TRUE)
+ctx <- context_save(root=tempfile(), auto=TRUE)
 context_read(ctx)
 
 ## which will look at the packages you currently have attached and
@@ -84,7 +85,7 @@ context_read(ctx)
 ## Once a context is defined, *tasks* can be defined in the context.
 ## These are simply R expressions associated with the identifier of a
 ## context.
-ctx <- context_save(auto=TRUE)
+ctx <- context_save(root=tempfile(), auto=TRUE)
 ctx$id
 t <- task_save(quote(sin(1)), context=ctx)
 task_read(t)
@@ -160,7 +161,7 @@ src <- package_sources(github=c("traitecoevo/callr",
                                 "richfitz/storr"))
 
 ## This can then be passed through to the `context_save` function above:
-ctx <- context_save(packages="remake", package_sources=src)
+ctx <- context_save(root=tempfile(), packages="remake", package_sources=src)
 
 ## This takes a little while (though subsequent calls to the same root
 ## will be faster) as it downloads the required packages from github

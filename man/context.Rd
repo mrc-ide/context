@@ -6,14 +6,19 @@
 \alias{context_save}
 \title{Save and reload contexts}
 \usage{
-context_save(packages = NULL, sources = NULL, auto = FALSE,
-  package_sources = NULL, envir = parent.frame(), root = tempdir())
+context_save(root, packages = NULL, sources = NULL, auto = FALSE,
+  package_sources = NULL, envir = parent.frame())
 
 context_load(handle, install = TRUE, envir = .GlobalEnv, ...)
 
 context_read(handle)
 }
 \arguments{
+\item{root}{Root directory to store and retrieve files.  Files
+will be added to the \code{contexts} subdirectory of this path.
+This will change later to support alternative ways of saving
+files, perhaps into a database instance.}
+
 \item{packages}{A character vector of packages (or \code{NULL}) if
 no packages are to be loaded.}
 
@@ -32,14 +37,6 @@ is the environment into which the global environment is copied.
 Specify a non-global environment here to avoid clobbering the
 workspace, but at the risk that some environments may not
 restore exactly as desired.}
-
-\item{root}{Root directory to store and retrieve files.  Files
-will be added to the \code{contexts} subdirectory of this path.
-This will change later to support alternative ways of saving
-files.  The default puts files into the temp directory of
-\emph{this} R instance; this directory will be deleted on
-session exit so it not an appropriate place to store files for
-later use.}
 
 \item{handle}{A \code{context_handle} object returned by
 \code{context_save}.}

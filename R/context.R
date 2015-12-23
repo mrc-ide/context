@@ -10,6 +10,11 @@
 ##'
 ##' @title Save and reload contexts
 ##'
+##' @param root Root directory to store and retrieve files.  Files
+##'   will be added to the \code{contexts} subdirectory of this path.
+##'   This will change later to support alternative ways of saving
+##'   files, perhaps into a database instance.
+##'
 ##' @param packages A character vector of packages (or \code{NULL}) if
 ##'   no packages are to be loaded.
 ##'
@@ -29,22 +34,14 @@
 ##'   workspace, but at the risk that some environments may not
 ##'   restore exactly as desired.
 ##'
-##' @param root Root directory to store and retrieve files.  Files
-##'   will be added to the \code{contexts} subdirectory of this path.
-##'   This will change later to support alternative ways of saving
-##'   files.  The default puts files into the temp directory of
-##'   \emph{this} R instance; this directory will be deleted on
-##'   session exit so it not an appropriate place to store files for
-##'   later use.
-##'
 ##' @param handle A \code{context_handle} object returned by
 ##'   \code{context_save}.
 ##'
 ##' @export
 ##' @rdname context
-context_save <- function(packages=NULL, sources=NULL, auto=FALSE,
+context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
                          package_sources=NULL,
-                         envir=parent.frame(), root=tempdir()) {
+                         envir=parent.frame()) {
   setup_bootstrap(root)
   ret <- context_build(packages, sources, auto, package_sources, envir)
   id <- context_db(root)$set_by_value(ret, namespace="contexts")
