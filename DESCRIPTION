@@ -11,7 +11,7 @@ BugReports: https://github.com/dide-tools/context/issues
 Imports:
     curl,
     drat,
-    storr (>= 0.3.3)
+    storr (>= 0.5.1)
 Suggests:
     codetools,
     knitr,

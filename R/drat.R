@@ -91,7 +91,7 @@ package_sources <- function(cran=NULL, repos=NULL,
 build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
   path <- path_drat(root)
   db <- storr::storr(context_db(root)$driver,
-                     default_namespace="drat_timestamp", mangle_key=TRUE)
+                     default_namespace="drat_timestamp")
   drat_repo_init(path)
 
   build <- function(t, x) {
