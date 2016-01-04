@@ -10,7 +10,7 @@ setup_bootstrap <- function(root) {
   if (is.na(installed) || written < installed) {
     write_bootstrap(root)
     write_runner(root)
-    build_local_drat(setup_bootstrap_self_sources(), root)
+    build_local_drat(setup_bootstrap_self_sources(), path_drat(root))
     invisible(TRUE)
   } else if (written > installed) {
     ## This might get relaxed.

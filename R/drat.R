@@ -72,26 +72,18 @@ package_sources <- function(cran=NULL, repos=NULL,
 ##' Build a local ad-hoc drat from a set of package sources.  This
 ##' downloads the zipball from github, bitbucket, or locates it
 ##' locally, builds a \emph{source} package and adds it to an ad-hoc
-##' drat repository within \code{root}.  This is designed to be used
+##' drat repository within \code{path}.  This is designed to be used
 ##' within \code{install_packages} and \code{context_save}, but can be
 ##' called directly.
 ##'
 ##' @title Build local drat repository
 ##' @param sources A \code{\link{package_sources}} object
-##' @param root Root directory to store and retrieve files.  Files
-##'   will be added to the \code{contexts} subdirectory of this path.
-##'   This will change later to support alternative ways of saving
-##'   files.  The default puts files into the temp directory of
-##'   \emph{this} R instance; this directory will be deleted on
-##'   session exit so it not an appropriate place to store files for
-##'   later use.
+##' @param path Path to build the drat repository at
 ##' @param force Re-fetch all packages, even if they still look fresh.
 ##' @param quiet Quieten the download progress (which can be quite messy)
 ##' @export
-build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
-  path <- path_drat(root)
-  db <- storr::storr(context_db(root)$driver,
-                     default_namespace="drat_timestamp")
+build_local_drat <- function(sources, path, force=FALSE, quiet=TRUE) {
+  db <- storr::storr_rds(file.path(path, "timestamp"), mangle_key=TRUE)
   drat_repo_init(path)
 
   build <- function(t, x) {
@@ -118,7 +110,7 @@ build_local_drat <- function(sources, root, force=FALSE, quiet=TRUE) {
 
   ## This is needed outside.
   sources$local_drat <- path
-  sources
+  invisible(sources)
 }
 
 ## This comes from drat.builder, and is _largely_ compatible with devtools

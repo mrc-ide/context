@@ -14,3 +14,6 @@ path_bin <- function(root, script=NULL) {
 path_db <- function(root) {
   file.path(root, "db")
 }
+path_config <- function(root) {
+  file.path(root, "config")
+}

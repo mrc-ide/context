@@ -11,14 +11,16 @@ test_that("tasks", {
   expect_is(handle, "task_handle")
   expect_equal(nchar(handle$id), 32)
   expect_identical(handle$root, root)
+  expect_identical(handle$db, ctx$db)
 
   expect_null(task_read(handle)$objects)
 
-  expect_identical(task_status_read(handle), TASK_PENDING)
+  expect_identical(task_status(handle), TASK_PENDING)
 
   e <- new.env()
   dat <- task_load(handle, FALSE, e)
   expect_is(dat, "task")
+  expect_is(dat$db, "storr")
   ## OK, this is nasty.  If we have a local environment, like in this
   ## situation, then unserialising that environment is going to create
   ## a situation where our *globals* aren't in the right place.  Such
@@ -39,7 +41,7 @@ test_that("task_list", {
   expect_is(obj, "task_handle")
   expect_equal(length(obj), length(x))
 
-  expect_identical(task_status_read(obj),
+  expect_identical(task_status(obj),
                    rep(TASK_PENDING, length(x)))
 
   ## subsetting:
@@ -48,7 +50,7 @@ test_that("task_list", {
   expect_equal(el$id, obj$id[[1]])
   expect_identical(obj[1:2], obj)
 
-  tmp <- lapply(obj, task_read)
+  tmp <- lapply(seq_along(obj), function(i) task_read(obj[[i]]))
   ctx <- vcapply(tmp, "[[", "context_id")
   expect_identical(ctx[[1]], ctx[[2]])
 })
@@ -62,11 +64,11 @@ test_that("task_delete", {
   handle <- task_save(expr, ctx)
   expect_equal(tasks_list(root), handle$id)
 
-  expect_true(context_db(handle$root)$exists(handle$id, "tasks"))
+  expect_true(context_db(handle)$exists(handle$id, "tasks"))
   expect_true(task_delete(handle))
   expect_equal(tasks_list(root), character(0))
 
-  expect_false(context_db(handle$root)$exists(handle$id, "tasks"))
+  expect_false(context_db(handle)$exists(handle$id, "tasks"))
   expect_false(task_delete(handle))
 })
 

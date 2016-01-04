@@ -25,5 +25,5 @@ test_that("run", {
   i <- match("install", log$title)[[1]]
   expect_match(log$value[[i]], "context")
 
-  expect_equal(context_db(root)$get(handle$id, "task_results"), sin(1))
+  expect_equal(context_db(handle)$get(handle$id, "task_results"), sin(1))
 })

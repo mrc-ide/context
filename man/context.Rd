@@ -7,7 +7,8 @@
 \title{Save and reload contexts}
 \usage{
 context_save(root, packages = NULL, sources = NULL, auto = FALSE,
-  package_sources = NULL, envir = parent.frame())
+  package_sources = NULL, envir = parent.frame(), storage_type = NULL,
+  storage_args = NULL)
 
 context_load(handle, install = TRUE, envir = .GlobalEnv, ...)
 
@@ -37,6 +38,12 @@ is the environment into which the global environment is copied.
 Specify a non-global environment here to avoid clobbering the
 workspace, but at the risk that some environments may not
 restore exactly as desired.}
+
+\item{storage_type}{Optional storage type.  Currently only 'rds'
+storage is supported, so this is largely ignored.}
+
+\item{storage_args}{Arguments used to open storage driver
+(currently ignored).}
 
 \item{handle}{A \code{context_handle} object returned by
 \code{context_save}.}

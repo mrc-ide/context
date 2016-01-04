@@ -8,7 +8,10 @@ env_chain <- function(e, stop_at=list(.GlobalEnv, emptyenv())) {
 }
 
 cleanup <- function(root) {
-  context_db(root)$driver$destroy()
+  if (file.exists(path_config(root))) {
+    suppressWarnings(context_db(root))$driver$destroy()
+  }
+  unlink(root, recursive=TRUE)
   ## This prunes libPaths down to the set of files that exist, so with
   ## the above should do a reasonable job of trimming any additions
   ## because the actual directories will have been deleted.

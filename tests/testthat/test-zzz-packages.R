@@ -5,13 +5,13 @@ test_that("no special packages", {
   on.exit(cleanup(root))
 
   src <- package_sources()
-  build_local_drat(src, root=root)
+  build_local_drat(src, path_drat(root))
   expect_null(src$repos)
 })
 
 test_that("drat repos", {
   str <- "drat://OutbreakResources"
-  src <- package_sources(repos="drat://OutbreakResources")
+  src <- package_sources(repos=str)
   expect_equal(src$repos,
                setNames("https://OutbreakResources.github.io/drat/", str))
 
@@ -35,7 +35,7 @@ test_that("local drat creation", {
   expect_is(src$expire, "difftime")
 
   drat_src <- file.path(path_drat(root), "src", "contrib")
-  src <- build_local_drat(src, root=root, quiet=TRUE)
+  src <- build_local_drat(src, path_drat(root), quiet=TRUE)
 
   expect_true(file.exists(drat_src))
   pkgs <- read.dcf(file.path(drat_src, "PACKAGES"))

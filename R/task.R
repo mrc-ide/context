@@ -35,11 +35,12 @@ task_save_list <- function(list, context, envir=parent.frame()) {
   if (!is.list(list)) {
     stop("Expected a list")
   }
+  ## TODO: This should work equally well with contexts and context handles.
   if (!is.context_handle(context)) {
     stop("Invalid context")
   }
   root <- context$root
-  db <- context_db(root)
+  db <- context_db(context)
 
   if (!db$exists(context$id, namespace="contexts")) {
     stop(sprintf("Context %s does not exist", context$id))
@@ -57,7 +58,10 @@ task_save_list <- function(list, context, envir=parent.frame()) {
     dat$id
   }
 
-  task_handle(root, vcapply(list, f), FALSE)
+  ret <- task_handle(root, vcapply(list, f), FALSE)
+  ## Not 100% sure about this.
+  ret$db <- db
+  ret
 }
 
 ##' @rdname task
@@ -92,7 +96,7 @@ task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
   ##
   ## The enclos environment to eval won't help because it's ignored if
   ## the environment argument is an actual environment.
-  context <- context_handle(dat$context_id, handle$root)
+  context <- context_handle(handle$root, dat$context_id, context_db(handle))
   dat$envir_context <- context_load(context, install, envir)
 
   ## This approch has worked well for rrqueue, so keeping it going
@@ -108,7 +112,10 @@ task_read <- function(handle) {
   if (is.task(handle)) {
     handle
   } else if (is.task_handle(handle)) {
-    context_db(handle$root)$get(handle$id, namespace="tasks")
+    db <- context_db(handle)
+    ret <- db$get(handle$id, namespace="tasks")
+    ret$db <- db
+    ret
   } else {
     stop("handle must be a task or task_handle")
   }
@@ -126,8 +133,8 @@ tasks_list <- function(root) {
 ##' @param handle A task handle
 ##' @export
 task_result <- function(handle) {
-  db <- context_db(handle$root)
-  tryCatch(db$get(handle$id, "task_results"),
+  ## TODO: Why is this a hash error not a key error?
+  tryCatch(context_db(handle)$get(handle$id, "task_results"),
            HashError=function(e) stop("Task does not have results"))
 }
 
@@ -139,17 +146,21 @@ task_result <- function(handle) {
 ##'  \code{TRUE} then \code{task_handle} throws if creating a nonexistant task.
 ##' @export
 task_handle <- function(root, id, check_exists=TRUE) {
+  ## TODO: Consider:
+  ## if (is.context(root)) {
+  ##   root <- root$root
+  ## }
   if (!is.character(id)) {
     stop("id must be a character")
   }
+  ret <- structure(list(root=root, id=id), class="task_handle")
   if (check_exists) {
-    db <- context_db(root)
-    ok <- vlapply(id, db$exists, "tasks")
+    ok <- vlapply(id, context_db(ret)$exists, "tasks")
     if (!all(ok)) {
       stop("tasks do not exist: ", id[!ok])
     }
   }
-  structure(list(id=id, root=root), class="task_handle")
+  ret
 }
 
 ## Not yet exported:
@@ -189,7 +200,7 @@ print.task_handle <- function(x, ...) {
 ##' @param envir Environment to load global variables into.
 ##' @export
 task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
-  db <- context_db(handle$root)
+  db <- context_db(handle)
   context_log("root", handle$root)
   context_log("task", handle$id)
   dat <- task_load(handle, install, envir)
@@ -221,10 +232,10 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
 ##' @title Task status
 ##' @param handle Task handle
 ##' @export
-task_status_read <- function(handle) {
-  ## TODO: -> task_status
+task_status <- function(handle) {
+  ## TODO: rename -> task_status
   ## TODO: in storr, add a missing action wrapper here?
-  db <- context_db(handle$root)
+  db <- context_db(handle)
   f <- function(id) {
     tryCatch(db$get(id, "task_status"),
              KeyError=function(e) TASK_MISSING)
@@ -244,7 +255,7 @@ task_status_read <- function(handle) {
 ##' @export
 ##' @return \code{TRUE} if a task was actually deleted.
 task_delete <- function(handle) {
-  db <- context_db(handle$root)
+  db <- context_db(handle)
   f <- function(id) {
     ## NOTE: not short-circuiting 'OR' here because we want 'OR' of
     ## the results but still to run all three commands.

@@ -4,18 +4,12 @@
 \alias{build_local_drat}
 \title{Build local drat repository}
 \usage{
-build_local_drat(sources, root, force = FALSE, quiet = TRUE)
+build_local_drat(sources, path, force = FALSE, quiet = TRUE)
 }
 \arguments{
 \item{sources}{A \code{\link{package_sources}} object}
 
-\item{root}{Root directory to store and retrieve files.  Files
-will be added to the \code{contexts} subdirectory of this path.
-This will change later to support alternative ways of saving
-files.  The default puts files into the temp directory of
-\emph{this} R instance; this directory will be deleted on
-session exit so it not an appropriate place to store files for
-later use.}
+\item{path}{Path to build the drat repository at}
 
 \item{force}{Re-fetch all packages, even if they still look fresh.}
 
@@ -25,7 +19,7 @@ later use.}
 Build a local ad-hoc drat from a set of package sources.  This
 downloads the zipball from github, bitbucket, or locates it
 locally, builds a \emph{source} package and adds it to an ad-hoc
-drat repository within \code{root}.  This is designed to be used
+drat repository within \code{path}.  This is designed to be used
 within \code{install_packages} and \code{context_save}, but can be
 called directly.
 }

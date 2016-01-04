@@ -34,19 +34,26 @@
 ##'   workspace, but at the risk that some environments may not
 ##'   restore exactly as desired.
 ##'
+##' @param storage_type Optional storage type.  Currently only 'rds'
+##'   storage is supported, so this is largely ignored.
+##'
+##' @param storage_args Arguments used to open storage driver
+##'   (currently ignored).
+##'
 ##' @param handle A \code{context_handle} object returned by
 ##'   \code{context_save}.
 ##'
 ##' @export
 ##' @rdname context
 context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
-                         package_sources=NULL,
-                         envir=parent.frame()) {
+                         package_sources=NULL, envir=parent.frame(),
+                         storage_type=NULL, storage_args=NULL) {
   setup_bootstrap(root)
+  db <- setup_context(root, storage_type, storage_args)
   ret <- context_build(packages, sources, auto, package_sources, envir)
-  id <- context_db(root)$set_by_value(ret, namespace="contexts")
-  build_local_drat(package_sources, root)
-  context_handle(id, root)
+  id <- db$set_by_value(ret, namespace="contexts", use_cache=FALSE)
+  build_local_drat(package_sources, path_drat(root))
+  context_handle(root, id, db)
 }
 
 context_build <- function(packages, sources, auto, package_sources, envir) {
@@ -110,6 +117,8 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   context_log("context", handle$id)
   obj <- context_read(handle)
 
+  ## NOTE: This is not scoped.  That's probably not a problem because
+  ## the package loading is not scoped either.
   use_local_library(path_library(handle$root))
   if (install) {
     install_packages_missing(c(obj$packages$attached, obj$packages$loaded),
@@ -145,7 +154,7 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
 ##' @export
 ##' @rdname context
 context_read <- function(handle) {
-  ret <- context_db(handle$root)$get(handle$id, namespace="contexts")
+  ret <- context_db(handle)$get(handle$id, namespace="contexts")
   ## TODO: same treatment as task_read where task_read(task) -> task
   ##
   ## We'll take responsibility here for setting up the local drat
@@ -161,7 +170,7 @@ context_read <- function(handle) {
   ret
 }
 
-context_list <- function(root) {
+contexts_list <- function(root) {
   context_db(root)$list(namespace="contexts")
 }
 
@@ -192,8 +201,8 @@ is.context <- function(x) {
   inherits(x, "context")
 }
 
-context_handle <- function(id, root) {
-  structure(list(id=id, root=root), class="context_handle")
+context_handle <- function(root, id, db=NULL) {
+  structure(list(root=root, id=id, db=db), class="context_handle")
 }
 is.context_handle <- function(x) {
   inherits(x, "context_handle")
@@ -208,10 +217,6 @@ print.context <- function(x, ...) {
   print_ad_hoc(x)
 }
 
-context_exists <- function(id, root) {
-  context_db(root)$exists(id, namespace="contexts")
-}
-
 use_local_library <- function(lib) {
   context_log("lib", lib)
   dir.create(lib, FALSE, TRUE)
@@ -219,4 +224,24 @@ use_local_library <- function(lib) {
   ## nuke all but the system libraries.
   .libPaths(union(lib, .libPaths()))
   invisible(lib)
+}
+
+setup_context <- function(root, type, args) {
+  f_config <- path_config(root)
+  if (file.exists(f_config)) {
+    config <- readRDS(f_config)
+    if (!is.null(type) && !identical(type, config$type)) {
+      stop(sprintf("Incompatible storage types: requested %s, stored: %s",
+                   type, config$type))
+    }
+    context_db_open(root, config)
+  } else {
+    if (is.null(type)) {
+      type <- "rds"
+    }
+    config <- list(type=type, args=args)
+    saveRDS(config, f_config)
+    withCallingHandlers(context_db_open(root, config),
+                        error=function(e) file.remove(f_config))
+  }
 }

@@ -15,8 +15,9 @@ test_that("simplest case", {
   expect_is(handle$id, "character")
   expect_equal(nchar(handle$id), 32)
   expect_identical(handle$root, root)
+  expect_is(handle$db, "storr")
 
-  db <- context_db(root)
+  db <- context_db(handle)
   expect_true(db$exists(handle$id, "contexts"))
   ## TODO: should be in storr
   expect_true(db$driver$exists_hash(handle$id))
@@ -24,6 +25,7 @@ test_that("simplest case", {
   e <- new.env()
   res <- context_load(handle, envir=e)
   expect_identical(names(e), character(0))
+  expect_false(identical(res, environment()))
   expect_identical(names(res), "root")
 
   obj <- context_read(handle)
@@ -36,7 +38,7 @@ test_that("auto", {
   on.exit(cleanup(root))
 
   handle <- context_save(root=root, auto=TRUE)
-  db <- context_db(root)
+  db <- context_db(handle)
   expect_true(db$exists(handle$id, "contexts"))
   expect_true(db$driver$exists_hash(handle$id))
 
@@ -110,4 +112,15 @@ test_that("globals", {
 
   ctx <- context_save(auto=TRUE, root=path)
   expect_equal(context_read(ctx)$global, dat)
+})
+
+test_that("storage type", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+  expect_error(context_save(root=root, storage_type="redis"),
+               "Unsupported storage type")
+  expect_false(file.exists(path_config(root)))
+  handle <- context_save(root=root, storage_type="rds")
+  expect_error(context_save(root=root, storage_type="redis"),
+               "Incompatible storage types")
 })
