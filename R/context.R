@@ -234,14 +234,14 @@ setup_context <- function(root, type, args) {
       stop(sprintf("Incompatible storage types: requested %s, stored: %s",
                    type, config$type))
     }
-    context_db_open(root, config)
+    context_db_open(root, config, FALSE)
   } else {
     if (is.null(type)) {
       type <- "rds"
     }
     config <- list(type=type, args=args)
     saveRDS(config, f_config)
-    withCallingHandlers(context_db_open(root, config),
+    withCallingHandlers(context_db_open(root, config, TRUE),
                         error=function(e) file.remove(f_config))
   }
 }

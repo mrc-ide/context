@@ -48,20 +48,14 @@ task_save_list <- function(list, context, envir=parent.frame()) {
 
   f <- function(x) {
     dat <- store_expression(x, envir)
-    ## Add some extra things:
     dat$context_id <- context$id
-    dat$root <- root
-    class(dat) <- "task"
-
     db$set(dat$id, dat, namespace="tasks")
     db$set(dat$id, TASK_PENDING, namespace="task_status")
     db$set(dat$id, Sys.time(), namespace="task_time_sub")
     dat$id
   }
 
-  ret <- task_handle(root, vcapply(list, f), FALSE)
-  ret$db <- db
-  ret
+  task_handle(context, vcapply(list, f), FALSE)
 }
 
 ##' @rdname task

@@ -147,3 +147,13 @@ test_that("context_db", {
   expect_error(ok(context_db(c(ctx$root, ctx$root))), "Invalid input")
   expect_error(ok(context_db(1L)), "Invalid input")
 })
+
+test_that("environment backed context", {
+  ctx <- context_save(tempfile(), storage_type="environment")
+  db <- context_db(ctx)
+  expect_is(db, "storr")
+  expect_equal(db$driver$type(), "environment")
+  expect_is(context_handle(ctx$root, ctx$id, db), "context_handle")
+  expect_error(context_db(context_handle(ctx$root, ctx$id)),
+               "Cannot reconnect to environment storage")
+})

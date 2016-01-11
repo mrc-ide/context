@@ -32,18 +32,22 @@ context_db <- function(x) {
   } else if (is.recursive(x) && inherits(x$db, "storr")) {
     x$db
   } else {
+    ## NOTE: This will give a cryptic error if config not found...
     if (is.recursive(x)) {
       x <- x$root
     }
     if (!is.character(x) || length(x) != 1L) {
       stop("Invalid input; cannot determine context root")
     }
-    context_db_open(x, readRDS(path_config(x)))
+    context_db_open(x, readRDS(path_config(x)), FALSE)
   }
 }
 
-context_db_open <- function(root, config) {
+context_db_open <- function(root, config, create) {
+  ## NOTE: config$args is ignored at the moment...
   switch(config$type,
+         environment=if (create) storr::storr_environment()
+                     else stop("Cannot reconnect to environment storage"),
          rds=storr::storr_rds(path_db(root), compress=FALSE, mangle_key=TRUE),
          ## This is actually a little more difficult than this because
          ## we need to add any required packages (e.g., redux) to the
