@@ -179,3 +179,18 @@ write_script <- function(text, dest) {
 invert_names <- function(x) {
   setNames(names(x), x)
 }
+
+capture_log <- function(expr, filename) {
+  if (!is.null(filename)) {
+    dir.create(dirname(filename), showWarnings=FALSE, recursive=TRUE)
+    con <- file(filename, open="w")
+    sink(con, type="message") # Dangerous!
+    sink(con, type="output")
+    on.exit({
+      sink(NULL, type="message")
+      sink(NULL, type="output")
+      close(con)
+    })
+  }
+  eval(expr, parent.frame())
+}

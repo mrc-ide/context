@@ -110,7 +110,7 @@ task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
 ##' @export
 task_read <- function(handle) {
   if (is.task(handle)) {
-    handle
+    ret <- handle
   } else if (is.task_handle(handle)) {
     db <- context_db(handle)
     ret <- db$get(handle$id, namespace="tasks")
@@ -119,6 +119,7 @@ task_read <- function(handle) {
   } else {
     stop("handle must be a task or task_handle")
   }
+  ret
 }
 
 ##' @rdname task
@@ -205,8 +206,20 @@ print.task_handle <- function(x, ...) {
 ##' @param handle Task handle
 ##' @param install Install packages when constructing context?
 ##' @param envir Environment to load global variables into.
+##'
+##' @param filename Filename to log \emph{all} output to.  This will
+##'   sink the message stream as well as the output stream, so if
+##'   specified (i.e., is non-NULL) then this function will apparently
+##'   print no output to the console, which will make debugging more
+##'   difficult when run interactively.  However, when run
+##'   non-interactively, especially on remote servers, this will allow
+##'   collection of diagnostics that facilitate debugging.
+##'
 ##' @export
-task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
+task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL) {
+  if (!is.null(filename)) {
+    return(capture_log(task_run(handle, install, envir, NULL), filename))
+  }
   db <- context_db(handle)
   context_log("root", handle$root)
   context_log("task", handle$id)

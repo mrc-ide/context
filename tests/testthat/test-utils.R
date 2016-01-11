@@ -20,3 +20,26 @@ test_that("install.packages2", {
   expect_error(suppressWarnings(install.packages2("asdfa", repos=repos)),
                "is not available")
 })
+
+test_that("capture_log", {
+  filename <- tempfile()
+  expect_message(capture_log(message("foo"), NULL), "foo")
+
+  capture_log(message("foo"), filename)
+  expect_true(file.exists(filename))
+  ## This is because of test_that's message muffling; that's
+  ## notoriously version dependent unfortunately.
+  ##   expect_identical(readLines(filename), "foo")
+  ## In comparison see
+  ##   local({
+  ##     filename <- tempfile()
+  ##     capture_log(message("foo"), filename)
+  ##     readLines(filename)
+  ##   })
+  f <- function() {
+    cat("foo\n")
+    1
+  }
+  expect_equal(capture_log(f(), filename), 1)
+  expect_identical(readLines(filename), "foo")
+})

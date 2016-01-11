@@ -4,7 +4,7 @@
 \alias{task_run}
 \title{Run a task}
 \usage{
-task_run(handle, install = FALSE, envir = .GlobalEnv)
+task_run(handle, install = FALSE, envir = .GlobalEnv, filename = NULL)
 }
 \arguments{
 \item{handle}{Task handle}
@@ -12,6 +12,14 @@ task_run(handle, install = FALSE, envir = .GlobalEnv)
 \item{install}{Install packages when constructing context?}
 
 \item{envir}{Environment to load global variables into.}
+
+\item{filename}{Filename to log \emph{all} output to.  This will
+sink the message stream as well as the output stream, so if
+specified (i.e., is non-NULL) then this function will apparently
+print no output to the console, which will make debugging more
+difficult when run interactively.  However, when run
+non-interactively, especially on remote servers, this will allow
+collection of diagnostics that facilitate debugging.}
 }
 \description{
 Run a task
