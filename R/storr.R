@@ -44,7 +44,7 @@ context_db <- function(x) {
 
 context_db_open <- function(root, config) {
   switch(config$type,
-         rds=storr::storr_rds(path_db(root)),
+         rds=storr::storr_rds(path_db(root), compress=FALSE, mangle_key=TRUE),
          ## This is actually a little more difficult than this because
          ## we need to add any required packages (e.g., redux) to the
          ## bootstrap script.  That's also going to generate some
