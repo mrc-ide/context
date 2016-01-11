@@ -124,3 +124,26 @@ test_that("storage type", {
   expect_error(context_save(root=root, storage_type="redis"),
                "Incompatible storage types")
 })
+
+test_that("context_db", {
+  ctx <- context_save(tempfile())
+  db <- ctx$db
+  db$set_by_value(runif(10))
+  ok <- function(x) {
+    inherits(x, "storr") &&
+      x$driver$type() == "rds" &&
+      identical(x$driver$path, db$driver$path) &&
+      identical(x$list_hashes(), db$list_hashes()) &&
+      identical(x$list(), db$list())
+  }
+
+  expect_true(ok(context_db(ctx)))
+  expect_true(ok(context_db(ctx$root)))
+  expect_true(ok(context_db(ctx$db)))
+  expect_true(ok(context_db(list(root=ctx$root, db=ctx$db))))
+  expect_true(ok(context_db(list(root=ctx$root))))
+  expect_true(ok(context_db(list(db=ctx$db))))
+  expect_error(ok(context_db(character(0))), "Invalid input")
+  expect_error(ok(context_db(c(ctx$root, ctx$root))), "Invalid input")
+  expect_error(ok(context_db(1L)), "Invalid input")
+})

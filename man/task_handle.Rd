@@ -7,12 +7,15 @@
 task_handle(root, id, check_exists = TRUE)
 }
 \arguments{
-\item{root}{Context root}
+\item{root}{Context root (or a context, or anything context can
+internally wrangle into its database format; see
+\code{\link{context_db}}).}
 
 \item{id}{Task identifier}
 
-\item{check_exists}{Check that the task exists as the handle is created?  If
-\code{TRUE} then \code{task_handle} throws if creating a nonexistant task.}
+\item{check_exists}{Check that the task exists as the handle is
+created?  If \code{TRUE} then \code{task_handle} throws if
+creating a nonexistant task.}
 }
 \description{
 Create a handle to a task

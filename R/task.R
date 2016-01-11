@@ -140,22 +140,29 @@ task_result <- function(handle) {
 
 ##' Create a handle to a task
 ##' @title Create task handle
-##' @param root Context root
+##'
+##' @param root Context root (or a context, or anything context can
+##'   internally wrangle into its database format; see
+##'   \code{\link{context_db}}).
+##'
 ##' @param id Task identifier
-##' @param check_exists Check that the task exists as the handle is created?  If
-##'  \code{TRUE} then \code{task_handle} throws if creating a nonexistant task.
+##'
+##' @param check_exists Check that the task exists as the handle is
+##'   created?  If \code{TRUE} then \code{task_handle} throws if
+##'   creating a nonexistant task.
 ##' @export
 task_handle <- function(root, id, check_exists=TRUE) {
-  ## TODO: Consider:
-  ## if (is.context(root)) {
-  ##   root <- root$root
-  ## }
+  ## I don't think this one needs to care where root is if it can get
+  ## the db.  Consider entirely dropping the root in favour of
+  ## _always_ including the db.
   if (!is.character(id)) {
     stop("id must be a character")
   }
-  ret <- structure(list(root=root, id=id), class="task_handle")
+  db <- context_db(root)
+  root <- if (is.recursive(root)) root$root else root
+  ret <- structure(list(root=root, id=id, db=db), class="task_handle")
   if (check_exists) {
-    ok <- vlapply(id, context_db(ret)$exists, "tasks")
+    ok <- vlapply(id, db$exists, "tasks")
     if (!all(ok)) {
       stop("tasks do not exist: ", id[!ok])
     }
