@@ -29,19 +29,19 @@ setup_bootstrap_self_sources <- function() {
   context <- Sys.getenv("CONTEXT_SOURCE_PATH")
   storr <- Sys.getenv("STORR_SOURCE_PATH")
 
-  github <- local <- NULL
+  repos <- local <- NULL
   if (context == "") {
-    github <- c(github, "dide-tools/context@master")
+    repos <- "drat://richfitz"
   } else {
     local <- c(local, context)
   }
   if (storr == "") {
-    github <- c(github, "richfitz/storr@master")
+    repos <- "drat://richfitz"
   } else {
     local <- c(local, storr)
   }
 
-  package_sources(github=github, local=local)
+  package_sources(repos=repos, local=local)
 }
 
 read_version <- function(root) {
