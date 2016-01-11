@@ -100,9 +100,31 @@ test_that("task_run", {
   y <- 2
   expr <- quote(list(x, y))
   ctx <- context_save(auto=TRUE, root=root)
+  db <- context_db(ctx)
+
+  expect_equal(db$list("task_time_sub"), character(0))
+  expect_equal(db$list("task_time_beg"), character(0))
+  expect_equal(db$list("task_time_end"), character(0))
+
   handle <- task_save(expr, ctx)
+
+  expect_equal(db$list("task_time_sub"), handle$id)
+  expect_equal(db$list("task_time_beg"), character(0))
+  expect_equal(db$list("task_time_end"), character(0))
 
   e <- new.env(parent=environment())
   res <- task_run(handle, envir=e)
   expect_identical(res, list(x, y))
+
+  expect_equal(db$list("task_time_sub"), handle$id)
+  expect_equal(db$list("task_time_beg"), handle$id)
+  expect_equal(db$list("task_time_end"), handle$id)
+
+  t_sub <- db$get(handle$id, "task_time_sub")
+  t_beg <- db$get(handle$id, "task_time_beg")
+  t_end <- db$get(handle$id, "task_time_end")
+
+  expect_is(t_sub, "POSIXt")
+  expect_true(t_beg >= t_sub)
+  expect_true(t_end >= t_beg)
 })

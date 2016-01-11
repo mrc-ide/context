@@ -55,11 +55,11 @@ task_save_list <- function(list, context, envir=parent.frame()) {
 
     db$set(dat$id, dat, namespace="tasks")
     db$set(dat$id, TASK_PENDING, namespace="task_status")
+    db$set(dat$id, Sys.time(), namespace="task_time_sub")
     dat$id
   }
 
   ret <- task_handle(root, vcapply(list, f), FALSE)
-  ## Not 100% sure about this.
   ret$db <- db
   ret
 }
@@ -214,6 +214,7 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
   context_log("expr", capture.output(print(dat$expr)))
   context_log("start", Sys_time())
   db$set(handle$id, TASK_RUNNING, "task_status")
+  db$set(handle$id, Sys.time(), "task_time_beg")
 
   value <- try(eval(dat$expr, dat$envir))
   err <- is_error(value)
@@ -221,6 +222,7 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv) {
   db$set(handle$id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
   db$set(handle$id, value, "task_results")
 
+  db$set(handle$id, Sys.time(), "task_time_end")
   context_log("end", Sys_time())
   invisible(value)
 }
