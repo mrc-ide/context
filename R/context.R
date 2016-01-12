@@ -170,6 +170,8 @@ context_read <- function(handle) {
   ret
 }
 
+##' @export
+##' @rdname context
 contexts_list <- function(root) {
   context_db(root)$list(namespace="contexts")
 }
@@ -201,9 +203,14 @@ is.context <- function(x) {
   inherits(x, "context")
 }
 
+##' @export
+##' @rdname context
+##' @param db The context db (used internally, and not intended for
+##'   end-user use)
 context_handle <- function(root, id, db=NULL) {
   structure(list(root=root, id=id, db=db), class="context_handle")
 }
+
 is.context_handle <- function(x) {
   inherits(x, "context_handle")
 }
