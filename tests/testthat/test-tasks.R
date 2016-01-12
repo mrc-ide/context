@@ -43,6 +43,9 @@ test_that("task_list", {
 
   expect_identical(task_status(obj),
                    rep(TASK_PENDING, length(x)))
+  expect_identical(task_status(obj, TRUE),
+                   setNames(rep(TASK_PENDING, length(x)),
+                            obj$id))
 
   ## subsetting:
   el <- obj[[1]]

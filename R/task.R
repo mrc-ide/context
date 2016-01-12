@@ -247,8 +247,9 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL) {
 ##' Task status
 ##' @title Task status
 ##' @param handle Task handle
+##' @param named Name the output with the task ids?
 ##' @export
-task_status <- function(handle) {
+task_status <- function(handle, named=FALSE) {
   ## TODO: rename -> task_status
   ## TODO: in storr, add a missing action wrapper here?
   db <- context_db(handle)
@@ -256,7 +257,7 @@ task_status <- function(handle) {
     tryCatch(db$get(id, "task_status"),
              KeyError=function(e) TASK_MISSING)
   }
-  vcapply(handle$id, f, USE.NAMES=FALSE)
+  vcapply(handle$id, f, USE.NAMES=named)
 }
 
 ## TODO: decide if this triggers gc.  In general this is a dangerous

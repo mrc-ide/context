@@ -4,10 +4,12 @@
 \alias{task_status}
 \title{Task status}
 \usage{
-task_status(handle)
+task_status(handle, named = FALSE)
 }
 \arguments{
 \item{handle}{Task handle}
+
+\item{named}{Name the output with the task ids?}
 }
 \description{
 Task status
