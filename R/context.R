@@ -170,7 +170,9 @@ context_read <- function(handle) {
   ## Because the final drat link needs to be an absolute path, this
   ## means that wherever the context is read will get the correct
   ## local path.
-  ret$package_sources$local_drat <- path_drat(handle$root)
+  if (!is.null(package_sources$local_drat)) {
+    ret$package_sources$local_drat <- path_drat(handle$root)
+  }
   ret
 }
 
