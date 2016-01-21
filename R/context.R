@@ -111,11 +111,15 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
 ##'
 ##' @export
 context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
-  if (!is.context_handle(handle)) {
+  if (!is.context_handle(handle) || is.context(handle)) {
     stop("handle must be a context_handle")
   }
   context_log("context", handle$id)
-  obj <- context_read(handle)
+  if (is.context_handle(handle)) {
+    obj <- context_read(handle)
+  } else {
+    obj <- handle
+  }
 
   ## NOTE: This is not scoped.  That's probably not a problem because
   ## the package loading is not scoped either.
