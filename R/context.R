@@ -97,6 +97,7 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
     stop("Expected a package_sources object (or NULL)")
   }
 
+  ret$package_sources <- package_sources
   ret$local <- if (is.GlobalEnv(envir)) NULL else envir
   ret$auto <- auto
   class(ret) <- "context"
@@ -170,7 +171,7 @@ context_read <- function(handle) {
   ## Because the final drat link needs to be an absolute path, this
   ## means that wherever the context is read will get the correct
   ## local path.
-  if (!is.null(package_sources$local_drat)) {
+  if (!is.null(ret$package_sources$local_drat)) {
     ret$package_sources$local_drat <- path_drat(handle$root)
   }
   ret
