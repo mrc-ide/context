@@ -27,18 +27,12 @@ setup_bootstrap_self_sources <- function() {
   ##
   ## storr will go on CRAN and then this simplifies.
   context <- Sys.getenv("CONTEXT_SOURCE_PATH")
-  storr <- Sys.getenv("STORR_SOURCE_PATH")
 
   repos <- local <- NULL
   if (context == "") {
     repos <- "drat://richfitz"
   } else {
     local <- c(local, context)
-  }
-  if (storr == "") {
-    repos <- "drat://richfitz"
-  } else {
-    local <- c(local, storr)
   }
 
   package_sources(repos=repos, local=local)
@@ -94,9 +88,18 @@ write_bootstrap <- function(root) {
     }
     context_log("install", "context")
     path_local_drat <- path_drat(root)
+    ## NOTE: This line is needed to get context installed.  When
+    ## context is on CRAN it could possibly be omitted.
+    context_local <- length(dir(file.path(path_local_drat, "src/contrib"),
+                                "^context_.*\\.tar\\.gz") > 0L)
+    if (context_local) {
+      context_drat_url <- file_url(path_local_drat)
+      drat_add_empty_bin(path_local_drat)
+    } else {
+      context_drat_url <- "https://richfitz.github.io/drat/"
+    }
     repos <- c(CRAN="http://cran.rstudio.com",
-               local_drat=file_url(path_local_drat))
-    drat_add_empty_bin(path_local_drat)
+               context=context_drat_url)
     install.packages2("context", lib=lib, repos=repos)
     context_log("done", "")
   }
