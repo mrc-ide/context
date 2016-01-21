@@ -20,7 +20,7 @@ test_that("simplest case", {
   db <- context_db(handle)
   expect_true(db$exists(handle$id, "contexts"))
   ## TODO: should be in storr
-  expect_true(db$driver$exists_hash(handle$id))
+  expect_true(db$driver$exists_object(handle$id))
 
   e <- new.env()
   res <- context_load(handle, envir=e)
@@ -40,7 +40,7 @@ test_that("auto", {
   handle <- context_save(root=root, auto=TRUE)
   db <- context_db(handle)
   expect_true(db$exists(handle$id, "contexts"))
-  expect_true(db$driver$exists_hash(handle$id))
+  expect_true(db$driver$exists_object(handle$id))
 
   obj <- context_read(handle)
   expect_is(obj$local, "environment")

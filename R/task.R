@@ -97,6 +97,8 @@ task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
   ## here.  Based on rrqueue:::task_expr(), which might be worth
   ## pulling out more cleanly for testing?
   dat$envir <- restore_locals(dat, dat$envir_context)
+
+  class(dat) <- "task"
   dat
 }
 
