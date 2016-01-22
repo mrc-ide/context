@@ -77,12 +77,18 @@ package_sources <- function(cran=NULL, repos=NULL,
 ##' called directly.
 ##'
 ##' @title Build local drat repository
-##' @param sources A \code{\link{package_sources}} object
+##' @param package_sources A \code{\link{package_sources}} object
 ##' @param path Path to build the drat repository at
 ##' @param force Re-fetch all packages, even if they still look fresh.
-##' @param quiet Quieten the download progress (which can be quite messy)
+##' @param quiet Quieten the download progress (which can be quite
+##'   messy)
+##' @return The \code{package_sources} object with the
+##'   \code{local_drat} element set to the path of the local drat.
+##'   This is suitable for passing into \code{\link{install_packages}}
+##'   as it will set the drat appropriately.  If no drat repository
+##'   was created this element will be \code{NULL}.
 ##' @export
-build_local_drat <- function(sources, path, force=FALSE, quiet=TRUE) {
+build_local_drat <- function(package_sources, path, force=FALSE, quiet=TRUE) {
   db <- storr::storr_rds(file.path(path, "timestamp"), mangle_key=TRUE)
   drat_repo_init(path)
 
@@ -95,10 +101,11 @@ build_local_drat <- function(sources, path, force=FALSE, quiet=TRUE) {
 
   now <- Sys.time()
   for (t in c("github", "bitbucket", "local")) {
-    src <- sources[[t]]
+    src <- package_sources[[t]]
     for (i in seq_along(src)) {
       key <- names(src)[[i]]
-      ok <- !force && db$exists(key) && db$get(key) - now < sources$expire
+      ok <- !force && db$exists(key) &&
+        db$get(key) - now < package_sources$expire
       if (!ok) {
         pkg <- build(t, src[[i]])
         drat::insertPackage(pkg, path, commit=FALSE)
@@ -113,11 +120,11 @@ build_local_drat <- function(sources, path, force=FALSE, quiet=TRUE) {
   ## to build an empty PACKAGES file (tools::write_PACKAGES) or to
   ## declare there is no local drat.
   if (file.exists(file.path(path, "src", "contrib", "PACKAGES"))) {
-    sources$local_drat <- path
+    package_sources$local_drat <- path
   } else {
-    sources <- NULL
+    package_sources$local_drat <- NULL
   }
-  invisible(sources)
+  invisible(package_sources)
 }
 
 ## This comes from drat.builder, and is _largely_ compatible with devtools

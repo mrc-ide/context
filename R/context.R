@@ -51,8 +51,13 @@ context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
   setup_bootstrap(root)
   db <- setup_context(root, storage_type, storage_args)
   ret <- context_build(packages, sources, auto, package_sources, envir)
+  ## NOTE: This is going to give us an _absolute_ path, which we will
+  ## tend to rewrite.  It's not enough to assume that we can say
+  ## TRUE/FALSE here because install_packages does not know about the
+  ## context root.
+  ret$package_sources <-
+    build_local_drat(package_sources, path_drat(root))
   id <- db$set_by_value(ret, namespace="contexts", use_cache=FALSE)
-  build_local_drat(package_sources, path_drat(root))
   context_handle(root, id, db)
 }
 
