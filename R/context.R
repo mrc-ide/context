@@ -217,6 +217,7 @@ is.context <- function(x) {
 
 ##' @export
 ##' @rdname context
+##' @param id The context id
 ##' @param db The context db (used internally, and not intended for
 ##'   end-user use)
 context_handle <- function(root, id, db=NULL) {

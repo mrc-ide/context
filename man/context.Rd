@@ -59,6 +59,8 @@ storage is supported, so this is largely ignored.}
 \item{...}{Additional arguments passed through to
 \code{install_packages} if it is used.}
 
+\item{id}{The context id}
+
 \item{db}{The context db (used internally, and not intended for
 end-user use)}
 }
