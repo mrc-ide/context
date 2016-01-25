@@ -7,6 +7,10 @@ test_that("local drat", {
   root <- tempfile("context_")
   Sys.setenv(R_TESTS="")
 
+  if (!nzchar(Sys.getenv("CONTEXT_SOURCE_PATH", ""))) {
+    skip("Not using local drat for context")
+  }
+
   ## Building packages for local sources takes ~0.8s which is
   ## terrible.  I'd love to know how to make that faster.
   sources <- setup_bootstrap_self_sources()
