@@ -53,8 +53,10 @@ install_packages <- function(packages, sources=package_sources(),
     r <- c(r, "local_drat"=file_url(sources$local_drat))
   }
   context_log("install", paste(packages, collapse=", "))
+  lib <- .libPaths()[[1]]
+  ## TODO: use seagull here for the locking, I think.
   if (lock_wait) {
-    lockfile <- file.path(.libPaths()[[1]], ".lock_context")
+    lockfile <- file.path(lib, ".lock_context")
     do_install <- lock(lockfile)
     if (do_install) {
       on.exit(file.remove(lockfile))
@@ -63,7 +65,7 @@ install_packages <- function(packages, sources=package_sources(),
     }
   }
   if (do_install) {
-    install.packages2(packages, repos=r, ..., error=error)
+    install.packages2(packages, repos=r, ..., lib=lib, error=error)
   }
   invisible()
 }

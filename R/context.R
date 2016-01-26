@@ -55,8 +55,7 @@ context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
   ## tend to rewrite.  It's not enough to assume that we can say
   ## TRUE/FALSE here because install_packages does not know about the
   ## context root.
-  ret$package_sources <-
-    build_local_drat(package_sources, path_drat(root))
+  ret$package_sources <- build_local_drat(ret$package_sources, path_drat(root))
   id <- db$set_by_value(ret, namespace="contexts", use_cache=FALSE)
   context_handle(root, id, db)
 }
