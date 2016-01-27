@@ -9,12 +9,6 @@
 ##' \code{install.packages}, these function will throw an error if
 ##' package installation fails (unless error=FALSE is set).
 ##'
-##' @section Warning:
-##'
-##' Because of the possibility of confusion with
-##'   \code{\link{install.packages}}, this function may be renamed
-##'   shortly.
-##'
 ##' @title Install packages
 ##' @param packages A character vector of packages to install
 ##'
@@ -22,21 +16,29 @@
 ##'   \code{\link{package_sources}}.
 ##'
 ##' @param ... Additional arguments passed through to
-##'   \code{\link{install.packages}}.
+##'   \code{\link{install.packages}} (or for
+##'   \code{install_packages_missing}, to \code{install_packages}).
 ##'
 ##' @param error Throw an error if package installation fails.
 ##'
-##' @param lock_wait Lock the directory while installing, or wait for
-##'   a second installation to complete.  In contrast with
-##'   \code{\link{install.packages}}, the lock is always library-wide.
-##'   Catastrophoic failure (e.g., out of memory error during package
-##'   installation) could leave a lockfile present.  In that case,
-##'   delete the file \code{.lock_context} from the first entry in
-##'   \code{.libPaths()}.
+##' @param move_in_place Attempt to do the right thing during parallel
+##'   installations that affect the same packages.  When \code{TRUE},
+##'   installation happens into a temporary directory and then files
+##'   are copied into place.  This means that if multiple processes
+##'   are installing the same packages they should not get into a
+##'   tangle; they'll both install and compile everything (which is
+##'   much simpler than trying to negotiate lockfiles and waiting
+##'   periods) but the processes will not get into trouble where one
+##'   is disallowed from removing the packages used by another.  If
+##'   installation fails catastrophically this may leave some files in
+##'   \code{.libPaths()[[1]]} beginning \code{CONTEXT_TMP_LIBRARY_};
+##'   these can be safely removed.
 ##'
 ##' @export
 install_packages <- function(packages, sources=package_sources(),
-                             ..., error=TRUE, lock_wait=TRUE) {
+                             lib=NULL, ..., error=TRUE,
+                             move_in_place=FALSE) {
+  ## TODO: sources -> package_sources?
   if (length(packages) == 0L) {
     return()
   }
@@ -48,73 +50,57 @@ install_packages <- function(packages, sources=package_sources(),
   if (!is.null(sources$repos)) {
     r <- c(r, sources$repos)
   }
+  ## TODO: The dealing with local_drat here is broken; it does not
+  ## come out of package_sources() correctly (i.e., is not set).  This
+  ## is because the context_read sets the sources generally and this
+  ## function does not know about that.
+  ##
+  ## The resolution needs to be that this function should not take
+  ## sources but instead take arguments 'cran' and 'repos'.
   if (!is.null(sources$local_drat)) {
     drat_add_empty_bin(sources$local_drat)
     r <- c(r, "local_drat"=file_url(sources$local_drat))
   }
   context_log("install", paste(packages, collapse=", "))
+
   lib <- .libPaths()[[1]]
-  ## TODO: use seagull here for the locking, I think.
-  if (lock_wait) {
-    lockfile <- file.path(lib, ".lock_context")
-    do_install <- lock(lockfile)
-    if (do_install) {
-      on.exit(file.remove(lockfile))
-    } else {
-      lock_wait(lockfile, packages)
+
+  if (move_in_place) {
+    lib_real <- lib
+    lib <- tempfile(tmpdir=lib_real, pattern="CONTEXT_TMP_LIBRARY_")
+    dir.create(lib, FALSE)
+    on.exit(unlink(lib, recursive=TRUE))
+    context_log("tmplib", lib_real)
+  }
+
+  install.packages2(packages, repos=r, ..., lib=lib, error=error)
+
+  if (move_in_place) {
+    installed <- dir(lib)
+    try <- setdiff(installed, dir(lib_real))
+    ## TODO: It's possible here that 'skip' is a potential problem;
+    ## the process running skip might complete before another process
+    ## has finished its copy, and then fail to load packages.  It's
+    ## possible that we could wait for the packages to be put into
+    ## place but in practice that's going to be very difficult to do
+    ## (and some connections are super slow).  It might be best to
+    ## just try and copy everything.
+    if (length(try) > 0L) {
+      file.copy(file.path(lib, try), lib_real, overwrite=FALSE, recursive=TRUE)
     }
+    skip <- setdiff(installed, try)
+
+    msg <- c(
+      if (length(try) > 0L) paste("copied", paste(try, collapse=", ")),
+      if (length(skip) > 0L) paste("skipped", paste(skip, collapse=", ")))
+    context_log("installed", paste(msg, collapse=" | "))
   }
-  if (do_install) {
-    install.packages2(packages, repos=r, ..., lib=lib, error=error)
-  }
+
   invisible()
 }
 
-## Create a lockfile, returning TRUE if the lockfile is ours (in an
-## effort to avoid race conditions).  Rather than open the file for
-## writing (which might be subject to client side caching, we try and
-## *copy* the file without overwriting which the underlying
-## implementation *should* only allow once.
-##
-## It's possible that the inverse approch might be better.
-##   http://stackoverflow.com/questions/668336/platform-independent-file-locking
-## leave a file there always (e.g., during use_local_library) and copy
-## that away.  but I don't see that would do better in general.
-## See also:
-##   http://www.dwheeler.com/secure-programs/Secure-Programs-HOWTO/avoid-race.html
-lock <- function(lockfile, ...) {
-  ## NOTE: random might not be enough here for processes started at
-  ## exactly the same time, but hostname/pid should go a long way.
-  str <- sprintf("%s:%s:%s", hostname(), process_id(), random_id())
-  tmp <- tempfile()
-  writeLines(str, tmp, ...)
-  on.exit(file.remove(tmp))
-  ok <- !file.exists(lockfile) && file.copy(tmp, lockfile, overwrite=FALSE)
-  ok && readLines(lockfile) == str
-}
-
-lock_wait <- function(lockfile, packages, wait_minutes=10, check_seconds=1) {
-  ## How long seems reasonable? 5 minutes? 10 minutes?  This is
-  ## hard to tune because we're deep within a bunch of function
-  ## calls here.
-  context_log("(waiting)", Sys_time())
-  wait <- as.difftime(wait_minutes, units="mins")
-  t0 <- Sys.time()
-  while (file.exists(lockfile) && Sys.time() - t0 < wait) {
-    Sys.sleep(check_seconds)
-    message(".", appendLF=FALSE)
-  }
-  message("")
-  if (file.exists(lockfile)) {
-    stop("Previous installation failed *badly* or taking too long: aborting")
-  }
-  msg <- setdiff(packages, .packages(TRUE))
-  if (length(msg) > 0L) {
-    stop("Previous installation failed; missing: ", paste(msg, collapse=", "))
-  }
-  context_log("(resuming)", Sys_time())
-}
-
+##' @export
+##' @rdname install_packages
 install_packages_missing <- function(packages, ...) {
   install_packages(setdiff(packages, .packages(TRUE)), ...)
 }

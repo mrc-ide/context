@@ -131,7 +131,8 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
   use_local_library(path_library(handle$root))
   if (install) {
     install_packages_missing(c(obj$packages$attached, obj$packages$loaded),
-                             sources=obj$package_sources, ...)
+                             sources=obj$package_sources, ...,
+                             move_in_place=TRUE)
   }
 
   context_log("library", paste0(obj$packages$attached, collapse=", "))

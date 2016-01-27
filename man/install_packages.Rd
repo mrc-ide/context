@@ -2,10 +2,13 @@
 % Please edit documentation in R/install.R
 \name{install_packages}
 \alias{install_packages}
+\alias{install_packages_missing}
 \title{Install packages}
 \usage{
-install_packages(packages, sources = package_sources(), ..., error = TRUE,
-  lock_wait = TRUE)
+install_packages(packages, sources = package_sources(), lib = NULL, ...,
+  error = TRUE, move_in_place = FALSE)
+
+install_packages_missing(packages, ...)
 }
 \arguments{
 \item{packages}{A character vector of packages to install}
@@ -14,17 +17,23 @@ install_packages(packages, sources = package_sources(), ..., error = TRUE,
 \code{\link{package_sources}}.}
 
 \item{...}{Additional arguments passed through to
-\code{\link{install.packages}}.}
+\code{\link{install.packages}} (or for
+\code{install_packages_missing}, to \code{install_packages}).}
 
 \item{error}{Throw an error if package installation fails.}
 
-\item{lock_wait}{Lock the directory while installing, or wait for
-a second installation to complete.  In contrast with
-\code{\link{install.packages}}, the lock is always library-wide.
-Catastrophoic failure (e.g., out of memory error during package
-installation) could leave a lockfile present.  In that case,
-delete the file \code{.lock_context} from the first entry in
-\code{.libPaths()}.}
+\item{move_in_place}{Attempt to do the right thing during parallel
+installations that affect the same packages.  When \code{TRUE},
+installation happens into a temporary directory and then files
+are copied into place.  This means that if multiple processes
+are installing the same packages they should not get into a
+tangle; they'll both install and compile everything (which is
+much simpler than trying to negotiate lockfiles and waiting
+periods) but the processes will not get into trouble where one
+is disallowed from removing the packages used by another.  If
+installation fails catastrophically this may leave some files in
+\code{.libPaths()[[1]]} beginning \code{CONTEXT_TMP_LIBRARY_};
+these can be safely removed.}
 }
 \description{
 Install packages, using source information from
@@ -37,12 +46,5 @@ addition, \code{install_packages_missing} only installs
 \emph{missing} packages only.  Also in contrast with
 \code{install.packages}, these function will throw an error if
 package installation fails (unless error=FALSE is set).
-}
-\section{Warning}{
-
-
-Because of the possibility of confusion with
-  \code{\link{install.packages}}, this function may be renamed
-  shortly.
 }
 

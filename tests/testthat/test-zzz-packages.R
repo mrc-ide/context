@@ -69,7 +69,7 @@ test_that("package installation in parallel", {
 
   f <- function() {
     capture_messages({
-      install_packages("digest", quiet=TRUE)
+      install_packages("digest", quiet=TRUE, move_in_place=TRUE)
       packageVersion("digest", lib)
     })
   }
@@ -84,24 +84,18 @@ test_that("package installation in parallel", {
   runif(1) # advance the seed
   t2 <- parallel::mcparallel(f(), "i2")
   res <- parallel::mccollect(list(t1, t2))
+  t3 <- parallel::mcparallel(f(), "i3")
+  res3 <- parallel::mccollect(list(t3))$i3
 
   ## Both packages did install so that's nice:
   val <- lapply(res, attr, "result", exact=TRUE)
   expect_true(all(vlapply(val, inherits, "package_version")))
 
   ## Messages are turned off, but can expect this:
-  n <- viapply(res, length)
-  expect_true(sum(n == 1L) == 1L)
-  expect_true(sum(n > 1L) == 1L)
+  n <- lengths(res)
+  expect_true(all(sum(n == 3L)))
 
-  res_installed <- res[[which(n == 1)]]
-  res_waited <- res[[which(n > 1)]]
-
-  re_install <- "^\\[\\s+install\\s+\\]\\s+digest"
-  re_wait <- "^\\[\\s+\\(waiting\\)\\s+\\]\\s+"
-  re_resume <- "^\\[\\s+\\(resuming\\)\\s+\\]\\s+"
-  expect_true(grepl(re_install, res_installed[[1]]))
-  expect_true(grepl(re_install, res_waited[[1]]))
-  expect_true(grepl(re_wait, res_waited[[2]]))
-  expect_true(grepl(re_resume, res_waited[[length(res_waited)]]))
+  expect_true(any(vlapply(res, function(x)
+    grepl("installed", x[[3]], fixed=TRUE))))
+  expect_true(grepl("skipped digest", res3[[3]]))
 })

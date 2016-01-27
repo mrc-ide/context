@@ -40,7 +40,4 @@ if (Sys.info()[["user"]] == "rich") {
   if (file.exists("../../DESCRIPTION")) {
     Sys.setenv("CONTEXT_SOURCE_PATH"=normalizePath("../../"))
   }
-  if (file.exists("~/Documents/src/storr/DESCRIPTION")) {
-    Sys.setenv("STORR_SOURCE_PATH"=normalizePath("~/Documents/src/storr/"))
-  }
 }

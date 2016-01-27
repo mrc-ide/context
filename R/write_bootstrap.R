@@ -92,15 +92,15 @@ write_bootstrap <- function(root) {
     ## context is on CRAN it could possibly be omitted.
     context_local <- length(dir(file.path(path_local_drat, "src/contrib"),
                                 "^context_.*\\.tar\\.gz") > 0L)
+    package_sources <- list(cran="http://cran.rstudio.com")
     if (context_local) {
-      context_drat_url <- file_url(path_local_drat)
-      drat_add_empty_bin(path_local_drat)
+      package_sources$local_drat <- path_local_drat
     } else {
-      context_drat_url <- "https://richfitz.github.io/drat/"
+      package_sources$repos <- "https://richfitz.github.io/drat/"
     }
-    repos <- c(CRAN="http://cran.rstudio.com",
-               context=context_drat_url)
-    install.packages2("context", lib=lib, repos=repos)
+
+    install_packages("context", lib=lib, sources=package_sources,
+                     error=TRUE, move_in_place=TRUE)
     context_log("done", "")
   }
   main <- function() {
