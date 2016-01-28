@@ -67,32 +67,32 @@ install_packages <- function(packages, sources=package_sources(),
 
   if (move_in_place) {
     lib_real <- lib
-    lib <- tempfile(tmpdir=lib_real, pattern="CONTEXT_TMP_LIBRARY_")
+    pat <- sprintf("CONTEXT_%s_%d_TMP", Sys.info()[["nodename"]], Sys.getpid())
+    lib <- tempfile(pat, lib_real)
     dir.create(lib, FALSE)
     on.exit(unlink(lib, recursive=TRUE))
-    context_log("tmplib", lib_real)
+    context_log("tmplib", lib)
   }
 
   install.packages2(packages, repos=r, ..., lib=lib, error=error)
 
   if (move_in_place) {
-    installed <- dir(lib)
-    try <- setdiff(installed, dir(lib_real))
-    ## TODO: It's possible here that 'skip' is a potential problem;
-    ## the process running skip might complete before another process
-    ## has finished its copy, and then fail to load packages.  It's
-    ## possible that we could wait for the packages to be put into
-    ## place but in practice that's going to be very difficult to do
-    ## (and some connections are super slow).  It might be best to
-    ## just try and copy everything.
-    if (length(try) > 0L) {
-      file.copy(file.path(lib, try), lib_real, overwrite=FALSE, recursive=TRUE)
+    installed <- .packages(TRUE, lib)
+    re <- "^CONTEXT_(.*)_TMP(.*)$"
+    others <- setdiff(dir(lib_real, pattern=re), basename(lib))
+    if (length(others) > 0L) {
+      context_log("us", sub(re, "\\1", basename(lib)))
+      context_log("others",
+                  paste(sub(re, "\\1", others), collapse=", "))
     }
-    skip <- setdiff(installed, try)
 
+    new <- setdiff(installed, dir(lib_real))
+    exist <- setdiff(installed, new)
+    file.copy(file.path(lib, installed), lib_real,
+              overwrite=FALSE, recursive=TRUE)
     msg <- c(
-      if (length(try) > 0L) paste("copied", paste(try, collapse=", ")),
-      if (length(skip) > 0L) paste("skipped", paste(skip, collapse=", ")))
+      if (length(new) > 0L) paste("copied", paste(new, collapse=", ")),
+      if (length(exist) > 0L) paste("skipped", paste(exist, collapse=", ")))
     context_log("installed", paste(msg, collapse=" | "))
   }
 
