@@ -75,9 +75,15 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
     if (is.character(packages)) {
       packages <- list(attached=packages, loaded=character(0))
     } else if (is.list(packages)) {
-      if (!setequal(names(packages), c("loaded", "attached"))) {
-        stop("Incorrect names for 'packages'")
+      unk <- setdiff(names(packages), c("loaded", "attached"))
+      if (length(unk) > 0L) {
+        stop("Unknown names for 'packages': ", paste(unk, collapse=", "))
       }
+      if (!all(vlapply(packages, is.character))) {
+        stop("All elements of 'packages' must be a character vector")
+      }
+      packages <- modifyList(list(attached=character(0), loaded=character(0)),
+                             packages)
     } else {
       stop("Incorrect type for packages")
     }
@@ -176,6 +182,10 @@ context_read <- function(handle) {
   ## Because the final drat link needs to be an absolute path, this
   ## means that wherever the context is read will get the correct
   ## local path.
+  ##
+  ## TODO: Despite needing to be a absolute path here, this is
+  ## *relative* if handle$root is relative, which might easily be the
+  ## case.  So normalizePath perhaps?  or is that happening elsewhere?
   if (!is.null(ret$package_sources$local_drat)) {
     ret$package_sources$local_drat <- path_drat(handle$root)
   }
