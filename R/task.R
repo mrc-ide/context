@@ -35,8 +35,7 @@ task_save_list <- function(list, context, envir=parent.frame()) {
   if (!is.list(list)) {
     stop("Expected a list")
   }
-  ## TODO: This should work equally well with contexts and context handles.
-  if (!is.context_handle(context)) {
+  if (!(is.context_handle(context) || is.context(context))) {
     stop("Invalid context")
   }
   root <- context$root
