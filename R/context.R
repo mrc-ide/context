@@ -171,6 +171,7 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
 ##' @rdname context
 context_read <- function(handle) {
   ret <- context_db(handle)$get(handle$id, namespace="contexts")
+  ret[names(handle)] <- handle
   ## TODO: same treatment as task_read where task_read(task) -> task
   ##
   ## We'll take responsibility here for setting up the local drat
