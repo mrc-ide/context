@@ -80,22 +80,20 @@ package_sources <- function(cran=NULL, repos=NULL,
 ##' @param package_sources A \code{\link{package_sources}} object
 ##' @param path Path to build the drat repository at
 ##' @param force Re-fetch all packages, even if they still look fresh.
-##' @param quiet Quieten the download progress (which can be quite
-##'   messy)
 ##' @return The \code{package_sources} object with the
 ##'   \code{local_drat} element set to the path of the local drat.
 ##'   This is suitable for passing into \code{\link{install_packages}}
 ##'   as it will set the drat appropriately.  If no drat repository
 ##'   was created this element will be \code{NULL}.
 ##' @export
-build_local_drat <- function(package_sources, path, force=FALSE, quiet=TRUE) {
+build_local_drat <- function(package_sources, path, force=FALSE) {
   db <- storr::storr_rds(file.path(path, "timestamp"), mangle_key=TRUE)
   drat_repo_init(path)
 
   build <- function(t, x) {
     switch(t,
-           github=build_github(x, quiet),
-           bitbucket=build_bitbucket(x, quiet),
+           github=build_github(x),
+           bitbucket=build_bitbucket(x),
            local=build_local(x))
   }
 
@@ -199,11 +197,11 @@ R_build <- function(path) {
   normalizePath(setdiff(dir(full.names=TRUE), prev))
 }
 
-build_github <- function(x, quiet=FALSE) {
-  build_remote(github_url(x$user, x$repo, x$ref), x$subdir, quiet, x$str)
+build_github <- function(x) {
+  build_remote(github_url(x$user, x$repo, x$ref), x$subdir, x$str)
 }
-build_bitbucket <- function(x, quiet=FALSE) {
-  build_remote(bitbucket_url(x$user, x$repo, x$ref), x$subdir, quiet, x$str)
+build_bitbucket <- function(x) {
+  build_remote(bitbucket_url(x$user, x$repo, x$ref), x$subdir, x$str)
 }
 build_local <- function(x) {
   path <- x$path
@@ -222,13 +220,13 @@ build_local <- function(x) {
   }
 }
 
-build_remote <- function(url, subdir, quiet=FALSE, str=url) {
+build_remote <- function(url, subdir, str=url) {
   path <- tempfile("context_sources_")
   dir.create(path)
   dest <- file.path(path, "context.zip")
   ## TODO: Consider always printing this.
   context_log("download", str)
-  download_file(url, dest, quiet=quiet)
+  download_file(url, dest, quiet=!isTRUE(getOption("context.log", FALSE)))
   unzip(dest, exdir=path)
   file.remove(dest)
   target <- dir(path, full.names=TRUE)

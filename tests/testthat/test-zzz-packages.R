@@ -35,7 +35,7 @@ test_that("local drat creation", {
   expect_is(src$expire, "difftime")
 
   drat_src <- file.path(path_drat(root), "src", "contrib")
-  src <- build_local_drat(src, path_drat(root), quiet=TRUE)
+  src <- build_local_drat(src, path_drat(root))
 
   expect_true(file.exists(drat_src))
   pkgs <- read.dcf(file.path(drat_src, "PACKAGES"))

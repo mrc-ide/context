@@ -4,7 +4,7 @@
 \alias{build_local_drat}
 \title{Build local drat repository}
 \usage{
-build_local_drat(package_sources, path, force = FALSE, quiet = TRUE)
+build_local_drat(package_sources, path, force = FALSE)
 }
 \arguments{
 \item{package_sources}{A \code{\link{package_sources}} object}
@@ -12,9 +12,6 @@ build_local_drat(package_sources, path, force = FALSE, quiet = TRUE)
 \item{path}{Path to build the drat repository at}
 
 \item{force}{Re-fetch all packages, even if they still look fresh.}
-
-\item{quiet}{Quieten the download progress (which can be quite
-messy)}
 }
 \value{
 The \code{package_sources} object with the

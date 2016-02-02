@@ -91,7 +91,7 @@ write_bootstrap <- function(root) {
     ## NOTE: This line is needed to get context installed.  When
     ## context is on CRAN it could possibly be omitted.
     context_local <- length(dir(file.path(path_local_drat, "src/contrib"),
-                                "^context_.*\\.tar\\.gz") > 0L)
+                                "^context_.*\\.tar\\.gz")) > 0L
     package_sources <- list(cran="http://cran.rstudio.com")
     if (context_local) {
       package_sources$local_drat <- path_local_drat

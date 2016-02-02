@@ -42,25 +42,8 @@ install_packages <- function(packages, sources=package_sources(),
   if (length(packages) == 0L) {
     return()
   }
-  ## This attempts to avoid listing CRAN twice which makes
-  ## available.packages quite slow.
-  r <- getOption("repos")
-  r <- r[r != sources$cran]
-  r["CRAN"] <- sources$cran
-  if (!is.null(sources$repos)) {
-    r <- c(r, sources$repos)
-  }
-  ## TODO: The dealing with local_drat here is broken; it does not
-  ## come out of package_sources() correctly (i.e., is not set).  This
-  ## is because the context_read sets the sources generally and this
-  ## function does not know about that.
-  ##
-  ## The resolution needs to be that this function should not take
-  ## sources but instead take arguments 'cran' and 'repos'.
-  if (!is.null(sources$local_drat)) {
-    drat_add_empty_bin(sources$local_drat)
-    r <- c(r, "local_drat"=file_url(sources$local_drat))
-  }
+
+  r <- context_repos(sources)
   context_log("install", paste(packages, collapse=", "))
 
   lib <- .libPaths()[[1]]
@@ -140,4 +123,27 @@ install.packages2 <- function(pkgs, ..., error=TRUE) {
   ## Here we *could* check that the package name is installed but for
   ## local packages (e.g., repos=NULL) we need to go into the archive
   ## and get the correct package name!
+}
+
+context_repos <- function(sources) {
+  ## This attempts to avoid listing CRAN twice which makes
+  ## available.packages quite slow.
+  r <- getOption("repos")
+  r <- r[r != sources$cran]
+  r["CRAN"] <- sources$cran
+  if (!is.null(sources$repos)) {
+    r <- c(r, sources$repos)
+  }
+  ## TODO: The dealing with local_drat here is broken; it does not
+  ## come out of package_sources() correctly (i.e., is not set).  This
+  ## is because the context_read sets the sources generally and this
+  ## function does not know about that.
+  ##
+  ## The resolution needs to be that this function should not take
+  ## sources but instead take arguments 'cran' and 'repos'.
+  if (!is.null(sources$local_drat)) {
+    drat_add_empty_bin(sources$local_drat)
+    r <- c(r, "local_drat"=file_url(sources$local_drat))
+  }
+  r
 }
