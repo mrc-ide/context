@@ -46,7 +46,7 @@ task_save_list <- function(list, context, envir=parent.frame()) {
   }
 
   f <- function(x) {
-    dat <- store_expression(x, envir)
+    dat <- store_expression(x, envir, db)
     dat$context_id <- context$id
     db$set(dat$id, dat, namespace="tasks")
     db$set(dat$id, TASK_PENDING, namespace="task_status")

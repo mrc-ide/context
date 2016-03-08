@@ -85,7 +85,7 @@ test_that("local variables", {
   handle <- task_save(expr, ctx)
 
   res <- task_read(handle)
-  expect_equal(res$objects, list(x=x))
+  expect_equal(names(res$objects), "x")
 
   e <- new.env(parent=.GlobalEnv)
   t <- task_load(handle, envir=e)
@@ -93,6 +93,9 @@ test_that("local variables", {
   expect_identical(ls(t$envir), "x")
   expect_identical(t$envir$x, x)
   expect_identical(parent.env(t$envir), t$envir_context)
+
+  res <- task_run(handle, envir=e)
+  expect_equal(res, sin(1))
 })
 
 test_that("task_run", {

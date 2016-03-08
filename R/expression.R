@@ -1,6 +1,6 @@
 ## like rrqueue:::prepare_expression() followed by
 ## rrqueue::save_expression().
-store_expression <- function(expr, envir) {
+store_expression <- function(expr, envir, db) {
   id <- random_id()
   fun <- expr[[1]]
   args <- expr[-1]
@@ -26,17 +26,14 @@ store_expression <- function(expr, envir) {
       stop("not all objects found: ",
            paste(object_names[!ok], collapse=", "))
     }
-    ## What is less clear here is if I should save these with the
-    ## mangling (as I did in rrqueue) or if I should just dump the
-    ## whole set of things out in a single list.  The advantage of the
-    ## mangled version is that it could allow for de-duplicated
-    ## storage (which would be good if we had large objects) but the
-    ## (big) disadvantage is that it leads to a lot of files kicking
-    ## around which is problematic from a cleanup perspective.  So
-    ## instead I think that it would be better to save these all in
-    ## the returned object.
-    ret$objects <- setNames(lapply(object_names, get, envir, inherits=FALSE),
-                            object_names)
+    ## NOTE: The advantage of saving these via the store is we can do
+    ## deduplicated storage (which would be good if we had large
+    ## objects and we get lots of duplicate objects with things like
+    ## qlapply) but the (big) disadvantage is that it leads to a lot
+    ## of files kicking around which is problematic from a cleanup
+    ## perspective.
+    ret$objects <- vcapply(object_names, function(i)
+      db$set_by_value(get(i, envir, inherits=FALSE), namespace="objects"))
   }
 
   ret
@@ -46,11 +43,7 @@ store_expression <- function(expr, envir) {
 restore_locals <- function(dat, parent) {
   e <- new.env(parent=parent)
   if (!is.null(dat$objects)) {
-    objects <- dat$objects
-    object_names <- names(objects)
-    for (i in seq_along(objects)) {
-      e[[object_names[[i]]]] <- objects[[i]]
-    }
+    context_db(dat)$export(e, dat$objects, "objects")
   }
   e
 }
