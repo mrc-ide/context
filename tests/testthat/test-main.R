@@ -32,6 +32,22 @@ test_that("run", {
   expect_equal(db$get(handle$id, "task_results"), sin(1))
 })
 
+test_that("run (locals)", {
+  ctx <- context_save(root=tempfile("cluster_"))
+  x <- 1:10
+  handle <- task_save(quote(sin(x)), ctx)
+  full <- install_context(tempdir())
+
+  Sys.setenv(R_TESTS="")
+  res <- call_system(full, c(handle$root, handle$id))
+  expect_null(attr(res, "status", exact=TRUE))
+
+  db <- context_db(handle$root)
+  expect_equal(db$get(handle$id, "task_status"), TASK_COMPLETE)
+  expect_true(db$exists(handle$id, "task_results"))
+  expect_equal(db$get(handle$id, "task_results"), sin(x))
+})
+
 test_that("install", {
   root <- tempfile("cluster_")
   on.exit(cleanup(root))
