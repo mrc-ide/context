@@ -39,7 +39,11 @@ context_db <- function(x) {
     if (!is.character(x) || length(x) != 1L) {
       stop("Invalid input; cannot determine context root")
     }
-    context_db_open(x, readRDS(path_config(x)), FALSE)
+    config <- path_config(x)
+    if (!file.exists(config)) {
+      stop("context database not set up at ", x)
+    }
+    context_db_open(x, readRDS(config), FALSE)
   }
 }
 
