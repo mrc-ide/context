@@ -157,3 +157,20 @@ test_that("environment backed context", {
   expect_error(context_db(context_handle(ctx$root, ctx$id)),
                "Cannot reconnect to environment storage")
 })
+
+test_that("list empty context", {
+  root <- tempfile()
+
+  expect_error(contexts_list(root),
+               "context database not set up at")
+  expect_null(contexts_list(root, error=FALSE))
+
+  ctx1 <- context_save(root, auto=TRUE)
+  expect_equal(contexts_list(root), ctx1$id)
+  expect_equal(context_handle(root)$id, ctx1$id)
+
+  Sys.sleep(.1)
+  ctx2 <- context_save(root, auto=TRUE)
+  expect_equal(sort(contexts_list(root)), sort(c(ctx1$id, ctx2$id)))
+  expect_equal(context_handle(root)$id, ctx2$id)
+})

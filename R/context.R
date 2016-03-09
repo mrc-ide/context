@@ -57,6 +57,13 @@ context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
   ## context root.
   ret$package_sources <- build_local_drat(ret$package_sources, path_drat(root))
   id <- db$set_by_value(ret, namespace="contexts", use_cache=FALSE)
+  ## NOTE: this will _always_ save the time.  We might alternatively
+  ## want the time to be saved on *first* creation, which would
+  ## include a step like:
+  ##   if (!db$exists(id, "contexts_date")) { ...set... }
+  ## in the current form this is going to set the "most recently
+  ## saved" context as the main one.
+  db$set(id, Sys.time(), namespace="context_date")
   context_handle(root, id, db)
 }
 
@@ -195,8 +202,22 @@ context_read <- function(handle) {
 
 ##' @export
 ##' @rdname context
-contexts_list <- function(root) {
-  context_db(root)$list(namespace="contexts")
+##'
+##' @param error For \code{contexts_list}, should we throw an error if
+##'   no context database exists at \code{root}?  The default does
+##'   throw an error, but \code{error=TRUE} might be useful in cases
+##'   where you want to know that no contexts have yet been saved to
+##'   the root.
+contexts_list <- function(root, error=TRUE) {
+  if (error) {
+    db <- context_db(root)
+  } else {
+    db <- tryCatch(context_db(root), error=function(e) NULL)
+    if (is.null(db)) {
+      return(NULL)
+    }
+  }
+  db$list(namespace="contexts")
 }
 
 ## This is going to be horrid to test because it really requires
@@ -228,10 +249,22 @@ is.context <- function(x) {
 
 ##' @export
 ##' @rdname context
-##' @param id The context id
+##'
+##' @param id The context id.  If \code{NULL} we will try and load the
+##'   most recently saved context within root.
+##'
 ##' @param db The context db (used internally, and not intended for
 ##'   end-user use)
 context_handle <- function(root, id, db=NULL) {
+  if (is.null(id)) {
+    id <- context::contexts_list(root)
+    if (length(id) > 1L) {
+      if (is.null(db)) {
+        db <- context_db(root)
+      }
+      id <- id[[which.max(vnapply(id, db$get, "context_date"))]]
+    }
+  }
   structure(list(root=root, id=id, db=db), class="context_handle")
 }
 

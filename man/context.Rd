@@ -16,7 +16,7 @@ context_load(handle, install = TRUE, envir = .GlobalEnv, ...)
 
 context_read(handle)
 
-contexts_list(root)
+contexts_list(root, error = TRUE)
 
 context_handle(root, id, db = NULL)
 }
@@ -59,7 +59,14 @@ storage is supported, so this is largely ignored.}
 \item{...}{Additional arguments passed through to
 \code{install_packages} if it is used.}
 
-\item{id}{The context id}
+\item{error}{For \code{contexts_list}, should we throw an error if
+no context database exists at \code{root}?  The default does
+throw an error, but \code{error=TRUE} might be useful in cases
+where you want to know that no contexts have yet been saved to
+the root.}
+
+\item{id}{The context id.  If \code{NULL} we will try and load the
+most recently saved context within root.}
 
 \item{db}{The context db (used internally, and not intended for
 end-user use)}
