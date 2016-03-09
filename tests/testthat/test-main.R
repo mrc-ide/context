@@ -46,6 +46,11 @@ test_that("run (locals)", {
   expect_equal(db$get(handle$id, "task_status"), TASK_COMPLETE)
   expect_true(db$exists(handle$id, "task_results"))
   expect_equal(db$get(handle$id, "task_results"), sin(x))
+
+  ## Try with the runner:
+  full2 <- file.path(handle$root, "bin", "context_runner")
+  res2 <- call_system(full, c(handle$root, handle$id))
+  expect_null(attr(res2, "status", exact=TRUE))
 })
 
 test_that("install", {
