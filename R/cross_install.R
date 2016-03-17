@@ -89,7 +89,7 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   if (length(packages_src) > 0L) {
     context_log("cross",
                 paste("Cross installing source packages for:",
-                      paste(packages_bin, collapse=", ")))
+                      paste(packages_src, collapse=", ")))
     j <- match(packages_src, pkgs_src[, "Package"])
     k <- pkgs_src[j, "NeedsCompilation"] == "yes"
     if (any(k)) {
@@ -142,12 +142,17 @@ cross_install_package <- function(package, dat, lib, binary, platform) {
     unzip(path, exdir=lib)
   } else {
     untar(path, exdir=tmp)
+    dir.create(lib, FALSE, TRUE)
     file.remove(path)
     path <- file.path(tmp, x$Package)
-    args <- c("CMD", "INSTALL", "--no-test-load", normalizePath(path))
-    env <- c(R_LIBS=paste(c(lib, .libPaths()), collapse=.Platform$path.sep),
+    lib <- normalizePath(lib, "/")
+    env <- c(R_LIBS_USER=paste(c(lib, .libPaths()),
+                               collapse=.Platform$path.sep),
              CYGWIN = "nodosfilewarning")
     env <- sprintf("%s=%s", names(env), unname(env))
+    args <- c("CMD", "INSTALL", "--no-test-load",
+              paste0("--library=", lib),
+              normalizePath(path))
     ok <- system2(file.path(R.home(), "bin", "R"), args, env=env)
     if (ok != 0L) {
       stop(sprintf("Command failed (code: %d)", ok))
