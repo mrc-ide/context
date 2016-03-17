@@ -81,12 +81,21 @@ write_bootstrap <- function(root) {
     context_log("bootstrap", normalizePath(root))
     lib <- use_local_library(path_library(root))
     if ("context" %in% .packages(TRUE, lib)) {
-      if (isTRUE(packageVersion("context", lib) >= read_version(root))) {
+      v_installed <- packageVersion("context", lib)
+      v_needed <- read_version(root)
+      if (v_installed >= v_needed) {
         context_log("ok", "")
+        if (!isTRUE(v_installed >= v_needed)) {
+          context_log("warn", "platform specific weirdness?")
+        }
         return()
+      } else {
+        context_log("upgrade",
+                    sprintf("context: %s -> %s", v_installed, v_needed))
       }
+    } else {
+      context_log("install", "context")
     }
-    context_log("install", "context")
     path_local_drat <- path_drat(root)
     ## NOTE: This line is needed to get context installed.  When
     ## context is on CRAN it could possibly be omitted.

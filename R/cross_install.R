@@ -122,10 +122,10 @@ cross_install_bootstrap <- function(lib, platform, r_version, root=NULL) {
 ##' @rdname cross_install_packages
 cross_install_context <- function(lib, platform, r_version, context) {
   root <- context$root
-  context::cross_install_bootstrap(lib, platform, r_version, root)
+  cross_install_bootstrap(lib, platform, r_version, root)
   packages <- unlist(context$packages, use.names=FALSE)
   repos <- context_repos(context$package_sources)
-  context::cross_install_packages(lib, platform, r_version, repos, packages)
+  cross_install_packages(lib, platform, r_version, repos, packages)
 }
 
 cross_install_package <- function(package, dat, lib, binary, platform) {
