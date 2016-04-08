@@ -194,3 +194,7 @@ capture_log <- function(expr, filename) {
   }
   eval(expr, parent.frame())
 }
+
+`%||%` <- function(a, b) {
+  if (!is.null(a)) a else b
+}

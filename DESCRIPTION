@@ -15,6 +15,7 @@ Imports:
 Suggests:
     codetools,
     knitr,
+    parallel,
     rmarkdown,
     testthat (>= 0.11.0)
 RoxygenNote: 5.0.1
