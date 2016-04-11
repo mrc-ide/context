@@ -79,6 +79,7 @@ file_url <- function(path) {
 
 find_funcs <- function(fun, env) {
   ours <- names(env)
+  ours <- ours[vlapply(ours, function(x) is.function(env[[x]]))]
   seen <- character(0)
   test <- list(fun)
   while (length(test) > 0L) {

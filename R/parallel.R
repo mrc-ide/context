@@ -17,6 +17,7 @@ par <- new.env(parent=emptyenv())
 ##' @export
 start_parallel_cluster <- function(n, ctx) {
   if (is.null(par$cl)) {
+    context_log("cluster", "Starting cluster")
     ## Log to <base>/workers/<context_id>_<pid>_%d I think
     fmt <- sprintf("%s/workers/%s_%d_%%d", ctx$root, ctx$id, Sys.getpid())
     dir.create(dirname(fmt), FALSE, TRUE)
@@ -31,6 +32,7 @@ start_parallel_cluster <- function(n, ctx) {
     invisible(parallel::clusterCall(par$cl, ".libPaths", .libPaths()))
     invisible(parallel::clusterCall(par$cl, context_start, ctx$root, ctx$id))
     parallel::setDefaultCluster(par$cl)
+    context_log("cluster", "Cluster started")
   } else {
     stop("Parallel cluster already running?")
   }
@@ -54,6 +56,9 @@ parallel_cluster <- function() {
 }
 
 start_cluster <- function(n, logfile_fmt) {
+  ## NOTE: None of the context_log() lines here will trigger logging
+  ## on the cluster because the cluster jas not been assigned into the
+  ## `par` environment yet.
   logfiles <- sprintf(logfile_fmt, seq_len(n))
   cl <- vector("list", n)
   context_log("cluster", sprintf("Starting %d nodes", n))

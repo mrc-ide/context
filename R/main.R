@@ -3,6 +3,12 @@ main <- function(args=commandArgs(TRUE)) {
   context_log("init", Sys_time())
   context_log("version", packageVersion(.packageName))
   args <- main_parse_args(args)
+
+  if (Sys.getenv("CONTEXT_CORES") != "" && is.null(par$cl)) {
+    start_parallel_cluster(as.integer(Sys.getenv("CONTEXT_CORES")), obj)
+    on.exit(stop_parallel_cluster())
+  }
+
   task_run(task_handle(args$root, args$id), install=TRUE, envir=.GlobalEnv)
   invisible()
 }

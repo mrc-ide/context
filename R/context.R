@@ -166,6 +166,7 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
     context_log("global", "")
     deserialise_image(obj$global, envir=envir)
   }
+
   if (!is.null(obj$local)) {
     context_log("local", "")
     obj$local

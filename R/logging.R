@@ -20,9 +20,22 @@ context_log_start <- function() {
 context_log_stop <- function() {
   options(context.log=NULL)
 }
+
 context_log <- function(topic, value) {
   if (isTRUE(getOption("context.log"))) {
-    message(trimws(sprintf("[ %-9s ]  %s", topic, value)))
+    str <- trimws(sprintf("[ %-9s ]  %s", topic, value))
+    message(str)
+    if (!is.null(par$cl)) {
+      ## Logging is rare enough that we should communicate with
+      ## workers; the cost is relatively low.  It might be worth
+      ## making this an option though.
+      ##
+      ## NOTE: if one of the nodes here is busy (though not sure how
+      ## that can happen) then this will hang or cause things to error
+      ## out.  OTOH, given that the underlying computations will use a
+      ## cluster, we would simply hang there instead...
+      parallel::clusterCall(par$cl, "message", str)
+    }
   }
 }
 
