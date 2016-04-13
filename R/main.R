@@ -4,15 +4,19 @@ main <- function(args=commandArgs(TRUE)) {
   context_log("version", packageVersion(.packageName))
   args <- main_parse_args(args)
 
-  if (Sys.getenv("CONTEXT_CORES") != "" && is.null(par$cl)) {
+  h <- task_handle(args$root, args$id)
+  cores <- Sys.getenv("CONTEXT_CORES")
+
+  if (cores != "" && is.null(par$cl)) {
     context_log("debug", "running as parallel job")
-    start_parallel_cluster(as.integer(Sys.getenv("CONTEXT_CORES")), obj)
+    ctx <- context_handle(h$root, task_read(h)$context_id)
+    start_parallel_cluster(as.integer(cores), ctx)
     on.exit(stop_parallel_cluster())
   } else {
     context_log("debug", "running as single core job")
   }
 
-  task_run(task_handle(args$root, args$id), install=TRUE, envir=.GlobalEnv)
+  task_run(h, install=TRUE, envir=.GlobalEnv)
   invisible()
 }
 
