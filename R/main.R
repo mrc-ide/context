@@ -5,8 +5,11 @@ main <- function(args=commandArgs(TRUE)) {
   args <- main_parse_args(args)
 
   if (Sys.getenv("CONTEXT_CORES") != "" && is.null(par$cl)) {
+    cluster_log("debug", "running as parallel job")
     start_parallel_cluster(as.integer(Sys.getenv("CONTEXT_CORES")), obj)
     on.exit(stop_parallel_cluster())
+  } else {
+    cluster_log("debug", "running as single core job")
   }
 
   task_run(task_handle(args$root, args$id), install=TRUE, envir=.GlobalEnv)
