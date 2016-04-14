@@ -23,7 +23,14 @@ context_log_stop <- function() {
 
 context_log <- function(topic, value) {
   if (isTRUE(getOption("context.log"))) {
+    n <- length(value) - 1L
+    if (n > 0L) {
+      topic <- c(topic, rep_len("...", n))
+    }
     str <- trimws(sprintf("[ %-9s ]  %s", topic, value))
+    if (n > 0L) {
+      str <- paste(str, collapse="\n")
+    }
     message(str)
     if (!is.null(par$cl)) {
       ## Logging is rare enough that we should communicate with
