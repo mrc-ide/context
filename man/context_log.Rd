@@ -15,6 +15,16 @@ parse_context_log(x)
 \arguments{
 \item{x}{Vector of log output}
 }
+\value{
+\code{context_log_start} invisibly returns a logical
+  indicating if logging was previously enabled.  This allows
+  patterns like:
+\preformatted{if (!context::context_log_start()) {
+  context::context_log_stop()
+}
+}
+to have a scoped log (i.e., log for the duration of a function).
+}
 \description{
 Start and stop the context log.  Soon this might swap out for
 \code{loggr}, but for now this should do.  When active, some

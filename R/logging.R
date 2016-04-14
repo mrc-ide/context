@@ -12,8 +12,17 @@
 ##' @title Start and stop log
 ##' @export
 ##' @rdname context_log
+##'
+##' @return \code{context_log_start} invisibly returns a logical
+##'   indicating if logging was previously enabled.  This allows
+##'   patterns like:
+##' \preformatted{if (!context::context_log_start()) {
+##'   context::context_log_stop()
+##' }
+##' }
+##' to have a scoped log (i.e., log for the duration of a function).
 context_log_start <- function() {
-  options(context.log=TRUE)
+  invisible(isTRUE(options(context.log=TRUE)$context.log))
 }
 ##' @export
 ##' @rdname context_log
