@@ -28,6 +28,9 @@
 ##'
 ##' @export
 cross_install_packages <- function(lib, platform, r_version, repos, packages) {
+  ## TODO: Coming here in Windows this does the wrong thing because we
+  ## *are* using the library by this point; but that gets skipped over
+  ## because we don't normalise the path here.
   if (lib %in% .libPaths()) {
     stop("Do not use cross_install_packages to install into current library")
   }

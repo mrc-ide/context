@@ -24,7 +24,10 @@ not supported in contrast with devtools).}
 
 \item{local}{Character vector of paths to packages on your local
 computer to make available.  These can be directories or built
-\code{tar.gz} files.}
+\code{tar.gz}, \code{tgz} or \code{zip} files.  If the directory
+contains a \code{DESCRIPTION} file it is treated as the source
+of an R package, otherwise all package-like files (tar.gz, tgz
+and zip) will be added.}
 
 \item{expire}{Number of days after which to expire packages in the
 archive.  After this, packages will be fetched again.

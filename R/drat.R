@@ -17,7 +17,10 @@
 ##'
 ##' @param local Character vector of paths to packages on your local
 ##'   computer to make available.  These can be directories or built
-##'   \code{tar.gz} files.
+##'   \code{tar.gz}, \code{tgz} or \code{zip} files.  If the directory
+##'   contains a \code{DESCRIPTION} file it is treated as the source
+##'   of an R package, otherwise all package-like files (tar.gz, tgz
+##'   and zip) will be added.
 ##'
 ##' @param expire Number of days after which to expire packages in the
 ##'   archive.  After this, packages will be fetched again.
@@ -106,8 +109,12 @@ build_local_drat <- function(package_sources, path, force=FALSE) {
         db$get(key) - now < package_sources$expire
       if (!ok) {
         pkg <- build(t, src[[i]])
-        drat::insertPackage(pkg, path, commit=FALSE)
-        file.remove(pkg)
+        for (p in pkg) { # build_local can return != 1
+          context_log("=> drat", sprintf("%s (%s)", p, t))
+          ## TODO: in the case where we are adding binary packages, we
+          ## need to know what version of R to put them into?
+          drat::insertPackage(p, path, commit=FALSE)
+        }
         db$set(key, now)
       }
     }
@@ -204,17 +211,20 @@ build_bitbucket <- function(x) {
   build_remote(bitbucket_url(x$user, x$repo, x$ref), x$subdir, x$str)
 }
 build_local <- function(x) {
+  re_pkg <- "\\.(tar\\.gz|tgz|zip)$"
   path <- x$path
-  if (grepl("\\.tar\\.gz", path)) {
+  if (grepl(re_pkg, path)) {
     tmp <- tempfile("context_sources_")
     dir.create(tmp)
     file.copy(path, tmp)
     file.path(tmp, basename(path))
-  } else if (is_dir(path)) {
+  } else if (is_dir(path) && file.exists(file.path(path, "DESCRIPTION"))) {
     tmp <- tempfile("context_sources_")
     dir.create(tmp)
     file.copy(path, tmp, recursive=TRUE)
     R_build(file.path(tmp, basename(path)))
+  } else if (is_dir(path)) {
+    dir(path, re_pkg, full.names=TRUE)
   } else {
     stop("Invalid local source")
   }
