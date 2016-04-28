@@ -54,6 +54,5 @@ Come up with a general way of specifying all the required bits so that we can re
 ## Installation
 
 ```r
-devtools::install_github("richfitz/storr")
 devtools::install_github("dide-tools/context")
 ```

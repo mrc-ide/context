@@ -13,7 +13,8 @@ Depends:
 Imports:
     curl,
     drat (>= 0.1.0),
-    storr (>= 1.0.0)
+    storr (>= 1.0.0),
+    uuid
 Suggests:
     codetools,
     knitr,

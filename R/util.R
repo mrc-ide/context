@@ -42,11 +42,8 @@ file_remove <- function(...) {
   ok
 }
 
-## This should be swapped out for the uuid function, but let's see how
-## that goes
 random_id <- function() {
-  pos <- c(as.character(0:9), letters[1:6])
-  paste(sample(pos, 32, replace=TRUE), collapse="")
+  gsub("-", "", uuid::UUIDgenerate(), fixed=TRUE)
 }
 
 print_ad_hoc <- function(x) {
