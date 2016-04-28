@@ -47,9 +47,15 @@ random_id <- function() {
 }
 
 print_ad_hoc <- function(x) {
+  x <- unclass(x)
   i <- vlapply(unclass(x), is.raw)
   if (any(i)) {
     x[i] <- sprintf("raw <%d bytes>", lengths(x[i]))
+  }
+  i <- vlapply(x, is.atomic) & lengths(x) > 1L
+  if (any(i)) {
+    x[i] <- vcapply(x[i], function(el)
+      paste(sprintf("\n   - %s", el), collapse=""))
   }
   members <- paste(sprintf(" - %s: %s\n", names(x), unname(x)), collapse="")
   cat(sprintf("<%s>\n%s", class(x)[[1]], members))
