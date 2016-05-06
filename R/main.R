@@ -16,7 +16,14 @@ main <- function(args=commandArgs(TRUE)) {
     context_log("debug", "running as single core job")
   }
 
-  task_run(h, install=TRUE, envir=.GlobalEnv)
+  res <- task_run(h, install=TRUE, envir=.GlobalEnv)
+
+  propagate_error <- toupper(Sys.getenv("CONTEXT_PROPAGATE_ERROR")) == "TRUE"
+
+  if (is_error(res) && propagate_error) {
+    msg <- attr(res, "condition")$message
+    stop("Error while running task:\n", msg)
+  }
   invisible()
 }
 
