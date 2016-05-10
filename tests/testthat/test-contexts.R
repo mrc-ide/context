@@ -174,3 +174,11 @@ test_that("list empty context", {
   expect_equal(sort(contexts_list(root)), sort(c(ctx1$id, ctx2$id)))
   expect_equal(context_handle(root)$id, ctx2$id)
 })
+
+test_that("args", {
+  ctx <- context_save(tempfile(), storage_args=list(compress=TRUE))
+  expect_true(context_db(ctx)$driver$compress)
+
+  ctx <- context_save(tempfile(), storage_args=list(compress=FALSE))
+  expect_false(context_db(ctx)$driver$compress)
+})

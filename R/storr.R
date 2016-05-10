@@ -48,16 +48,24 @@ context_db <- function(x) {
 }
 
 context_db_open <- function(root, config, create) {
-  ## NOTE: config$args is ignored at the moment...
-  switch(config$type,
-         environment=if (create) storr::storr_environment()
-                     else stop("Cannot reconnect to environment storage"),
-         rds=storr::storr_rds(path_db(root), compress=FALSE, mangle_key=TRUE),
-         ## This is actually a little more difficult than this because
-         ## we need to add any required packages (e.g., redux) to the
-         ## bootstrap script.  That's also going to generate some
-         ## issues with blowing out 'Suggests:' in the package
-         ## perhaps.  For now leave this be.
-         ## redis=storr::storr_redis_api(redux::redis(config=config$args)),
-         stop("Unsupported storage type ", config$type))
+  if (config$type == "environment") {
+    if (!create) {
+      stop("Cannot reconnect to environment storage")
+    }
+    ret <- storr::storr_environment()
+  } else if (config$type == "rds") {
+    defaults <- list(compress=FALSE, mangle_key=TRUE)
+    v <- intersect(names(defaults), names(config$args))
+    args <- c(list(path_db(root)), modifyList(defaults, config$args[v]))
+    ret <- do.call(storr::storr_rds, args, quote=TRUE)
+  } else {
+    ## This is actually a little more difficult than this because
+    ## we need to add any required packages (e.g., redux) to the
+    ## bootstrap script.  That's also going to generate some
+    ## issues with blowing out 'Suggests:' in the package
+    ## perhaps.  For now leave this be.
+    ## redis=storr::storr_redis_api(redux::redis(config=config$args)),
+    stop("Unsupported storage type ", config$type)
+  }
+  ret
 }
