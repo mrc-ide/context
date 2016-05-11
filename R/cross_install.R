@@ -44,6 +44,8 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
     stop("r_version must be scalar chararacter of for X.Y")
   }
 
+  packages <- setdiff(packages, base_packages())
+
   dir.create(lib, FALSE, TRUE)
   installed <- .packages(TRUE, lib)
   if (all(packages %in% installed)) {
