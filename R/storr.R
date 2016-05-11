@@ -56,7 +56,8 @@ context_db_open <- function(root, config, create) {
   } else if (config$type == "rds") {
     defaults <- list(compress=FALSE, mangle_key=TRUE)
     v <- intersect(names(defaults), names(config$args))
-    args <- c(list(path_db(root)), modifyList(defaults, config$args[v]))
+    args <- c(list(path_db(root)),
+              modifyList(defaults, as.list(config$args[v])))
     ret <- do.call(storr::storr_rds, args, quote=TRUE)
   } else {
     ## This is actually a little more difficult than this because
