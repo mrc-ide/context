@@ -134,3 +134,25 @@ test_that("task_run", {
   expect_true(t_beg >= t_sub)
   expect_true(t_end >= t_beg)
 })
+
+test_that("complex expressions", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+
+  x <- 1
+  y <- 10
+  n <- 2
+  expr <- quote(rep(x:y, n))
+  ctx <- context_save(root=root)
+
+  db <- context_db(ctx)
+
+  handle <- task_save(expr, ctx)
+
+  tmp <- task_read(handle)
+  expect_equal(tmp$expr, expr)
+  expect_equal(sort(names(tmp$objects)), c("n", "x", "y"))
+
+  res <- task_run(handle)
+  expect_equal(res, eval(expr))
+})

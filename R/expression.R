@@ -8,23 +8,18 @@ store_expression <- function(expr, envir, db) {
   is_call <- vlapply(args, is.call)
   is_symbol <- vlapply(args, is.symbol)
 
+  symbols <- vcapply(unname(as.list(args))[is_symbol], as.character)
   if (any(is_call)) {
-    ## In theory, this is not that nasty; what we'd need to do is to
-    ## scan through all expressions and pull out local variables, I
-    ## think.  The other option is that because we're going to
-    ## serialise the entire local environment we could possibly just
-    ## defer this step until the cluster tries to do anything with it.
-    ## In any case it can wait.
-    stop("complex expressions not yet supported")
+    symbols <- union(symbols,
+                     unname(unlist(lapply(args[is_call], find_symbols))))
   }
 
   ret <- list(expr=expr, id=id)
 
-  if (any(is_symbol)) {
-    object_names <- vcapply(args[is_symbol], as.character)
-    if (!all(ok <- exists(object_names, envir, inherits=FALSE))) {
+  if (length(symbols) > 0L) {
+    if (!all(ok <- exists(symbols, envir, inherits=FALSE))) {
       stop("not all objects found: ",
-           paste(object_names[!ok], collapse=", "))
+           paste(symbols[!ok], collapse=", "))
     }
     ## NOTE: The advantage of saving these via the store is we can do
     ## deduplicated storage (which would be good if we had large
@@ -32,7 +27,7 @@ store_expression <- function(expr, envir, db) {
     ## qlapply) but the (big) disadvantage is that it leads to a lot
     ## of files kicking around which is problematic from a cleanup
     ## perspective.
-    ret$objects <- vcapply(object_names, function(i)
+    ret$objects <- vcapply(symbols, function(i)
       db$set_by_value(get(i, envir, inherits=FALSE), namespace="objects"))
   }
 
@@ -46,4 +41,29 @@ restore_locals <- function(dat, parent) {
     context_db(dat)$export(e, dat$objects, "objects")
   }
   e
+}
+
+find_symbols <- function(expr, hide_errors=TRUE) {
+  if (is.list(expr)) {
+    return(join_deps(lapply(expr, find_symbols)))
+  }
+  symbols <- character(0)
+
+  f <- function(e) {
+    if (!is.recursive(e)) {
+      if (!is.symbol(e)) { # A literal of some type
+        return()
+      }
+      symbols <<- c(symbols, deparse(e))
+    } else {
+      for (a in as.list(e[-1])) {
+        if (!missing(a)) {
+          f(a)
+        }
+      }
+    }
+  }
+
+  f(expr)
+  unique(symbols)
 }
