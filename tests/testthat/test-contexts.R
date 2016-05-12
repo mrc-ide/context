@@ -191,3 +191,27 @@ test_that("args override", {
                  "Ignoring incompatible storage_args")
   expect_false(context_db(ctx2)$driver$compress)
 })
+
+test_that("compression works", {
+  ctx1 <- context_save(tempfile(), storage_args=list(compress=TRUE))
+  db1 <- context_db(ctx1)
+  expect_true(db1$driver$compress)
+  expr <- quote(rep(1:10, each=100))
+  handle1 <- task_save(expr, ctx1)
+  res1 <- task_run(handle1, envir=new.env(parent=.GlobalEnv))
+  hash1 <- db1$get_hash(handle1$id, "task_results")
+  s1 <- file.size(db1$driver$name_hash(hash1))
+
+  ctx2 <- context_save(tempfile(), storage_args=list(compress=FALSE))
+  db2 <- context_db(ctx2)
+  expect_false(db2$driver$compress)
+  expr <- quote(rep(1:10, each=100))
+  handle2 <- task_save(expr, ctx2)
+  res2 <- task_run(handle2, envir=new.env(parent=.GlobalEnv))
+  hash2 <- db2$get_hash(handle2$id, "task_results")
+  s2 <- file.size(db2$driver$name_hash(hash2))
+
+  expect_gt(s2, s1)
+  expect_equal(res1, res2)
+  expect_identical(hash1, hash2)
+})
