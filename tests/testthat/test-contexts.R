@@ -168,7 +168,6 @@ test_that("list empty context", {
   ctx1 <- context_save(root, auto=TRUE)
   expect_equal(contexts_list(root), ctx1$id)
   expect_equal(context_handle(root)$id, ctx1$id)
-
   Sys.sleep(.1)
   ctx2 <- context_save(root, auto=TRUE)
   expect_equal(sort(contexts_list(root)), sort(c(ctx1$id, ctx2$id)))
@@ -181,4 +180,14 @@ test_that("args", {
 
   ctx <- context_save(tempfile(), storage_args=list(compress=FALSE))
   expect_false(context_db(ctx)$driver$compress)
+})
+
+test_that("args override", {
+  path <- tempfile()
+  ctx1 <- context_save(path)
+  expect_false(context_db(ctx1)$driver$compress)
+
+  expect_warning(ctx2 <- context_save(path, storage_args=list(compress=TRUE)),
+                 "Ignoring incompatible storage_args")
+  expect_false(context_db(ctx2)$driver$compress)
 })

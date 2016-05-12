@@ -48,8 +48,10 @@ restore exactly as desired.}
 \item{storage_type}{Optional storage type.  Currently only 'rds'
 storage is supported, so this is largely ignored.}
 
-\item{storage_args}{Arguments used to open storage driver
-(currently ignored).}
+\item{storage_args}{Arguments used to open storage driver.  This
+is only used when the context directory is created the first
+time, and if given when the directory already exists a warning
+will be given if the options differ to the saved options.}
 
 \item{handle}{A \code{context_handle} object returned by
 \code{context_save}.}

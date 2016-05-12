@@ -37,8 +37,10 @@
 ##' @param storage_type Optional storage type.  Currently only 'rds'
 ##'   storage is supported, so this is largely ignored.
 ##'
-##' @param storage_args Arguments used to open storage driver
-##'   (currently ignored).
+##' @param storage_args Arguments used to open storage driver.  This
+##'   is only used when the context directory is created the first
+##'   time, and if given when the directory already exists a warning
+##'   will be given if the options differ to the saved options.
 ##'
 ##' @param handle A \code{context_handle} object returned by
 ##'   \code{context_save}.
@@ -298,6 +300,27 @@ setup_context <- function(root, type, args) {
     if (!is.null(type) && !identical(type, config$type)) {
       stop(sprintf("Incompatible storage types: requested %s, stored: %s",
                    type, config$type))
+    }
+    if (!is.null(args)) {
+      v <- union(names(config$args), names(args))
+
+      f <- function(x) {
+        ## TODO: this will not work well on vector arguments if
+        ## anything takes them...
+        existing <- config$args[[x]] %||% "<NULL>"
+        given <- args[[x]] %||% "<NULL>"
+        if (identical(existing, new)) {
+          ""
+        } else {
+          sprintf("\n\t%s: existing: %s, given: %s", x, existing, given)
+        }
+      }
+      res <- vcapply(v, f)
+      res <- res[nzchar(res)]
+      if (length(res) > 0L) {
+        warning("Ignoring incompatible storage_args:",
+                paste(res, collapse=""), immediate.=TRUE)
+      }
     }
     context_db_open(root, config, FALSE)
   } else {
