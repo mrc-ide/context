@@ -170,6 +170,22 @@ task_handle <- function(root, id, check_exists=TRUE) {
   ret
 }
 
+##' Return the log of a task, if enabled
+##' @title Return task log
+##' @inheritParams task_handle
+##' @export
+task_log <- function(root, id) {
+  db <- context_db(root)
+  root <- context_root(root)
+  path <- tryCatch(db$get(id, "log_path"),
+                   error=function(e) stop("Logging not enabled"))
+  filename <- file.path(root, path)
+  if (!file.exists(filename)) {
+    stop("Logfile does not exist at ", filename)
+  }
+  parse_context_log(readLines(filename))
+}
+
 ## Not yet exported:
 is.task_handle <- function(x) {
   inherits(x, "task_handle")
