@@ -143,9 +143,10 @@ test_that("context_db", {
   expect_true(ok(context_db(list(root=ctx$root, db=ctx$db))))
   expect_true(ok(context_db(list(root=ctx$root))))
   expect_true(ok(context_db(list(db=ctx$db))))
-  expect_error(ok(context_db(character(0))), "Invalid input")
-  expect_error(ok(context_db(c(ctx$root, ctx$root))), "Invalid input")
-  expect_error(ok(context_db(1L)), "Invalid input")
+  expect_error(ok(context_db(character(0))), "Cannot determine context root")
+  expect_error(ok(context_db(c(ctx$root, ctx$root))),
+               "Cannot determine context root")
+  expect_error(ok(context_db(1L)), "Cannot determine context root")
 })
 
 test_that("environment backed context", {
@@ -167,11 +168,11 @@ test_that("list empty context", {
 
   ctx1 <- context_save(root, auto=TRUE)
   expect_equal(contexts_list(root), ctx1$id)
-  expect_equal(context_handle(root)$id, ctx1$id)
+  expect_equal(context_handle(root, NULL)$id, ctx1$id)
   Sys.sleep(.1)
   ctx2 <- context_save(root, auto=TRUE)
   expect_equal(sort(contexts_list(root)), sort(c(ctx1$id, ctx2$id)))
-  expect_equal(context_handle(root)$id, ctx2$id)
+  expect_equal(context_handle(root, NULL)$id, ctx2$id)
 })
 
 test_that("args", {

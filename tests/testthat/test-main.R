@@ -76,7 +76,7 @@ test_that("install", {
 
 test_that("error propagation", {
   ctx <- context_save(auto=TRUE, root=tempfile("cluster_"))
-  db <- context_db(handle$root)
+  db <- context_db(ctx)
 
   full <- install_context(tempdir())
 
