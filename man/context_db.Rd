@@ -2,9 +2,12 @@
 % Please edit documentation in R/storr.R
 \name{context_db}
 \alias{context_db}
+\alias{context_root}
 \title{Get the context db}
 \usage{
 context_db(x)
+
+context_root(x)
 }
 \arguments{
 \item{x}{An object (see Details)}
@@ -13,7 +16,7 @@ context_db(x)
 The storr database used by this context
 }
 \description{
-Get a context db by way of some object.
+Get a context db or root by way of some object.
 }
 \details{
 Valid options for \code{x} are

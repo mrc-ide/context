@@ -1,4 +1,4 @@
-##' Get a context db by way of some object.
+##' Get a context db or root by way of some object.
 ##'
 ##' Valid options for \code{x} are
 ##'
@@ -32,18 +32,26 @@ context_db <- function(x) {
   } else if (is.recursive(x) && inherits(x$db, "storr")) {
     x$db
   } else {
-    ## NOTE: This will give a cryptic error if config not found...
-    if (is.recursive(x)) {
-      x <- x$root
-    }
-    if (!is.character(x) || length(x) != 1L) {
-      stop("Invalid input; cannot determine context root")
-    }
+    root <- context_root(x)
+    context_db_open(root, readRDS(path_config(root)), FALSE)
+  }
+}
+
+##' @export
+##' @rdname context_db
+context_root <- function(x) {
+  if (is.character(x) && length(x) == 1L) {
     config <- path_config(x)
     if (!file.exists(config)) {
       stop("context database not set up at ", x)
     }
-    context_db_open(x, readRDS(config), FALSE)
+    x
+  } else if (is.recursive(x) && !is.null(x$root)) {
+    context_root(x$root)
+  } else if (inherits(x, "storr")) {
+    context_root(x$driver$path)
+  } else {
+    stop("Cannot determine context root")
   }
 }
 

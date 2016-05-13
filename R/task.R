@@ -148,6 +148,10 @@ task_result <- function(handle) {
 ##'   creating a nonexistant task.
 ##' @export
 task_handle <- function(root, id, check_exists=TRUE) {
+  if (inherits(root, "task_handle") &&
+      (is.null(id) || identical(id, root$id))) {
+    return(root)
+  }
   ## I don't think this one needs to care where root is if it can get
   ## the db.  Consider entirely dropping the root in favour of
   ## _always_ including the db.
@@ -155,7 +159,7 @@ task_handle <- function(root, id, check_exists=TRUE) {
     stop("id must be a character")
   }
   db <- context_db(root)
-  root <- if (is.recursive(root)) root$root else root
+  root <- context_root(root)
   ret <- structure(list(root=root, id=id, db=db), class="task_handle")
   if (check_exists) {
     ok <- vlapply(id, db$exists, "tasks")
@@ -251,7 +255,7 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL) {
 ##' @param named Name the output with the task ids?
 ##' @export
 task_status <- function(handle, named=FALSE) {
-  ## TODO: rename -> task_status
+  ## TODO: rename -> tasks_status
   ## TODO: in storr, add a missing action wrapper here?
   db <- context_db(handle)
   f <- function(id) {
