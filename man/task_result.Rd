@@ -4,10 +4,13 @@
 \alias{task_result}
 \title{Fetch task result}
 \usage{
-task_result(handle)
+task_result(handle, sanitise = FALSE)
 }
 \arguments{
 \item{handle}{A task handle}
+
+\item{sanitise}{Should we avoid throwing an error if a task is not
+completed?  Used internally, and not generally needed.}
 }
 \description{
 Fetch result from completed task.

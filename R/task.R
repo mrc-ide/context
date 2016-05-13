@@ -127,11 +127,23 @@ tasks_list <- function(root) {
 ##' Fetch result from completed task.
 ##' @title Fetch task result
 ##' @param handle A task handle
+##'
+##' @param sanitise Should we avoid throwing an error if a task is not
+##'   completed?  Used internally, and not generally needed.
+##'
 ##' @export
-task_result <- function(handle) {
-  ## TODO: Why is this a hash error not a key error?
-  tryCatch(context_db(handle)$get(handle$id, "task_results"),
-           HashError=function(e) stop("Task does not have results"))
+task_result <- function(handle, sanitise=FALSE) {
+  status <- task_status(handle, FALSE)
+  if (status == "COMPLETE" || status == "ERROR") {
+    context_db(handle)$get(handle$id, "task_results")
+  } else {
+    err <- UnfetchableTask(handle$id, status)
+    if (sanitise) {
+      err
+    } else {
+      stop(err)
+    }
+  }
 }
 
 ##' Create a handle to a task
@@ -302,4 +314,10 @@ task_delete <- function(handle) {
       db$del(handle$id, "task_results")
   }
   invisible(any(vlapply(handle$id, f, USE.NAMES=FALSE)))
+}
+
+UnfetchableTask <- function(task_id, status) {
+  msg <- sprintf("task %s is unfetchable: %s", task_id, status)
+  structure(list(message=msg, task_id=task_id, task_status=status),
+            class=c("UnfetchableTask", "error", "condition"))
 }
