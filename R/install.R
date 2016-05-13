@@ -15,6 +15,8 @@
 ##' @param sources Source information from
 ##'   \code{\link{package_sources}}.
 ##'
+##' @param lib Optional library to install packages into
+##'
 ##' @param ... Additional arguments passed through to
 ##'   \code{\link{install.packages}} (or for
 ##'   \code{install_packages_missing}, to \code{install_packages}).
@@ -36,8 +38,7 @@
 ##'
 ##' @export
 install_packages <- function(packages, sources=package_sources(),
-                             lib=NULL, ..., error=TRUE,
-                             move_in_place=FALSE) {
+                             lib=NULL, ..., error=TRUE, move_in_place=FALSE) {
   ## TODO: sources -> package_sources?
   if (length(packages) == 0L) {
     return()
@@ -46,7 +47,9 @@ install_packages <- function(packages, sources=package_sources(),
   r <- context_repos(sources)
   context_log("install", paste(packages, collapse=", "))
 
-  lib <- .libPaths()[[1]]
+  if (is.null(lib)) {
+    lib <- .libPaths()[[1]]
+  }
 
   if (move_in_place) {
     lib_real <- lib

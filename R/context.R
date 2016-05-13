@@ -309,7 +309,7 @@ setup_context <- function(root, type, args) {
         ## anything takes them...
         existing <- config$args[[x]] %||% "<NULL>"
         given <- args[[x]] %||% "<NULL>"
-        if (identical(existing, new)) {
+        if (identical(existing, given)) {
           ""
         } else {
           sprintf("\n\t%s: existing: %s, given: %s", x, existing, given)

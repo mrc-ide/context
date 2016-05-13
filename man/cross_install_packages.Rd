@@ -27,6 +27,8 @@ patch version).}
 \item{packages}{Vector of packages to install}
 
 \item{root}{Context root}
+
+\item{context}{A context handle}
 }
 \description{
 Support for cross installing packages (e.g., installing windows

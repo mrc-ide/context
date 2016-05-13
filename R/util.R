@@ -1,3 +1,11 @@
+## Base imports:
+##' @importFrom stats na.omit setNames
+##'
+##' @importFrom utils available.packages capture.output contrib.url
+##'   download.file head install.packages installed.packages
+##'   modifyList packageVersion sessionInfo tail untar unzip
+NULL
+
 ## Like file.path, but NULL elements are skipped over rather than
 ## rendering the string non-existant.
 file_path <- function(...) {

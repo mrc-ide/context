@@ -44,9 +44,6 @@ restore_locals <- function(dat, parent) {
 }
 
 find_symbols <- function(expr, hide_errors=TRUE) {
-  if (is.list(expr)) {
-    return(join_deps(lapply(expr, find_symbols)))
-  }
   symbols <- character(0)
 
   f <- function(e) {

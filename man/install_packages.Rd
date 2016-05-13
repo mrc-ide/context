@@ -16,6 +16,8 @@ install_packages_missing(packages, ...)
 \item{sources}{Source information from
 \code{\link{package_sources}}.}
 
+\item{lib}{Optional library to install packages into}
+
 \item{...}{Additional arguments passed through to
 \code{\link{install.packages}} (or for
 \code{install_packages_missing}, to \code{install_packages}).}

@@ -130,8 +130,9 @@ cross_install_bootstrap <- function(lib, platform, r_version, root=NULL) {
 
 ##' @export
 ##' @rdname cross_install_packages
+##' @param context A context handle
 cross_install_context <- function(lib, platform, r_version, context) {
-  root <- context$root
+  root <- context::context_root(context)
   cross_install_bootstrap(lib, platform, r_version, root)
   packages <- unlist(context$packages, use.names=FALSE)
   repos <- context_repos(context$package_sources)
