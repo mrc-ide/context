@@ -226,7 +226,7 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL) {
 
   value <- try(eval(dat$expr, dat$envir))
   err <- is_error(value)
-  context_log(if (err) "error" else "result", "") # not sure here...
+  context_log(if (err) "error" else "ok", "") # not sure here...
   db$set(handle$id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
   db$set(handle$id, value, "task_results")
 
