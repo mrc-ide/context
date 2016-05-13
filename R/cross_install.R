@@ -49,7 +49,12 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   dir.create(lib, FALSE, TRUE)
   installed <- .packages(TRUE, lib)
   if (all(packages %in% installed)) {
-    context_log("cross", "Packages already installed")
+    if (length(packages) > 0L) {
+      msg <- "Packages already installed"
+    } else {
+      msg <- "No packages to install"
+    }
+    context_log("cross", msg)
     return()
   }
 
