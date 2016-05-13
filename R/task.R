@@ -215,6 +215,76 @@ task_log <- function(root, id) {
   parse_context_log(readLines(filename))
 }
 
+## TODO: why is this not in context?
+##
+## TODO: It might be useful to have a "sorted" option here, because
+## it's a bit confusing that when a specific list of tasks is given
+## the output is a different order.  However, because the task_ids
+## might be generated at any point above this it's hard to tell when a
+## sorted/unsorted list is wanted.
+
+##' Fetch times taken to queue, run, and since running a task.
+##'
+##' @title Fetch task times
+##'
+##' @param handle A task handle.  If the task handle has a
+##'   \emph{vector} of ids in it, then it represents a number of
+##'   tasks.  This will create a data.frame with that many rows.
+##'
+##' @param unit_elapsed Elapsed time unit.  The default is "secs".
+##'   This is passed to the \code{as.numeric} method of a
+##'   \code{difftime} object.
+##'
+##' @param sorted Sort the output in terms of submitted time?  If
+##'   \code{FALSE} then the output is sorted based on task ids.
+##'
+##' @export
+##' @author Rich FitzJohn
+tasks_times <- function(handle, unit_elapsed="secs", sorted=TRUE) {
+  db <- context::context_db(handle)
+  task_ids <- handle$id
+  if (length(task_ids) == 0L) {
+    empty_time <- Sys.time()[-1]
+    ret <- data.frame(task_id=character(0),
+                      submitted=empty_time,
+                      started=empty_time,
+                      finished=empty_time,
+                      waiting=numeric(0),
+                      running=numeric(0),
+                      idle=numeric(0),
+                      stringsAsFactors=FALSE)
+  } else {
+    f <- function(ids, type) {
+      NA_POSIXct <- as.POSIXct(NA)
+      gett <- function(id) {
+        tryCatch(db$get(id, type),
+                 KeyError=function(e) NA_POSIXct)
+      }
+      res <- lapply(ids, gett)
+      ret <- unlist(res)
+      class(ret) <- c("POSIXct", "POSIXt")
+      ret
+    }
+    ret <- data.frame(task_id   = task_ids,
+                      submitted = f(task_ids, "task_time_sub"),
+                      started   = f(task_ids, "task_time_beg"),
+                      finished  = f(task_ids, "task_time_end"),
+                      stringsAsFactors=FALSE)
+    if (sorted) {
+      ret <- ret[order(ret$submitted), ]
+    }
+    rownames(ret) <- NULL
+    started2  <- ret$started
+    finished2 <- ret$finished
+    now <- Sys.time()
+    finished2[is.na(finished2)] <- started2[is.na(started2)] <- now
+    ret$waiting <- as.numeric(started2  - ret$submitted, unit_elapsed)
+    ret$running <- as.numeric(finished2 - ret$started,   unit_elapsed)
+    ret$idle    <- as.numeric(now       - ret$finished,  unit_elapsed)
+  }
+  ret
+}
+
 ## Not yet exported:
 is.task_handle <- function(x) {
   inherits(x, "task_handle")
