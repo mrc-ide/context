@@ -78,7 +78,7 @@ parse_context_log <- function(x) {
 }
 
 ##' @export
-print.context_log <- function(x, ...) {
+print.context_log <- function(x, pretty=TRUE, ...) {
   prep <- function(x) {
     if (length(x) == 0) {
       ""
@@ -86,6 +86,18 @@ print.context_log <- function(x, ...) {
       paste0("\n", paste0("    ", x, collapse="\n"))
     }
   }
+  if (pretty && crayon::has_color()) {
+    x <- pretty_context_log(x)
+  }
   body <- vcapply(x$body, prep)
   cat(paste0(paste(paste0(x$str, body), collapse="\n"), "\n"))
+}
+
+pretty_context_log <- function(x) {
+  yellow <- crayon::make_style("yellow")$bold
+  green <- crayon::make_style("blue")$bold
+  x$str <- green(x$str)
+  i <- vapply(x$body, length, integer(1)) > 0L
+  x$body[i] <- lapply(x$body[i], yellow)
+  x
 }
