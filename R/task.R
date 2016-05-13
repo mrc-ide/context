@@ -182,6 +182,23 @@ task_handle <- function(root, id, check_exists=TRUE) {
   ret
 }
 
+##' Fetch expression for a task
+##' @title Fetch task expression
+##' @param handle A task handle
+##'
+##' @param locals Return locals bound to the expression (as an
+##'   attribute "locals")
+##'
+##' @export
+task_expr <- function(handle, locals=FALSE) {
+  t <- task_read(handle)
+  ret <- t$expr
+  if (locals) {
+    attr(ret, "locals") <- t$objects
+  }
+  ret
+}
+
 ##' Return the log of a task, if enabled
 ##' @title Return task log
 ##' @inheritParams task_handle
