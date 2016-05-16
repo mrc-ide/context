@@ -8,12 +8,12 @@ main <- function(args=commandArgs(TRUE)) {
   cores <- Sys.getenv("CONTEXT_CORES")
 
   if (cores != "" && is.null(par$cl)) {
-    context_log("debug", "running as parallel job")
+    context_log("parallel", "running as parallel job")
     ctx <- context_handle(h$root, task_read(h)$context_id)
     start_parallel_cluster(as.integer(cores), ctx)
     on.exit(stop_parallel_cluster())
   } else {
-    context_log("debug", "running as single core job")
+    context_log("parallel", "running as single core job")
   }
 
   res <- task_run(h, install=TRUE, envir=.GlobalEnv)

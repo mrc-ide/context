@@ -55,6 +55,7 @@ random_id <- function() {
 }
 
 print_ad_hoc <- function(x) {
+  cl <- class(x)[[1]]
   x <- unclass(x)
   i <- vlapply(unclass(x), is.raw)
   if (any(i)) {
@@ -66,7 +67,7 @@ print_ad_hoc <- function(x) {
       paste(sprintf("\n   - %s", el), collapse=""))
   }
   members <- paste(sprintf(" - %s: %s\n", names(x), unname(x)), collapse="")
-  cat(sprintf("<%s>\n%s", class(x)[[1]], members))
+  cat(sprintf("<%s>\n%s", cl, members))
   invisible(x)
 }
 
