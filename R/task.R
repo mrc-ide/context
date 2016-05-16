@@ -335,8 +335,10 @@ print.task_handle <- function(x, ...) {
 ##'   non-interactively, especially on remote servers, this will allow
 ##'   collection of diagnostics that facilitate debugging.
 ##'
+##' @param print_error Print information about an error if one occurs?
 ##' @export
-task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL) {
+task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL,
+                     print_error=TRUE) {
   if (!is.null(filename)) {
     return(capture_log(task_run(handle, install, envir, NULL), filename))
   }
@@ -349,15 +351,64 @@ task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL) {
   db$set(handle$id, TASK_RUNNING, "task_status")
   db$set(handle$id, Sys.time(), "task_time_beg")
 
-  value <- try(eval(dat$expr, dat$envir))
-  err <- is_error(value)
-  context_log(if (err) "error" else "ok", "") # not sure here...
+  warnings <- collector()
+  error <- NULL
+  handler <- function(e) {
+    trace <- call_trace(0, 3)
+    e$warnings <- warnings$get()
+    e$trace <- trace
+    class(e) <- c("context_task_error", class(e))
+    error <<- e
+    NULL
+  }
+
+  value <- tryCatch(withCallingHandlers(eval(dat$expr, dat$envir),
+                                        error=handler,
+                                        warning=function(e) warnings$add(e)),
+                    error=function(e) error)
+
+  err <- !is.null(error)
+  if (err && print_error) {
+    message(paste(as.character(error), collapse="\n"))
+  }
+
+  context_log(if (err) "error" else "ok", "")
   db$set(handle$id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
   db$set(handle$id, value, "task_results")
 
   db$set(handle$id, Sys.time(), "task_time_end")
   context_log("end", Sys_time())
   invisible(value)
+}
+
+##' @export
+as.character.context_task_error <- function(x, ...) {
+  call <- conditionCall(x)
+  if (!is.null(call)) {
+    dcall <- deparse(call)[1L]
+    prefix <- sprintf("Error in:\n    %s", dcall)
+  } else {
+    prefix <- "Error:"
+  }
+
+  ret <- paste0(prefix, "\n", conditionMessage(x), "\n")
+
+  if (length(x$trace) > 0L) {
+    ret <- c(ret,
+             "trace: (outermost first)",
+             sprintf("  %d: %s", seq_along(x$trace), x$trace))
+  }
+
+  nw <- length(x$warnings)
+  if (nw > 0L) {
+    calls <- lapply(x$warnings, "[[", "call")
+    msgs <- vcapply(x$warnings, "[[", "message")
+    tmp <- capture.output(print.warnings(structure(setNames(calls, msgs))))
+    ret <- c(ret,
+             ngettext(nw, "There was 1 warning",
+                      sprintf("There were %d warnings:", nw)),
+             tmp[-1])
+  }
 }
 
 ## TODO: need to write a status object too (after porting to storr) so

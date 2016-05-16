@@ -2,6 +2,7 @@
 
 S3method("[",task_handle)
 S3method("[[",task_handle)
+S3method(as.character,context_task_error)
 S3method(length,task_handle)
 S3method(print,context)
 S3method(print,context_handle)

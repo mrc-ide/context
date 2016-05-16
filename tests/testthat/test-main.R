@@ -86,7 +86,7 @@ test_that("error propagation", {
   res1 <- call_system(full, c(task1$root, task1$id))
   expect_null(attr(res1, "status", exact=TRUE))
   expect_equal(task_status(task1), TASK_ERROR)
-  expect_is(task_result(task1), "try-error")
+  expect_is(task_result(task1), "context_task_error")
 
   Sys.setenv(CONTEXT_PROPAGATE_ERROR="TRUE")
   on.exit(Sys.unsetenv("CONTEXT_PROPAGATE_ERROR"))
@@ -96,5 +96,5 @@ test_that("error propagation", {
     system2(full, c(task2$root, task2$id), stdout=TRUE, stderr=TRUE))
   expect_gt(attr(res2, "status", exact=TRUE), 0) # should be 1
   expect_equal(task_status(task2), TASK_ERROR)
-  expect_is(task_result(task2), "try-error")
+  expect_is(task_result(task2), "context_task_error")
 })

@@ -153,7 +153,7 @@ process_id <- function() {
 }
 
 is_error <- function(x) {
-  inherits(x, "try-error")
+  inherits(x, "error")
 }
 
 ## Like save.image but:
@@ -210,4 +210,28 @@ capture_log <- function(expr, filename) {
 
 `%||%` <- function(a, b) {
   if (!is.null(a)) a else b
+}
+
+call_trace <- function(skip_outer=0, skip_inner=0) {
+  calls <- sys.calls()
+
+  if (skip_outer > length(calls)) {
+    return(character(0))
+  } else if (skip_outer > 0L) {
+    calls <- calls[-seq_len(skip_outer)]
+  }
+
+  if (skip_inner > length(calls)) {
+    return(character(0))
+  } else if (skip_inner > 0L) {
+    calls <- calls[-seq(by=1, length.out=skip_inner, to=length(calls))]
+  }
+
+  limitedLabels(calls)
+}
+
+collector <- function(init=list()) {
+  res <- init
+  list(add=function(x) res <<- c(res, list(x)),
+       get=function() res)
 }

@@ -4,7 +4,8 @@
 \alias{task_run}
 \title{Run a task}
 \usage{
-task_run(handle, install = FALSE, envir = .GlobalEnv, filename = NULL)
+task_run(handle, install = FALSE, envir = .GlobalEnv, filename = NULL,
+  print_error = TRUE)
 }
 \arguments{
 \item{handle}{Task handle}
@@ -20,6 +21,8 @@ print no output to the console, which will make debugging more
 difficult when run interactively.  However, when run
 non-interactively, especially on remote servers, this will allow
 collection of diagnostics that facilitate debugging.}
+
+\item{print_error}{Print information about an error if one occurs?}
 }
 \description{
 Run a task

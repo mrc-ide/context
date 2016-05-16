@@ -156,3 +156,14 @@ test_that("complex expressions", {
   res <- task_run(handle)
   expect_equal(res, eval(expr))
 })
+
+test_that("stack trace", {
+  ## context_log_start()
+  ctx <- context::context_save(root=tempfile(), storage_type="environment")
+  task <- task_save(quote(readLines("asdfa.txt")), ctx)
+  ## Warning is not suppressed:
+  expect_warning(res <- task_run(task, print_error=FALSE), "No such file")
+  expect_is(res, "context_task_error")
+  expect_is(res$trace, "character")
+  expect_match(tail(res$trace, 2)[[1]], "^readLines")
+})
