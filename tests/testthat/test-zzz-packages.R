@@ -58,6 +58,7 @@ test_that("local drat creation", {
 })
 
 test_that("package installation in parallel", {
+  skip("Disabled, possibly to be removed")
   ## NOTE: I have seen a segfault here and I do not know where it
   ## could have come from.  My suspicion is that in inheriting RNG
   ## seeds something nasty happened (or in the multiple read/write
