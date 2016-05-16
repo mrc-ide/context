@@ -199,6 +199,12 @@ task_expr <- function(handle, locals=FALSE) {
   ret
 }
 
+##' @rdname task_expr
+##' @export
+task_function_name <- function(handle) {
+  paste(deparse(task_expr(handle)[[1L]]), collapse=" ")
+}
+
 ##' Return the log of a task, if enabled
 ##' @title Return task log
 ##' @inheritParams task_handle

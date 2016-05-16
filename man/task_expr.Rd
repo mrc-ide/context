@@ -2,9 +2,12 @@
 % Please edit documentation in R/task.R
 \name{task_expr}
 \alias{task_expr}
+\alias{task_function_name}
 \title{Fetch task expression}
 \usage{
 task_expr(handle, locals = FALSE)
+
+task_function_name(handle)
 }
 \arguments{
 \item{handle}{A task handle}
