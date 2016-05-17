@@ -162,8 +162,8 @@ cross_install_package <- function(package, dat, lib, binary, platform) {
              CYGWIN = "nodosfilewarning")
     env <- sprintf("%s=%s", names(env), unname(env))
     args <- c("CMD", "INSTALL", "--no-test-load",
-              paste0("--library=", lib),
-              normalizePath(path))
+              paste0("--library=", shQuote(lib)),
+              shQuote(normalizePath(path)))
     ok <- system2(file.path(R.home(), "bin", "R"), args, env=env)
     if (ok != 0L) {
       stop(sprintf("Command failed (code: %d)", ok))
