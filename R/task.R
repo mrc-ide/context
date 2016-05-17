@@ -214,11 +214,15 @@ task_log <- function(root, id) {
   root <- context_root(root)
   path <- tryCatch(db$get(id, "log_path"),
                    error=function(e) stop("Logging not enabled"))
-  filename <- file.path(root, path)
-  if (!file.exists(filename)) {
-    stop("Logfile does not exist at ", filename)
+  ## TODO: Need to check if this is a relative path -- pathr contains
+  ## things for this.
+  if (!grepl("^(/|[A-Za-z]:[/\\]|//|\\\\\\\\)", path)) {
+    path <- file.path(root, path)
   }
-  parse_context_log(readLines(filename))
+  if (!file.exists(path)) {
+    stop("Logfile does not exist at ", path)
+  }
+  parse_context_log(readLines(path))
 }
 
 ## TODO: why is this not in context?
