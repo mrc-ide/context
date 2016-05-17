@@ -17,18 +17,32 @@ store_expression <- function(expr, envir, db) {
   ret <- list(expr=expr, id=id)
 
   if (length(symbols) > 0L) {
-    if (!all(ok <- exists(symbols, envir, inherits=FALSE))) {
-      stop("not all objects found: ",
-           paste(symbols[!ok], collapse=", "))
+    local <- exists(symbols, envir, inherits=FALSE)
+    if (any(!local)) {
+      test <- symbols[!local]
+      ## TODO: Doing this *properly* requires that we know what was
+      ## created in the context.  So this is going to probably copy
+      ## too much over I think.  But distinguishing between Global
+      ## environment variables that were created when the context was
+      ## set up and from variables that have been changed is
+      ## challenging.
+      global <- exists(test, parent.env(.GlobalEnv))
+      if (any(!global)) {
+        stop("not all objects found: ",
+             paste(test[!global], collapse=", "))
+      }
     }
+
     ## NOTE: The advantage of saving these via the store is we can do
     ## deduplicated storage (which would be good if we had large
     ## objects and we get lots of duplicate objects with things like
     ## qlapply) but the (big) disadvantage is that it leads to a lot
     ## of files kicking around which is problematic from a cleanup
     ## perspective.
-    ret$objects <- vcapply(symbols, function(i)
-      db$set_by_value(get(i, envir, inherits=FALSE), namespace="objects"))
+    if (any(local)) {
+      ret$objects <- vcapply(symbols[local], function(i)
+        db$set_by_value(get(i, envir, inherits=FALSE), namespace="objects"))
+    }
   }
 
   ret
