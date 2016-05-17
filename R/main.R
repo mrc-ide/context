@@ -1,6 +1,7 @@
 main <- function(args=commandArgs(TRUE)) {
   context_log_start()
   context_log("init", Sys_time())
+  context_log("hostname", hostname())
   context_log("version", packageVersion(.packageName))
   args <- main_parse_args(args)
 
