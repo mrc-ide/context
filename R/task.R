@@ -222,7 +222,7 @@ task_log <- function(root, id) {
   if (!file.exists(path)) {
     stop("Logfile does not exist at ", path)
   }
-  parse_context_log(readLines(path))
+  parse_context_log(readLines(path, warn=FALSE))
 }
 
 ## TODO: why is this not in context?
