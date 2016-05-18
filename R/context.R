@@ -131,7 +131,7 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
 ##'
 ##' @export
 context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
-  if (!is.context_handle(handle) || is.context(handle)) {
+  if (!(is.context_handle(handle) || is.context(handle))) {
     stop("handle must be a context_handle")
   }
   context_log("context", handle$id)

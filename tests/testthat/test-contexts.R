@@ -32,6 +32,23 @@ test_that("simplest case", {
   expect_is(obj, "context")
 })
 
+test_that("load contexts and handles", {
+  root <- tempfile("cluster_")
+  on.exit(cleanup(root))
+  handle <- context_save(root=root, envir=.GlobalEnv)
+  expect_is(handle, "context_handle")
+  ctx <- context_read(handle)
+  expect_is(ctx, "context")
+
+  e1 <- context_load(ctx, envir=new.env())
+  expect_is(e1, "environment")
+  expect_equal(ls(e1), character(0))
+
+  e2 <- context_load(handle, envir=new.env())
+  expect_is(e2, "environment")
+  expect_equal(ls(e2), character(0))
+})
+
 test_that("auto", {
   Sys.setenv(R_TESTS="")
   root <- tempfile("cluster_")
