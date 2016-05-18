@@ -167,3 +167,18 @@ test_that("stack trace", {
   expect_is(res$trace, "character")
   expect_match(tail(res$trace, 2)[[1]], "^readLines")
 })
+
+test_that("stack trace, no warning", {
+  ctx <- context::context_save(root=tempfile(), storage_type="environment",
+                               sources="myfuns.R")
+  task <- task_save(quote(f(-10)), ctx)
+  context_log_start()
+  on.exit(context_log_stop())
+  expect_message(res <- task_run(task, print_error=TRUE),
+                 "Need positive x")
+})
+
+test_that("long expr", {
+  ctx <- context::context_save(root=tempfile(), storage_type="environment")
+  task <- task_save(quote(list(a_label = "a value", another_label=pi, one_more=c(exp(1), pi, 123.12312), last_one="a very long string here to wrap")), ctx)
+})

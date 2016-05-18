@@ -413,6 +413,7 @@ as.character.context_task_error <- function(x, ...) {
                       sprintf("There were %d warnings:", nw)),
              tmp[-1])
   }
+  ret
 }
 
 ## TODO: need to write a status object too (after porting to storr) so
