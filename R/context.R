@@ -141,10 +141,10 @@ context_load <- function(handle, install=TRUE, envir=.GlobalEnv, ...) {
     obj <- handle
   }
 
-  ## NOTE: This is not scoped.  That's probably not a problem because
-  ## the package loading is not scoped either.
-  use_local_library(path_library(handle$root))
   if (install) {
+    ## NOTE: This is not scoped.  That's probably not a problem
+    ## because the package loading is not scoped either.
+    use_local_library(path_library(handle$root))
     install_packages_missing(c(obj$packages$attached, obj$packages$loaded),
                              sources=obj$package_sources, ...,
                              move_in_place=TRUE)
