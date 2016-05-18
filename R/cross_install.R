@@ -48,6 +48,15 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
 
   dir.create(lib, FALSE, TRUE)
   installed <- .packages(TRUE, lib)
+  to_check <- intersect(packages, .packages(TRUE, lib))
+  upgrade <- to_check[vlapply(to_check, function(p)
+    packageVersion(p, lib) < packageVersion(p))]
+  if (length(upgrade) > 0L) {
+    context_log("upgrade", paste(upgrade, collapse=", "))
+    unlink(file.path(lib, upgrade), recursive=TRUE)
+    installed <- .packages(TRUE, lib)
+  }
+
   if (all(packages %in% installed)) {
     if (length(packages) > 0L) {
       msg <- "Packages already installed"
@@ -125,6 +134,7 @@ cross_install_bootstrap <- function(lib, platform, r_version, root=NULL) {
   } else {
     repos[["context"]] <- "https://richfitz.github.io/drat/"
   }
+
   cross_install_packages(lib, platform, r_version, repos, "context")
 }
 
