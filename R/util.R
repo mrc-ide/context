@@ -51,7 +51,7 @@ file_remove <- function(...) {
 }
 
 random_id <- function() {
-  gsub("-", "", uuid::UUIDgenerate(), fixed=TRUE)
+  gsub("-", "", uuid::UUIDgenerate(FALSE), fixed=TRUE)
 }
 
 print_ad_hoc <- function(x) {
