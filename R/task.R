@@ -216,7 +216,7 @@ task_log <- function(root, id) {
                    error=function(e) stop("Logging not enabled"))
   ## TODO: Need to check if this is a relative path -- pathr contains
   ## things for this.
-  if (!grepl("^(/|[A-Za-z]:[/\\]|//|\\\\\\\\)", path)) {
+  if (is_relative_path(path)) {
     path <- file.path(root, path)
   }
   if (!file.exists(path)) {

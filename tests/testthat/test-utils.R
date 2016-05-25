@@ -43,3 +43,13 @@ test_that("capture_log", {
   expect_equal(capture_log(f(), filename), 1)
   expect_identical(readLines(filename), "foo")
 })
+
+test_that("absolute paths", {
+  expect_true(is_absolute_path("/foo/bar"))
+  expect_true(is_absolute_path("//network/bar"))
+  expect_true(is_absolute_path("\\\\network/bar"))
+  expect_true(is_absolute_path("c:/foo/bar"))
+
+  expect_false(is_absolute_path("."))
+  expect_false(is_absolute_path("foo/bar"))
+})
