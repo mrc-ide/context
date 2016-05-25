@@ -167,17 +167,26 @@ cross_install_package <- function(package, dat, lib, binary, platform) {
     file.remove(path)
     path <- file.path(tmp, x$Package)
     lib <- normalizePath(lib, "/")
-    env <- c(R_LIBS_USER=paste(c(lib, .libPaths()),
-                               collapse=.Platform$path.sep),
+    ## We need to install the package into a temporary library and
+    ## move it into place because otherwise preparing the package for
+    ## lazy loading will cause issues if the package triggers loading
+    ## a package with compiled dependencies.
+    lib_tmp <- tempfile("cross_tmp_lib", tmpdir=lib)
+    dir.create(lib_tmp)
+    on.exit(try(unlink(lib_tmp, recursive=TRUE), silent=TRUE))
+    env <- c(R_LIBS_USER=paste(c(.libPaths()), collapse=.Platform$path.sep),
              CYGWIN = "nodosfilewarning")
     env <- sprintf("%s=%s", names(env), unname(env))
     args <- c("CMD", "INSTALL", "--no-test-load",
-              paste0("--library=", shQuote(lib)),
+              paste0("--library=", shQuote(lib_tmp)),
               shQuote(normalizePath(path)))
     ok <- system2(file.path(R.home(), "bin", "R"), args, env=env)
     if (ok != 0L) {
       stop(sprintf("Command failed (code: %d)", ok))
     }
+    file.rename(file.path(lib_tmp, x$Package), file.path(lib, x$Package))
+    file.remove(lib_tmp)
+    on.exit()
   }
 }
 
