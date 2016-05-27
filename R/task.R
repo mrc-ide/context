@@ -220,6 +220,9 @@ task_log <- function(root, id) {
   if (is_relative_path(path)) {
     path <- file.path(root, path)
   }
+  if (is_dir(path)) {
+    path <- file.path(path, id)
+  }
   if (!file.exists(path)) {
     stop("Logfile does not exist at ", path)
   }
