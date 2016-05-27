@@ -6,6 +6,7 @@ TASK_ERROR    <- "ERROR"
 TASK_ORPHAN   <- "ORPHAN"
 TASK_REDIRECT <- "REDIRECT"
 TASK_MISSING  <- "MISSING"
+TASK_CANCELLED <- "CANCELLED"
 
 ##' Save and reload tasks.  Tasks consist of an expression bound to a
 ##' \code{context}.
