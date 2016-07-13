@@ -187,10 +187,10 @@ test_that("don't load", {
   ctx <- context::context_save(root=tempfile(),
                                sources="noisy.R",
                                storage_type="environment")
-  t <- task_save(quote(double(2)), ctx)
+  t <- task_save(quote(times_two(2)), ctx)
   expect_message(env <- context_load(ctx), "NOISY")
 
-  expect_silent(ans <- task_run(t, load_context=FALSE))
+  expect_silent(ans <- task_run(t, load_context=FALSE, envir=env))
   expect_equal(ans, 4)
   expect_message(ans <- task_run(t, load_context=TRUE), "NOISY")
   expect_equal(ans, 4)
