@@ -222,7 +222,7 @@ task_log <- function(root, id) {
   db <- context_db(root)
   root <- context_root(root)
   path <- tryCatch(db$get(id, "log_path"),
-                   error=function(e) stop("Logging not enabled"))
+                   KeyError=function(e) stop("Logging not enabled"))
   ## TODO: Need to check if this is a relative path -- pathr contains
   ## things for this.
   if (is_relative_path(path)) {
