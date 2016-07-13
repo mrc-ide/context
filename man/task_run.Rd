@@ -5,7 +5,7 @@
 \title{Run a task}
 \usage{
 task_run(handle, install = FALSE, envir = .GlobalEnv, filename = NULL,
-  print_error = TRUE)
+  print_error = TRUE, load_context = TRUE)
 }
 \arguments{
 \item{handle}{Task handle}
@@ -23,6 +23,10 @@ non-interactively, especially on remote servers, this will allow
 collection of diagnostics that facilitate debugging.}
 
 \item{print_error}{Print information about an error if one occurs?}
+
+\item{load_context}{Load the context?  This is generally what is
+wanted, but if you're repeatedly evaluating expressions in the
+same context.}
 }
 \description{
 Run a task

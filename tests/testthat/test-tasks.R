@@ -182,3 +182,16 @@ test_that("long expr", {
   ctx <- context::context_save(root=tempfile(), storage_type="environment")
   task <- task_save(quote(list(a_label = "a value", another_label=pi, one_more=c(exp(1), pi, 123.12312), last_one="a very long string here to wrap")), ctx)
 })
+
+test_that("don't load", {
+  ctx <- context::context_save(root=tempfile(),
+                               sources="noisy.R",
+                               storage_type="environment")
+  t <- task_save(quote(double(2)), ctx)
+  expect_message(env <- context_load(ctx), "NOISY")
+
+  expect_silent(ans <- task_run(t, load_context=FALSE))
+  expect_equal(ans, 4)
+  expect_message(ans <- task_run(t, load_context=TRUE), "NOISY")
+  expect_equal(ans, 4)
+})

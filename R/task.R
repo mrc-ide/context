@@ -61,8 +61,12 @@ task_save_list <- function(list, context, envir=parent.frame()) {
 ##' @rdname task
 ##' @param install Should missing packages be installed?
 ##' @param handle A handle to load the task
+##' @param load_context Load the context?  This is generally what is
+##'   wanted, but if you're repeatedly evaluating expressions in the
+##'   same context.
 ##' @export
-task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
+task_load <- function(handle, install=TRUE, envir=.GlobalEnv,
+                      load_context=TRUE) {
   dat <- task_read(handle)
   ## OK, the handling of environments here is very confusing.  The
   ## `envir` argument here is going to be the _parent_; we'll need to
@@ -91,7 +95,11 @@ task_load <- function(handle, install=TRUE, envir=.GlobalEnv) {
   ## The enclos environment to eval won't help because it's ignored if
   ## the environment argument is an actual environment.
   context <- context_handle(handle$root, dat$context_id, context_db(handle))
-  dat$envir_context <- context_load(context, install, envir)
+  if (load_context) {
+    dat$envir_context <- context_load(context, install, envir)
+  } else {
+    dat$envir_context <- envir
+  }
 
   ## This approch has worked well for rrqueue, so keeping it going
   ## here.  Based on rrqueue:::task_expr(), which might be worth
@@ -229,8 +237,6 @@ task_log <- function(root, id) {
   parse_context_log(readLines(path, warn=FALSE))
 }
 
-## TODO: why is this not in context?
-##
 ## TODO: It might be useful to have a "sorted" option here, because
 ## it's a bit confusing that when a specific list of tasks is given
 ## the output is a different order.  However, because the task_ids
@@ -344,16 +350,19 @@ print.task_handle <- function(x, ...) {
 ##'   collection of diagnostics that facilitate debugging.
 ##'
 ##' @param print_error Print information about an error if one occurs?
+##'
+##' @inheritParams task_load
+##'
 ##' @export
 task_run <- function(handle, install=FALSE, envir=.GlobalEnv, filename=NULL,
-                     print_error=TRUE) {
+                     print_error=TRUE, load_context=TRUE) {
   if (!is.null(filename)) {
     return(capture_log(task_run(handle, install, envir, NULL), filename))
   }
   db <- context_db(handle)
   context_log("root", handle$root)
   context_log("task", handle$id)
-  dat <- task_load(handle, install, envir)
+  dat <- task_load(handle, install, envir, load_context)
   context_log("expr", capture.output(print(dat$expr)))
   context_log("start", Sys_time())
   db$set(handle$id, TASK_RUNNING, "task_status")

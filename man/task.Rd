@@ -12,7 +12,7 @@ task_save(expr, context, envir = parent.frame())
 
 task_save_list(list, context, envir = parent.frame())
 
-task_load(handle, install = TRUE, envir = .GlobalEnv)
+task_load(handle, install = TRUE, envir = .GlobalEnv, load_context = TRUE)
 
 task_read(handle)
 
@@ -34,6 +34,10 @@ local variables.}
 \item{handle}{A handle to load the task}
 
 \item{install}{Should missing packages be installed?}
+
+\item{load_context}{Load the context?  This is generally what is
+wanted, but if you're repeatedly evaluating expressions in the
+same context.}
 
 \item{root}{root}
 }
