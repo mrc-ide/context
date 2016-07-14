@@ -235,3 +235,7 @@ collector <- function(init=list()) {
   list(add=function(x) res <<- c(res, list(x)),
        get=function() res)
 }
+
+is_windows <- function() {
+  Sys.info()[["sysname"]] == "Windows"
+}

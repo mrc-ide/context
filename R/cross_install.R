@@ -185,8 +185,13 @@ cross_install_package <- function(package, dat, lib, binary, platform) {
       stop(sprintf("Command failed (code: %d)", ok))
     }
     file.rename(file.path(lib_tmp, x$Package), file.path(lib, x$Package))
-    file.remove(lib_tmp)
-    on.exit()
+    ## This is causing problems that seem surprising to me, possibly
+    ## due to things like the way that resource releasing is happening
+    ## on windows over SMB?
+    if (!is_windows()) {
+      file.remove(lib_tmp)
+      on.exit()
+    }
   }
 }
 
