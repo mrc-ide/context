@@ -233,3 +233,18 @@ test_that("compression works", {
   expect_equal(res1, res2)
   expect_identical(hash1, hash2)
 })
+
+test_that("unique value", {
+  root <- tempfile()
+  ctx1 <- context_save(root)
+  ctx2 <- context_save(root)
+  ctx3 <- context_save(root, unique_value="hello")
+  ctx4 <- context_save(root, unique_value="hello")
+  ctx5 <- context_save(root, unique_value="hello2")
+
+  expect_equal(ctx1$id, ctx2$id)
+  expect_equal(ctx3$id, ctx4$id)
+  expect_true(ctx1$id != ctx3$id)
+  expect_true(ctx1$id != ctx5$id)
+  expect_true(ctx3$id != ctx5$id)
+})

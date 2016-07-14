@@ -42,6 +42,16 @@
 ##'   time, and if given when the directory already exists a warning
 ##'   will be given if the options differ to the saved options.
 ##'
+##' @param unique_value A unique value to add to your context to
+##'   distinguish it from other contexts with otherwise identical
+##'   contents.  This is mostly useful in conjunction with \code{rrq}
+##'   where in a multiuser setting you might end up with two people
+##'   creating identical contexts and therefore sharing a queue!  By
+##'   adding a unique value (your name, a number, whatever) the
+##'   generated context ID will be arbitrarily different and you'll
+##'   avoid collisions.  Any R object can be used here (string,
+##'   number, vector, whatever).
+##'
 ##' @param handle A \code{context_handle} object returned by
 ##'   \code{context_save}.
 ##'
@@ -49,7 +59,8 @@
 ##' @rdname context
 context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
                          package_sources=NULL, envir=parent.frame(),
-                         storage_type=NULL, storage_args=NULL) {
+                         storage_type=NULL, storage_args=NULL,
+                         unique_value=NULL) {
   setup_bootstrap(root)
   db <- setup_context(root, storage_type, storage_args)
   ret <- context_build(packages, sources, auto, package_sources, envir)
@@ -58,6 +69,9 @@ context_save <- function(root, packages=NULL, sources=NULL, auto=FALSE,
   ## TRUE/FALSE here because install_packages does not know about the
   ## context root.
   ret$package_sources <- build_local_drat(ret$package_sources, path_drat(root))
+  if (!is.null(unique_value)) {
+    ret$unique_value <- unique_value
+  }
   id <- db$set_by_value(ret, namespace="contexts", use_cache=FALSE)
   ## NOTE: this will _always_ save the time.  We might alternatively
   ## want the time to be saved on *first* creation, which would

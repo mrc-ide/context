@@ -10,7 +10,7 @@
 \usage{
 context_save(root, packages = NULL, sources = NULL, auto = FALSE,
   package_sources = NULL, envir = parent.frame(), storage_type = NULL,
-  storage_args = NULL)
+  storage_args = NULL, unique_value = NULL)
 
 context_load(handle, install = TRUE, envir = .GlobalEnv, ...)
 
@@ -52,6 +52,16 @@ storage is supported, so this is largely ignored.}
 is only used when the context directory is created the first
 time, and if given when the directory already exists a warning
 will be given if the options differ to the saved options.}
+
+\item{unique_value}{A unique value to add to your context to
+distinguish it from other contexts with otherwise identical
+contents.  This is mostly useful in conjunction with \code{rrq}
+where in a multiuser setting you might end up with two people
+creating identical contexts and therefore sharing a queue!  By
+adding a unique value (your name, a number, whatever) the
+generated context ID will be arbitrarily different and you'll
+avoid collisions.  Any R object can be used here (string,
+number, vector, whatever).}
 
 \item{handle}{A \code{context_handle} object returned by
 \code{context_save}.}
