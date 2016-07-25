@@ -207,10 +207,14 @@ base_packages <- function() {
 }
 
 parse_deps <- function(x) {
+  ## TODO: This does not support returning version numbers (so
+  ## depending on particular versions of packages is not going to work
+  ## here).
+  ##
   ## Somewhere I had the version parsing thing; I will need that back
   ## soon.  For now this just strips version information entirely.
   val <- unlist(strsplit(x, ","), use.names=FALSE)
-  val <- gsub("\\s.*", "", trimws(val))
+  val <- gsub("(\\s|\\().*", "", trimws(val))
   val[val != "R"]
 }
 
