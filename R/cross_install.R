@@ -77,6 +77,13 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   ## OK, this is going to require help.  Now, one thing we *can* do is
   ## inspect the local dependencies because they are the same I hope.
   context_log("cross", "checking available packages")
+
+  ## TODO: probably this should be *local* drat repos only.
+  file_repo <- grepl("^file://", repos)
+  if (any(file_repo)) {
+    drat_add_empty_bin(sub("^file://", "",
+                           contrib_url(repos[file_repo], platform, r_version)))
+  }
   pkgs_bin <- available.packages(contrib_url(repos, platform, r_version))
   pkgs_src <- available.packages(contrib_url(repos, "src", NULL))
 

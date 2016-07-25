@@ -145,7 +145,7 @@ context_repos <- function(sources) {
   ## The resolution needs to be that this function should not take
   ## sources but instead take arguments 'cran' and 'repos'.
   if (!is.null(sources$local_drat)) {
-    drat_add_empty_bin(sources$local_drat)
+    drat_add_empty_bin(contrib.url(sources$local_drat, "binary"))
     r <- c(r, "local_drat"=file_url(sources$local_drat))
   }
   r

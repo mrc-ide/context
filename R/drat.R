@@ -180,7 +180,6 @@ parse_package_pointer <- function(x) {
 ## fails.  I'm not 100% sure that this should be needed, but it is at
 ## least on R 3.2.x windows.
 drat_add_empty_bin <- function(path) {
-  path <- contrib.url(path, "binary")
   path_PACKAGES <- file.path(path, "PACKAGES")
   if (!file.exists(path_PACKAGES)) {
     dir.create(path, FALSE, TRUE)
