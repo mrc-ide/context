@@ -120,15 +120,13 @@ build_local_drat <- function(package_sources, path, force=FALSE) {
     }
   }
 
-  ## This is needed for the corner case (now quite frequent) where no
-  ## packages are added to the drat repository; the options are either
-  ## to build an empty PACKAGES file (tools::write_PACKAGES) or to
-  ## declare there is no local drat.
-  if (file.exists(file.path(path, "src", "contrib", "PACKAGES"))) {
+  if (file.exists(path)) {
+    drat_add_empty_bin(file.path(path, "src", "contrib"))
     package_sources$local_drat <- path
   } else {
     package_sources$local_drat <- NULL
   }
+
   invisible(package_sources)
 }
 

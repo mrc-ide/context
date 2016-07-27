@@ -87,19 +87,25 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   pkgs_bin <- available.packages(contrib_url(repos, platform, r_version))
   pkgs_src <- available.packages(contrib_url(repos, "src", NULL))
 
-  ## Assume that src is a superset of bin:
-  i <- match(packages, pkgs_src[, "Package"])
-  if (any(is.na(i))) {
-    stop(sprintf("Can't find installation candidate for: %s",
-                 paste(packages[is.na(i)], collapse=", ")))
+  extra <- setdiff(rownames(pkgs_bin), rownames(pkgs_src))
+  if (length(extra) > 0L) {
+    pkgs_cmb <- rbind(pkgs_src, pkgs_bin[extra, ])
+  } else {
+    pkgs_cmb <- pkgs_src
   }
 
-  deps <- recursive_deps(packages, pkgs_src)
+  msg <- setdiff(packages, pkgs_cmb[, "Package"])
+  if (length(msg) > 0L) {
+    stop(sprintf("Can't find installation candidate for: %s",
+                 paste(msg, collapse=", ")))
+  }
+
+  deps <- recursive_deps(packages, pkgs_cmb)
   packages <- setdiff(deps, installed)
-  i <- match(packages, pkgs_src[, "Package"])
-  if (any(is.na(i))) {
+  msg <- setdiff(packages, pkgs_cmb[, "Package"])
+  if (length(msg) > 0L) {
     stop(sprintf("Can't find installation candidate for dependencies: %s",
-                 paste(packages[is.na(i)], collapse=", ")))
+                 paste(msg, collapse=", ")))
   }
 
   ## Install all the binary packages
