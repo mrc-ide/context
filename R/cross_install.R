@@ -81,8 +81,13 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   ## TODO: probably this should be *local* drat repos only.
   file_repo <- grepl("^file://", repos)
   if (any(file_repo)) {
-    drat_add_empty_bin(sub("^file://", "",
-                           contrib_url(repos[file_repo], platform, r_version)))
+    url <- contrib_url(repos[file_repo], platform, r_version)
+    if (is_windows()) {
+      path <- sub("^file:///", "", url)
+    } else {
+      path <- sub("^file://", "", url)
+    }
+    drat_add_empty_bin(path)
   }
   pkgs_bin <- available.packages(contrib_url(repos, platform, r_version))
   pkgs_src <- available.packages(contrib_url(repos, "src", NULL))

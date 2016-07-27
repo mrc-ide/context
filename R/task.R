@@ -214,7 +214,10 @@ task_function_name <- function(handle) {
   paste(deparse(task_expr(handle)[[1L]]), collapse=" ")
 }
 
-##' Return the log of a task, if enabled
+##' Return the log of a task, if enabled.
+##'
+##' The returned object is of class \code{task_log}, which has a print
+##' method that will nicely display.  Output is grouped into phases.
 ##' @title Return task log
 ##' @inheritParams task_handle
 ##' @export
