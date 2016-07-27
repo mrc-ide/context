@@ -82,12 +82,7 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   file_repo <- grepl("^file://", repos)
   if (any(file_repo)) {
     url <- contrib_url(repos[file_repo], platform, r_version)
-    if (is_windows()) {
-      path <- sub("^file:///", "", url)
-    } else {
-      path <- sub("^file://", "", url)
-    }
-    drat_add_empty_bin(path)
+    drat_add_empty_bin(file_unurl(url))
   }
   pkgs_bin <- available.packages(contrib_url(repos, platform, r_version))
   pkgs_src <- available.packages(contrib_url(repos, "src", NULL))
@@ -171,18 +166,26 @@ cross_install_package <- function(package, dat, lib, binary, platform) {
   tmp <- tempfile()
   dir.create(tmp)
   on.exit(unlink(tmp, recursive=TRUE))
+  dir.create(lib, FALSE, TRUE)
 
   x <- as.list(dat[match(package, dat[, "Package"]), ])
   ext <- if (!binary) "tar.gz" else if (platform == "windows") "zip" else "tgz"
   url <- sprintf("%s/%s_%s.%s", x$Repository, x$Package, x$Version, ext)
-  path <- file.path(tmp, basename(url))
-  download.file(url, path)
+  if (grepl("file://", url)) {
+    path <- file_unurl(url)
+    delete_path <- TRUE
+  } else {
+    delete_path <- FALSE
+    path <- file.path(tmp, basename(url))
+    download.file(url, path)
+  }
   if (binary) {
     unzip(path, exdir=lib)
   } else {
     untar(path, exdir=tmp)
-    dir.create(lib, FALSE, TRUE)
-    file.remove(path)
+    if (delete_path) {
+      file.remove(path)
+    }
     path <- file.path(tmp, x$Package)
     lib <- normalizePath(lib, "/")
     ## We need to install the package into a temporary library and

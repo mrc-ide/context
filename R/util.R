@@ -89,6 +89,14 @@ file_url <- function(path) {
   paste0("file://", if (substr(full_path, 1, 1) == "/") "" else "/", full_path)
 }
 
+file_unurl <- function(url) {
+  if (is_windows()) {
+    sub("^file:///", "", url)
+  } else {
+    sub("^file://", "", url)
+  }
+}
+
 find_funcs <- function(fun, env) {
   ours <- names(env)
   ours <- ours[vlapply(ours, function(x) is.function(env[[x]]))]
