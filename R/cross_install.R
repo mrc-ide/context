@@ -48,9 +48,9 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
 
   dir.create(lib, FALSE, TRUE)
   installed <- .packages(TRUE, lib)
-  to_check <- intersect(packages, .packages(TRUE, lib))
+  to_check <- intersect(packages, installed)
   upgrade <- to_check[vlapply(to_check, function(p)
-    packageVersion(p, lib) < packageVersion(p))]
+    package_version(p, lib) < packagerVersion(p))]
   if (length(upgrade) > 0L) {
     context_log("upgrade", paste(upgrade, collapse=", "))
     unlink(file.path(lib, upgrade), recursive=TRUE)
@@ -255,4 +255,13 @@ recursive_deps <- function(x, db) {
   }
 
   sort(unique(done))
+}
+
+package_version <- function(package, lib) {
+  path <- file.path(lib, package, "DESCRIPTION")
+  if (file.exists(path)) {
+    package_version(read.dcf(path, fields="Version"))
+  } else {
+    NA
+  }
 }
