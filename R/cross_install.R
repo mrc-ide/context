@@ -50,7 +50,7 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   installed <- .packages(TRUE, lib)
   to_check <- intersect(packages, installed)
   upgrade <- to_check[vlapply(to_check, function(p)
-    lib_package_version(p, lib) < packagerVersion(p))]
+    lib_package_version(p, lib) < packageVersion(p))]
   if (length(upgrade) > 0L) {
     context_log("upgrade", paste(upgrade, collapse=", "))
     unlink(file.path(lib, upgrade), recursive=TRUE)
