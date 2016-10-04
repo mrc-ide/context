@@ -26,8 +26,16 @@
 ##'
 ##' @param packages Vector of packages to install
 ##'
+##' @param allow_missing Allow packages that need compilation to be
+##'   skipped?  If so, then returns a matrix of information for the
+##'   packages that were not installed (this comes from the output of
+##'   \code{available.packages()}.  The idea behind using
+##'   \code{allow_missing = TRUE} is to fall back on installation of
+##'   these packages via an alternative route.
+##'
 ##' @export
-cross_install_packages <- function(lib, platform, r_version, repos, packages) {
+cross_install_packages <- function(lib, platform, r_version, repos, packages,
+                                   allow_missing = FALSE) {
   ## TODO: Coming here in Windows this does the wrong thing because we
   ## *are* using the library by this point; but that gets skipped over
   ## because we don't normalise the path here.
@@ -36,7 +44,8 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
   }
   ## NOTE: No Linux support because there is no Linux binary
   ## repository.
-  platform <- match.arg(platform, c("windows", "macosx", "macosx/mavericks"))
+  platform <- match.arg(platform, c("windows", "macosx", "macosx/mavericks",
+                                    "linux"))
   ok <- is.character(r_version) &&
     length(r_version) == 1L &&
     grepl("^[0-9]+\\.[0-9]+$", r_version)
@@ -84,8 +93,12 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
     url <- contrib_url(repos[file_repo], platform, r_version)
     drat_add_empty_bin(file_unurl(url))
   }
-  pkgs_bin <- available.packages(contrib_url(repos, platform, r_version))
   pkgs_src <- available.packages(contrib_url(repos, "src", NULL))
+  if (platform == "linux") {
+    pkgs_bin <- pkgs_src[integer(0), ]
+  } else {
+    pkgs_bin <- available.packages(contrib_url(repos, platform, r_version))
+  }
 
   extra <- setdiff(rownames(pkgs_bin), rownames(pkgs_src))
   if (length(extra) > 0L) {
@@ -118,24 +131,33 @@ cross_install_packages <- function(lib, platform, r_version, repos, packages) {
     lapply(packages_bin, cross_install_package, pkgs_bin, lib, TRUE, platform)
   }
 
+  msg <- NULL
   if (length(packages_src) > 0L) {
     context_log("cross",
                 paste("Cross installing source packages for:",
                       paste(packages_src, collapse=", ")))
     j <- match(packages_src, pkgs_src[, "Package"])
     k <- pkgs_src[j, "NeedsCompilation"] == "yes"
+    msg <- packages_src[k]
     if (any(k)) {
-      stop("Packages need compilation; cannot cross-install: ",
-           paste(packages_src[k], collapse=", "))
+      msg <- pkgs_src[j[k], , drop = FALSE]
+      if (!allow_missing) {
+        stop("Packages need compilation; cannot cross-install: ",
+             paste(packages_src[k], collapse=", "))
+      }
     }
-    lapply(packages_src, cross_install_package, pkgs_src, lib, FALSE, platform)
+    lapply(packages_src[!k], cross_install_package,
+           pkgs_src, lib, FALSE, platform)
   }
+
+  msg
 }
 
 ##' @export
 ##' @param root Context root
 ##' @rdname cross_install_packages
-cross_install_bootstrap <- function(lib, platform, r_version, root=NULL) {
+cross_install_bootstrap <- function(lib, platform, r_version, root=NULL,
+                                    allow_missing = FALSE) {
   repos <- c(CRAN="https://cran.rstudio.com")
   path_local_drat <- path_drat(root)
   context_local <-
@@ -148,18 +170,22 @@ cross_install_bootstrap <- function(lib, platform, r_version, root=NULL) {
     repos[["context"]] <- "https://richfitz.github.io/drat/"
   }
 
-  cross_install_packages(lib, platform, r_version, repos, "context")
+  cross_install_packages(lib, platform, r_version, repos, "context",
+                         allow_missing)
 }
 
 ##' @export
 ##' @rdname cross_install_packages
 ##' @param context A context handle
-cross_install_context <- function(lib, platform, r_version, context) {
+cross_install_context <- function(lib, platform, r_version, context,
+                                  allow_missing = FALSE) {
   root <- context::context_root(context)
-  cross_install_bootstrap(lib, platform, r_version, root)
+  res1 <- cross_install_bootstrap(lib, platform, r_version, root, allow_missing)
   packages <- unlist(context$packages, use.names=FALSE)
   repos <- context_repos(context$package_sources)
-  cross_install_packages(lib, platform, r_version, repos, packages)
+  res2 <- cross_install_packages(lib, platform, r_version, repos, packages,
+                                 allow_missing)
+  rbind(res1, res2)
 }
 
 cross_install_package <- function(package, dat, lib, binary, platform) {

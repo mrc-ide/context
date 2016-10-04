@@ -6,11 +6,14 @@
 \alias{cross_install_packages}
 \title{Cross install packages}
 \usage{
-cross_install_packages(lib, platform, r_version, repos, packages)
+cross_install_packages(lib, platform, r_version, repos, packages,
+  allow_missing = FALSE)
 
-cross_install_bootstrap(lib, platform, r_version, root = NULL)
+cross_install_bootstrap(lib, platform, r_version, root = NULL,
+  allow_missing = FALSE)
 
-cross_install_context(lib, platform, r_version, context)
+cross_install_context(lib, platform, r_version, context,
+  allow_missing = FALSE)
 }
 \arguments{
 \item{lib}{A library to install into.  \emph{Must} be specified
@@ -25,6 +28,13 @@ patch version).}
 \item{repos}{Repositories to use.  This must be provided at present.}
 
 \item{packages}{Vector of packages to install}
+
+\item{allow_missing}{Allow packages that need compilation to be
+skipped?  If so, then returns a matrix of information for the
+packages that were not installed (this comes from the output of
+\code{available.packages()}.  The idea behind using
+\code{allow_missing = TRUE} is to fall back on installation of
+these packages via an alternative route.}
 
 \item{root}{Context root}
 
