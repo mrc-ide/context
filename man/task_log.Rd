@@ -14,6 +14,10 @@ internally wrangle into its database format; see
 \item{id}{Task identifier}
 }
 \description{
-Return the log of a task, if enabled
+Return the log of a task, if enabled.
+}
+\details{
+The returned object is of class \code{task_log}, which has a print
+method that will nicely display.  Output is grouped into phases.
 }
 
