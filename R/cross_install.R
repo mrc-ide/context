@@ -185,7 +185,7 @@ cross_install_context <- function(lib, platform, r_version, context,
   repos <- context_repos(context$package_sources)
   res2 <- cross_install_packages(lib, platform, r_version, repos, packages,
                                  allow_missing)
-  rbind(res1, res2)
+  if (is.null(res1)) res2 else rbind(res1, res2)
 }
 
 cross_install_package <- function(package, dat, lib, binary, platform) {
