@@ -22,7 +22,7 @@ function you should know how many resources you have available.}
 \description{
 Start a sub-cluster, using the \code{parallel} package.  This will
 be available via either the return value of this function, the
-\code{parallel_cluster} function or by using \code{cl=NULL} with
+\code{parallel_cluster} function or by using \code{cl = NULL} with
 any of the \code{parallel} package functions.  The cluster will be
 started so that it is ready to use the context.
 }

@@ -1,8 +1,8 @@
-par <- new.env(parent=emptyenv())
+par <- new.env(parent = emptyenv())
 
 ##' Start a sub-cluster, using the \code{parallel} package.  This will
 ##' be available via either the return value of this function, the
-##' \code{parallel_cluster} function or by using \code{cl=NULL} with
+##' \code{parallel_cluster} function or by using \code{cl = NULL} with
 ##' any of the \code{parallel} package functions.  The cluster will be
 ##' started so that it is ready to use the context.
 ##'
@@ -19,7 +19,8 @@ start_parallel_cluster <- function(n, ctx) {
   if (is.null(par$cl)) {
     context_log("cluster", "Starting cluster")
     ## Log to <base>/workers/<context_id>_<pid>_%d I think
-    fmt <- sprintf("%s/workers/%s_%d_%%d", ctx$root, ctx$id, Sys.getpid())
+    path <- context_root_get(ctx)$path
+    fmt <- sprintf("%s/workers/%s_%d_%%d", path, ctx$id, Sys.getpid())
     dir.create(dirname(fmt), FALSE, TRUE)
     par$cl <- start_cluster(n, fmt)
     ## Then the question becomes -- how to we most simply point these
@@ -29,6 +30,7 @@ start_parallel_cluster <- function(n, ctx) {
       context_log_start()
       context_load(context_handle(root, id))
     }
+    stop("this needs a ton of work")
     invisible(parallel::clusterCall(par$cl, ".libPaths", .libPaths()))
     invisible(parallel::clusterCall(par$cl, context_start, ctx$root, ctx$id))
     parallel::setDefaultCluster(par$cl)
@@ -64,12 +66,12 @@ start_cluster <- function(n, logfile_fmt) {
   context_log("cluster", sprintf("Starting %d nodes", n))
   for (i in seq_len(n)) {
     context_log("worker", logfiles[[i]])
-    node <- parallel::makeCluster(1L, "PSOCK", outfile=logfiles[[i]])
+    node <- parallel::makeCluster(1L, "PSOCK", outfile = logfiles[[i]])
     cl[[i]] <- node[[1L]]
   }
   class(cl) <- c("SOCKcluster", "cluster")
   pid <- as.integer(parallel::clusterCall(cl, Sys.getpid))
-  context_log("cluster", sprintf("pids: %s", paste(pid, collapse=", ")))
+  context_log("cluster", sprintf("pids: %s", paste(pid, collapse = ", ")))
   attr(cl, "pid") <- pid
   cl
 }

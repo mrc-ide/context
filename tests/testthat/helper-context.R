@@ -9,9 +9,9 @@ env_chain <- function(e, stop_at=list(.GlobalEnv, emptyenv())) {
 
 cleanup <- function(root) {
   if (file.exists(path_config(root))) {
-    suppressWarnings(context_db(root))$driver$destroy()
+    suppressWarnings(context_db_get(root))$driver$destroy()
   }
-  unlink(root, recursive=TRUE)
+  unlink(root, recursive = TRUE)
   ## This prunes libPaths down to the set of files that exist, so with
   ## the above should do a reasonable job of trimming any additions
   ## because the actual directories will have been deleted.
@@ -33,6 +33,10 @@ skip_if_no_fork <- function() {
     return()
   }
   stop("Fork is not available")
+}
+
+missing_time <- function(n = 1) {
+  Sys.time()[rep(NA, n)]
 }
 
 ## Don't download when we're running locally, please.

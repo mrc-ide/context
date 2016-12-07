@@ -4,6 +4,14 @@
 
 > Contexts for evaluating R expressions
 
+---
+
+Breaking changes between verisons:
+
+* `package_sources` moves to `provisionr` and changes interface; most of the changes follow from this, so I think we can do a redirect here pretty safely
+
+---
+
 This package organises collecting (and recreating) the context of an R expression to replay later.  At this point, the package is hard-coded to use only filesystem storage, but soon I'll generalise that to allow interfacing with things like `rrqueue` which follow similar ideas.
 
 ## Concepts

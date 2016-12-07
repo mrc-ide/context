@@ -1,7 +1,10 @@
 ## like rrqueue:::prepare_expression() followed by
 ## rrqueue::save_expression().
+##
+## TODO: this needs harmonising with store_expression in rrq as that's
+## optimised to allow bulk writes efficiently.
 store_expression <- function(expr, envir, db) {
-  id <- random_id()
+  id <- ids::random_id()
   fun <- expr[[1]]
   args <- expr[-1]
 
@@ -14,10 +17,10 @@ store_expression <- function(expr, envir, db) {
                      unname(unlist(lapply(args[is_call], find_symbols))))
   }
 
-  ret <- list(expr=expr, id=id)
+  ret <- list(expr = expr, id = id)
 
   if (length(symbols) > 0L) {
-    local <- exists(symbols, envir, inherits=FALSE)
+    local <- exists(symbols, envir, inherits = FALSE)
     if (any(!local)) {
       test <- symbols[!local]
       ## TODO: Doing this *properly* requires that we know what was
@@ -29,7 +32,7 @@ store_expression <- function(expr, envir, db) {
       global <- exists(test, parent.env(.GlobalEnv))
       if (any(!global)) {
         stop("not all objects found: ",
-             paste(test[!global], collapse=", "))
+             paste(test[!global], collapse = ", "))
       }
     }
 
@@ -40,8 +43,9 @@ store_expression <- function(expr, envir, db) {
     ## of files kicking around which is problematic from a cleanup
     ## perspective.
     if (any(local)) {
-      ret$objects <- vcapply(symbols[local], function(i)
-        db$set_by_value(get(i, envir, inherits=FALSE), namespace="objects"))
+      objects <- lapply(symbols[local], get, envir, inherits = FALSE)
+      h <- db$mset_by_value(objects, "objects")
+      ret$objects <- setNames(h, symbols[local])
     }
   }
 
@@ -50,14 +54,14 @@ store_expression <- function(expr, envir, db) {
 
 ## Mostly similar to rrqueue::restore_expression
 restore_locals <- function(dat, parent) {
-  e <- new.env(parent=parent)
+  e <- new.env(parent = parent)
   if (!is.null(dat$objects)) {
-    context_db(dat)$export(e, dat$objects, "objects")
+    context_db_get(dat)$export(e, dat$objects, "objects")
   }
   e
 }
 
-find_symbols <- function(expr, hide_errors=TRUE) {
+find_symbols <- function(expr, hide_errors = TRUE) {
   symbols <- character(0)
 
   f <- function(e) {

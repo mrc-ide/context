@@ -1,6 +1,3 @@
-## I probably should use loggr here, but I can swap this out easily
-## enough later.
-
 ##' Start and stop the context log.  Soon this might swap out for
 ##' \code{loggr}, but for now this should do.  When active, some
 ##' actions will print diagnostic information to the message stream.
@@ -22,12 +19,12 @@
 ##' }
 ##' to have a scoped log (i.e., log for the duration of a function).
 context_log_start <- function() {
-  invisible(isTRUE(options(context.log=TRUE)$context.log))
+  invisible(isTRUE(options(context.log = TRUE)$context.log))
 }
 ##' @export
 ##' @rdname context_log
 context_log_stop <- function() {
-  options(context.log=NULL)
+  options(context.log = NULL)
 }
 
 context_log <- function(topic, value) {
@@ -38,7 +35,7 @@ context_log <- function(topic, value) {
     }
     str <- trimws(sprintf("[ %-9s ]  %s", topic, value))
     if (n > 0L) {
-      str <- paste(str, collapse="\n")
+      str <- paste(str, collapse = "\n")
     }
     message(str)
     if (!is.null(par$cl)) {
@@ -72,25 +69,25 @@ parse_context_log <- function(x) {
     x[setdiff(i[[idx]]:j[[idx]], i)]
   }
   body <- lapply(seq_along(i), f)
-  ret <- list(str=x[i], title=title, value=value, body=body)
+  ret <- list(str = x[i], title = title, value = value, body = body)
   class(ret) <- "context_log"
   ret
 }
 
 ##' @export
-print.context_log <- function(x, pretty=TRUE, ...) {
+print.context_log <- function(x, pretty = TRUE, ...) {
   prep <- function(x) {
     if (length(x) == 0) {
       ""
     } else {
-      paste0("\n", paste0("    ", x, collapse="\n"))
+      paste0("\n", paste0("    ", x, collapse = "\n"))
     }
   }
   if (pretty && crayon::has_color()) {
     x <- pretty_context_log(x)
   }
   body <- vcapply(x$body, prep)
-  cat(paste0(paste(paste0(x$str, body), collapse="\n"), "\n"))
+  cat(paste0(paste(paste0(x$str, body), collapse = "\n"), "\n"))
 }
 
 pretty_context_log <- function(x) {

@@ -13,8 +13,9 @@ Depends:
 Imports:
     crayon,
     curl,
-    drat (>= 0.1.0),
-    storr (>= 1.0.0),
+    ids,
+    provisionr,
+    storr (>= 1.0.3),
     uuid
 Suggests:
     codetools,
@@ -22,5 +23,6 @@ Suggests:
     parallel,
     rmarkdown,
     testthat (>= 0.11.0)
+Remotes: richfitz/storr@develop
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr

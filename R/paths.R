@@ -1,15 +1,6 @@
 ## Helpers for paths
-path_library <- function(root) {
-  file.path(root, "R", R.version[["platform"]], r_version(3))
-}
-path_drat <- function(root) {
-  file.path(root, "drat")
-}
 path_version <- function(root) {
   file.path(root, "context_version")
-}
-path_bin <- function(root, script=NULL) {
-  file_path(root, "bin", script)
 }
 path_db <- function(root) {
   file.path(root, "db")
@@ -30,4 +21,28 @@ is_absolute_path <- function(path) {
 ##' @rdname is_absolute_path
 is_relative_path <- function(path) {
   !is_absolute_path(path)
+}
+
+## This does not handle the case of a file /a/b/c and working
+## directory of the same.
+relative_paths <- function(filename, dir=getwd()) {
+  msg <- !file.exists(filename)
+  if (any(msg)) {
+    stop("files do not exist: ", paste(filename[msg], collapse=", "))
+  }
+
+  filename_abs <- clean_path(normalizePath(filename))
+  dir <- clean_path(normalizePath(dir))
+
+  ok <- string_starts_with(filename_abs, paste0(dir, "/"))
+  if (!all(ok)) {
+    stop("files above working directory: ",
+         paste(filename[!ok], collapse=", "))
+  }
+
+  substr(filename_abs, nchar(dir) + 2L, nchar(filename_abs))
+}
+
+clean_path <- function(x) {
+  sub("/+$", "", gsub("\\", "/", x, fixed=TRUE))
 }

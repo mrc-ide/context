@@ -1,18 +1,8 @@
 ## Base imports:
 ##' @importFrom stats na.omit setNames
 ##'
-##' @importFrom utils available.packages capture.output contrib.url
-##'   download.file head install.packages installed.packages
-##'   modifyList packageVersion sessionInfo tail untar unzip
+##' @importFrom utils capture.output modifyList packageVersion sessionInfo
 NULL
-
-## Like file.path, but NULL elements are skipped over rather than
-## rendering the string non-existant.
-file_path <- function(...) {
-  paths <- list(...)
-  paths <- paths[!vlapply(paths, is.null)]
-  do.call("file.path", paths, quote=TRUE)
-}
 
 ## Typed sapply
 vlapply <- function(X, FUN, ...) {
@@ -28,14 +18,6 @@ vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }
 
-## R version to n significant digits
-r_version <- function(n) {
-  if (n < 0L || n > 3L) {
-    stop("Invalid n")
-  }
-  getRversion()[1, seq_len(n)]
-}
-
 ## Determine if an object is the global environment
 is.GlobalEnv <- function(x) {
   identical(x, .GlobalEnv)
@@ -48,10 +30,6 @@ file_remove <- function(...) {
     file.remove(files[ok])
   }
   ok
-}
-
-random_id <- function() {
-  gsub("-", "", uuid::UUIDgenerate(FALSE), fixed=TRUE)
 }
 
 print_ad_hoc <- function(x) {
@@ -77,7 +55,7 @@ Sys_time <- function() {
   as.character(Sys.time())
 }
 
-is_dir <- function(x) {
+is_directory <- function(x) {
   file.info(x)[["isdir"]]
 }
 
@@ -110,14 +88,6 @@ find_funcs <- function(fun, env) {
   sort(seen)
 }
 
-fun_to_str <- function(x, env) {
-  paste0(x, " <- ",
-         paste(deparse(get(x, env, inherits=FALSE)), collapse="\n"))
-}
-
-clean_path <- function(x) {
-  sub("/+$", "", gsub("\\", "/", x, fixed=TRUE))
-}
 string_starts_with <- function(x, y) {
   substr(x, 1, nchar(y)) == y
 }
@@ -131,26 +101,6 @@ file_exists_under_wd <- function(filename) {
   }
   ok[nok] <- NA
   ok
-}
-
-## This does not handle the case of a file /a/b/c and working
-## directory of the same.
-relative_paths <- function(filename, dir=getwd()) {
-  msg <- !file.exists(filename)
-  if (any(msg)) {
-    stop("files do not exist: ", paste(filename[msg], collapse=", "))
-  }
-
-  filename_abs <- clean_path(normalizePath(filename))
-  dir <- clean_path(normalizePath(dir))
-
-  ok <- string_starts_with(filename_abs, paste0(dir, "/"))
-  if (!all(ok)) {
-    stop("files above working directory: ",
-         paste(filename[!ok], collapse=", "))
-  }
-
-  substr(filename_abs, nchar(dir) + 2L, nchar(filename_abs))
 }
 
 hostname <- function() {
@@ -189,16 +139,6 @@ deserialise_image <- function(bin, ...) {
 
 read_binary <- function(filename) {
   readBin(filename, raw(), file.size(filename))
-}
-
-write_script <- function(text, dest) {
-  dir.create(dirname(dest), FALSE, TRUE)
-  writeLines(text, dest)
-  Sys.chmod(dest, "0755")
-}
-
-invert_names <- function(x) {
-  setNames(names(x), x)
 }
 
 capture_log <- function(expr, filename) {
