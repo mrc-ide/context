@@ -24,7 +24,7 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
   ret
 }
 
-contexts_list <- function(root, names = FALSE, error = TRUE) {
+context_list <- function(root, names = FALSE, error = TRUE) {
   if (error) {
     db <- context_db_get(root)
   } else {

@@ -1,7 +1,7 @@
 ##' @rdname task
 ##' @export
 ##' @param root root
-tasks_list <- function(root) {
+task_list <- function(root) {
   context_db_get(root)$list("tasks")
 }
 
@@ -10,9 +10,9 @@ tasks_list <- function(root) {
 ##' @param handle Task handle
 ##' @param named Name the output with the task ids?
 ##' @export
-tasks_status <- function(id, root, named = FALSE) {
+task_status <- function(ids, root, named = FALSE) {
   db <- context_db_get(root)
-  vcapply(db$mget(id, "task_status", missing = TASK_MISSING),
+  vcapply(db$mget(ids, "task_status", missing = TASK_MISSING),
           identity, USE.NAMES = named)
 }
 
@@ -26,7 +26,7 @@ tasks_status <- function(id, root, named = FALSE) {
 ##' @export
 task_result <- function(id, root, sanitise = FALSE) {
   db <- context_db_get(root)
-  status <- tasks_status(id, db, FALSE)
+  status <- task_status(id, db, FALSE)
   if (status == "COMPLETE" || status == "ERROR") {
     db$get(id, "task_results")
   } else {
@@ -106,7 +106,7 @@ task_log <- function(id, root) {
 ##'
 ##' @export
 ##' @author Rich FitzJohn
-tasks_times <- function(ids, root, unit_elapsed = "secs", sorted = TRUE) {
+task_times <- function(ids, root, unit_elapsed = "secs", sorted = TRUE) {
   db <- context_db_get(root)
   n <- length(ids)
   if (length(ids) == 0L) {

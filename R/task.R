@@ -46,15 +46,15 @@ task_save <- function(expr, context, envir = parent.frame()) {
 ##' @param handle A task handle
 ##' @export
 ##' @return \code{TRUE} if a task was actually deleted.
-tasks_delete <- function(id, root) {
+task_delete <- function(ids, root) {
   db <- context_db_get(root)
-  n <- length(id)
+  n <- length(ids)
   ns <- c("tasks", "task_status", "task_results")
   if (n == 1L) {
-    res <- any(db$del(id, ns))
+    res <- any(db$del(ids, ns))
   } else {
     m <- length(ns)
-    res <- db$del(rep(id, each = m), rep(ns, n))
+    res <- db$del(rep(ids, each = m), rep(ns, n))
     res <- apply(matrix(res, m, n), 2, any)
   }
   invisible(res)

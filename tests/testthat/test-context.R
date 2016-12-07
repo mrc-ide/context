@@ -182,27 +182,27 @@ test_that("environment backed context", {
                "Cannot reconnect to environment storage")
 })
 
-test_that("contexts_list", {
+test_that("context_list", {
   path <- tempfile()
 
-  expect_error(contexts_list(path),
+  expect_error(context_list(path),
                "Context root not set up at")
-  expect_equal(contexts_list(path, error = FALSE), character(0))
-  expect_equal(contexts_list(path, error = FALSE, names = TRUE),
+  expect_equal(context_list(path, error = FALSE), character(0))
+  expect_equal(context_list(path, error = FALSE, names = TRUE),
                character(0))
 
   context_root_init(path)
 
-  expect_equal(contexts_list(path), character(0))
-  expect_equal(contexts_list(path, names = TRUE), character(0))
+  expect_equal(context_list(path), character(0))
+  expect_equal(context_list(path, names = TRUE), character(0))
 
   ctx1 <- context_save(path)
-  expect_equal(contexts_list(path), ctx1$id)
-  expect_equal(contexts_list(path, names = TRUE), ctx1$name)
+  expect_equal(context_list(path), ctx1$id)
+  expect_equal(context_list(path, names = TRUE), ctx1$name)
 
   ctx2 <- context_save(path)
-  expect_equal(sort(contexts_list(path)), sort(c(ctx1$id, ctx2$id)))
-  expect_equal(sort(contexts_list(path, names = TRUE)),
+  expect_equal(sort(context_list(path)), sort(c(ctx1$id, ctx2$id)))
+  expect_equal(sort(context_list(path, names = TRUE)),
                sort(c(ctx1$name, ctx2$name)))
 })
 
@@ -274,6 +274,4 @@ test_that("packages validation", {
   expect_error(context_save(path, envir = .GlobalEnv,
                             packages = TRUE),
                "Incorrect type for 'packages'", fixed = TRUE)
-
-
 })
