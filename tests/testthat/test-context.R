@@ -15,7 +15,7 @@ test_that("simplest case", {
   expect_true(is_id(ctx$id), "character")
   expect_is(ctx$db, "storr")
   expect_identical(ctx$root$path, path)
-  expect_identical(context_root_path(ctx), path)
+  expect_identical(context_root_get(ctx)$path, path)
 
   expect_true(ctx$db$exists(ctx$id, "contexts"))
   expect_true(ctx$db$exists_object(ctx$id))
@@ -206,23 +206,6 @@ test_that("contexts_list", {
                sort(c(ctx1$name, ctx2$name)))
 })
 
-test_that("storage_args", {
-  ctx <- context_save(tempfile(), storage_args = list(compress = TRUE))
-  expect_true(ctx$db$driver$compress)
-  ctx <- context_save(tempfile(), storage_args = list(compress = FALSE))
-  expect_false(ctx$db$driver$compress)
-})
-
-test_that("args override", {
-  path <- tempfile()
-  ctx1 <- context_save(path)
-  expect_false(ctx1$db$driver$compress)
-  expect_warning(ctx2 <-
-                   context_save(path, storage_args = list(compress = TRUE)),
-                 "Ignoring incompatible storage_args")
-  expect_false(ctx2$db$driver$compress)
-})
-
 test_that("compression works", {
   ctx1 <- context_save(tempfile(), storage_args = list(compress = TRUE))
   expect_true(ctx1$db$driver$compress)
@@ -243,4 +226,54 @@ test_that("compression works", {
   expect_gt(s2, s1)
   expect_equal(res1, res2)
   expect_identical(hash1, hash2)
+})
+
+test_that("print", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  ctx <- context_save(path, envir = .GlobalEnv)
+  expect_output(print(ctx), "<context>", fixed = TRUE)
+})
+
+test_that("name can't be id", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  expect_error(context_save(path, name = ids::random_id(), envir = .GlobalEnv),
+               "name cannot be an id")
+})
+
+test_that("auto does not allow package listing", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  expect_error(context_save(path, auto = TRUE, packages = "testthat",
+                            envir = .GlobalEnv),
+               "Do not specify 'packages' or 'sources' if using auto")
+  expect_error(context_save(path, auto = TRUE, sources = "noisy.R",
+                            envir = .GlobalEnv),
+               "Do not specify 'packages' or 'sources' if using auto")
+})
+
+test_that("non-attached packages", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  ctx <- context_save(path, envir = .GlobalEnv,
+                      packages = list(loaded = "testthat"))
+  expect_equal(ctx$packages,
+               list(attached = character(0), loaded = "testthat"))
+})
+
+test_that("packages validation", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  expect_error(context_save(path, envir = .GlobalEnv,
+                            packages = list(foo = "a")),
+               "Unknown names for 'packages': foo", fixed = TRUE)
+  expect_error(context_save(path, envir = .GlobalEnv,
+                            packages = list(loaded = TRUE)),
+               "All elements of 'packages' must be a character", fixed = TRUE)
+  expect_error(context_save(path, envir = .GlobalEnv,
+                            packages = TRUE),
+               "Incorrect type for 'packages'", fixed = TRUE)
+
+
 })

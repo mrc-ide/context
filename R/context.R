@@ -125,7 +125,7 @@ context_build <- function(packages, sources, auto, package_sources, envir, name)
       packages <- modifyList(list(attached = character(0), loaded = character(0)),
                              packages)
     } else {
-      stop("Incorrect type for packages")
+      stop("Incorrect type for 'packages'")
     }
     ret <- list(name = name,
                 packages = packages)

@@ -38,6 +38,9 @@ test_that("tasks in empty context", {
   expect_equal(res$waiting, rep(NA_real_, 2))
   expect_equal(res$running, rep(NA_real_, 2))
   expect_equal(res$idle, rep(NA_real_, 2))
+
+  res0 <- tasks_times(character(0), ctx)
+  expect_equal(res0, res[integer(0), ])
 })
 
 test_that("single task", {
@@ -71,6 +74,9 @@ test_that("single task", {
   expect_equal(dat$context_id, ctx$id)
   expect_equal(dat$expr, expr)
   expect_null(dat$objects)
+
+  expect_equal(task_expr(t, path), expr)
+  expect_equal(task_function_name(t, path), "sin")
 
   e <- new.env()
   dat <- task_load(t, ctx, e, load_context = TRUE, install = FALSE)
@@ -181,7 +187,11 @@ test_that("local variables", {
   expect_identical(dat$envir$x, x)
   expect_identical(parent.env(dat$envir), dat$envir_context)
 
-  res <- task_run(t, ctx, , envir = e)
+  expect_equal(task_expr(t, ctx), expr)
+  expect_equal(task_expr(t, ctx, TRUE),
+               structure(expr, locals = dat$objects))
+
+  res <- task_run(t, ctx, envir = e)
   expect_equal(res, sin(1))
 })
 
@@ -245,7 +255,7 @@ test_that("complex expressions", {
 
 test_that("stack trace", {
   ## context_log_start()
-  ctx <- context::context_save(tempfile(), storage_type = "environment")
+  ctx <- context_save(tempfile(), storage_type = "environment")
   t <- task_save(quote(readLines("asdfa.txt")), ctx)
   ## Warning is not suppressed:
   expect_warning(res <- task_run(t, ctx, print_error = FALSE), "No such file")
@@ -255,8 +265,8 @@ test_that("stack trace", {
 })
 
 test_that("stack trace, no warning", {
-  ctx <- context::context_save(tempfile(), storage_type = "environment",
-                               sources = "myfuns.R")
+  ctx <- context_save(tempfile(), storage_type = "environment",
+                      sources = "myfuns.R")
   t <- task_save(quote(f(-10)), ctx)
   context_log_start()
   on.exit(context_log_stop())
@@ -267,7 +277,7 @@ test_that("stack trace, no warning", {
 test_that("long expr", {
   ## TODO: this is obviously missing a second half where something
   ## that went *wrong* was printed.  Not sure what that is though!
-  ctx <- context::context_save(tempfile(), storage_type = "environment")
+  ctx <- context_save(tempfile(), storage_type = "environment")
   task <- task_save(quote(list(a_label = "a value",
                                another_label = pi,
                                one_more = c(exp(1), pi, 123.12312),
@@ -276,9 +286,9 @@ test_that("long expr", {
 })
 
 test_that("load_context", {
-  ctx <- context::context_save(tempfile(),
-                               sources = "noisy.R",
-                               storage_type = "environment")
+  ctx <- context_save(tempfile(),
+                      sources = "noisy.R",
+                      storage_type = "environment")
   t <- task_save(quote(times_two(2)), ctx)
   expect_message(env <- context_load(ctx), "NOISY")
 
@@ -293,4 +303,66 @@ test_that("print", {
   t <- task_save(quote(sin(2)), ctx)
   dat <- task_read(t, ctx)
   expect_output(print(dat), "<task>", fixed = TRUE)
+})
+
+test_that("capture output", {
+  context_log_start()
+  on.exit(context_log_stop())
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  t <- task_save(quote(sin(2)), ctx)
+  logfile <- tempfile()
+
+  ## Problem: This one is not working with testthat, unfortunately;
+  ## getting it working probably will mean either working out how to
+  ## win the sink fight with testthat, or testing in a subprocess.
+  ##
+  ## Solution via:
+  ## https://github.com/hadley/testthat/issues/460
+  res <- withCallingHandlers(
+    task_run(t, ctx, filename = logfile),
+    message = function(e) cat(conditionMessage(e), file = stderr(), sep = ""))
+  expect_equal(res, sin(2))
+  expect_true(file.exists(logfile))
+  dat <- parse_context_log(readLines(logfile))
+  expect_is(dat, "context_log")
+  str <- capture.output(print(dat))
+  expect_match(str[[1]], "[ root", fixed = TRUE)
+
+  ctx$db$set(t, logfile, "log_path")
+  expect_equal(task_log(t, ctx), dat)
+
+  logpath <- file.path(ctx$root$path, "logs")
+  dir.create(logpath, FALSE, TRUE)
+  file.copy(logfile, file.path(logpath, t))
+
+  ctx$db$set(t, "logs", "log_path")
+  expect_equal(task_log(t, ctx), dat)
+
+  ctx$db$set(t, file.path("logs", t), "log_path")
+  expect_equal(task_log(t, ctx), dat)
+
+  ctx$db$set(t, tempfile(), "log_path")
+  expect_error(task_log(t, ctx), "Logfile does not exist at")
+})
+
+test_that("run without loading", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  e <- list2env(list(a = 1), parent = emptyenv())
+  t <- task_save(quote(sin(a)), ctx, e)
+  expect_equal(task_run(t, ctx$root, .GlobalEnv, load_context = FALSE),
+               sin(e$a))
+})
+
+test_that("fetch task result", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  t <- task_save(quote(sin(1)), ctx)
+  expect_equal(task_run(t, ctx$root, .GlobalEnv), sin(1))
+
+  expect_equal(task_result(t, ctx$root), sin(1))
+  expect_equal(tasks_status(t, ctx$root), TASK_COMPLETE)
 })

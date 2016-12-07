@@ -20,7 +20,7 @@ store_expression <- function(expr, envir, db) {
   ret <- list(expr = expr, id = id)
 
   if (length(symbols) > 0L) {
-    local <- exists(symbols, envir, inherits = FALSE)
+    local <- vlapply(symbols, exists, envir, inherits = FALSE, USE.NAMES = FALSE)
     if (any(!local)) {
       test <- symbols[!local]
       ## TODO: Doing this *properly* requires that we know what was
@@ -29,7 +29,7 @@ store_expression <- function(expr, envir, db) {
       ## environment variables that were created when the context was
       ## set up and from variables that have been changed is
       ## challenging.
-      global <- exists(test, parent.env(.GlobalEnv))
+      global <- vlapply(test, exists, parent.env(.GlobalEnv), USE.NAMES = FALSE)
       if (any(!global)) {
         stop("not all objects found: ",
              paste(test[!global], collapse = ", "))

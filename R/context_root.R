@@ -127,16 +127,6 @@ context_root <- function(path, db = NULL) {
   ret
 }
 
-context_root_path <- function(x) {
-  if (inherits(x, "context_root")) {
-    x$path
-  } else if (is.recursive(x) && inherits(x$root, "context_root")) {
-    x$root$path
-  } else {
-    stop("can't find path")
-  }
-}
-
 ##' @export
 print.context_root <- function(x, ...) {
   print_ad_hoc(x)

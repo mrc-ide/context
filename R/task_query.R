@@ -80,7 +80,7 @@ task_log <- function(id, root) {
   if (is_relative_path(path)) {
     path <- file.path(context_root_get(root)$path, path)
   }
-  if (is_dir(path)) {
+  if (is_directory(path)) {
     path <- file.path(path, id)
   }
   if (!file.exists(path)) {
