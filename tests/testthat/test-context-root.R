@@ -8,6 +8,8 @@ test_that("basic", {
   expect_true(is_directory(ans$path))
   expect_is(ans$db, "storr")
   expect_equal(ans$db$driver$type(), "rds")
+
+  expect_true(file.exists(file.path(path_bin(path), "task_run")))
 })
 
 test_that("version conflict", {

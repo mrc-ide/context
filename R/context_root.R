@@ -8,6 +8,7 @@ context_root_init <- function(path, storage_type = NULL, storage_args = NULL) {
       dir.create(path, FALSE, TRUE)
       writeLines(as.character(packageVersion("context")), fv)
     }
+    write_scripts(path)
   } else if (written > installed) {
     stop("context version conflict; local is outdated")
   }

@@ -8,6 +8,12 @@ path_db <- function(root) {
 path_config <- function(root) {
   file.path(root, "config")
 }
+path_bin <- function(root) {
+  file.path(root, "bin")
+}
+path_library <- function(root, platform = NULL) {
+  file.path(root, "R", platform %||% platform(), r_version(2))
+}
 
 ## TODO: belongs in pathr, also used in remotefile / filestorr
 ##' Test if path is absolute or relative.

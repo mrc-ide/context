@@ -57,19 +57,6 @@ is_directory <- function(x) {
   v & !is.na(v)
 }
 
-find_funcs <- function(fun, env) {
-  ours <- names(env)
-  ours <- ours[vlapply(ours, function(x) is.function(env[[x]]))]
-  seen <- character(0)
-  test <- list(fun)
-  while (length(test) > 0L) {
-    new <- setdiff(intersect(codetools::findGlobals(test[[1]]), ours), seen)
-    seen <- c(seen, new)
-    test <- c(test[-1], lapply(new, get, env, inherits = FALSE))
-  }
-  sort(seen)
-}
-
 string_starts_with <- function(x, y) {
   substr(x, 1, nchar(y)) == y
 }
@@ -79,6 +66,15 @@ hostname <- function() {
 }
 process_id <- function() {
   Sys.getpid()
+}
+platform <- function() {
+  R.version[["platform"]]
+}
+r_version <- function(n) {
+  if (n < 0L || n > 3L) {
+    stop("Invalid n")
+  }
+  getRversion()[1, seq_len(n)]
 }
 
 ## Like save.image but:
@@ -149,4 +145,27 @@ collector <- function(init = list()) {
   res <- init
   list(add = function(x) res <<- c(res, list(x)),
        get = function() res)
+}
+
+find_functions <- function(fun, env) {
+  ours <- names(env)
+  ours <- ours[vlapply(ours, function(x) is.function(env[[x]]))]
+  seen <- character(0)
+  test <- list(fun)
+  while (length(test) > 0L) {
+    new <- setdiff(intersect(codetools::findGlobals(test[[1]]), ours), seen)
+    seen <- c(seen, new)
+    test <- c(test[-1], lapply(new, get, env, inherits=FALSE))
+  }
+  sort(seen)
+}
+
+fun_to_str <- function(x, env) {
+  paste0(x, " <- ",
+         paste(deparse(get(x, env, inherits=FALSE)), collapse="\n"))
+}
+
+Rscript <- function(...) {
+  Sys.setenv("R_TESTS" = "")
+  system2(file.path(R.home(), "bin", "Rscript"), ...)
 }
