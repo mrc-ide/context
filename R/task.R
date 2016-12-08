@@ -36,8 +36,8 @@ task_save <- function(expr, context, envir = parent.frame()) {
   dat$context_id <- context$id
   class(dat) <- "task"
   db$mset(dat$id,
-          list(dat, TASK_PENDING, Sys.time()),
-          c("tasks", "task_status", "task_time_sub"))
+          list(dat, TASK_PENDING, context$id, Sys.time()),
+          c("tasks", "task_status", "task_context", "task_time_sub"))
   dat$id
 }
 
@@ -58,6 +58,12 @@ task_delete <- function(ids, root) {
     res <- apply(matrix(res, m, n), 2, any)
   }
   invisible(res)
+}
+
+task_context <- function(ids, root) {
+  db <- context_db_get(root)
+  n <- length(ids)
+  vcapply(db$mget(ids, "task_context", missing = NA_character_), identity)
 }
 
 ##' @export

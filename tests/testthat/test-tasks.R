@@ -13,11 +13,12 @@ test_that("tasks in empty context", {
   expect_equal(task_list(context_root(path)), character(0))
 
   ids <- ids::random_id(2)
-  expect_false(task_delete(ids[[1]], ctx))
+  id <- ids[[1]]
+
+  expect_false(task_delete(id, ctx))
   expect_equal(task_delete(ids, ctx), c(FALSE, FALSE))
   expect_equal(task_delete(character(0), ctx), logical(0))
 
-  id <- ids[[1]]
   expect_is(task_result(id, ctx, TRUE), "UnfetchableTask")
   expect_error(task_result(id, ctx), "unfetchable: MISSING")
 
@@ -28,6 +29,10 @@ test_that("tasks in empty context", {
   ## This affects task_load, task_expr, task_function_name
   expect_error(task_read(id, ctx), "not found")
   expect_error(task_log(id, ctx), "Logging not enabled")
+
+  expect_equal(task_context(id, ctx), NA_character_)
+  expect_equal(task_context(ids, ctx), rep(NA_character_, 2L))
+  expect_equal(task_context(character(0), ctx), character(0))
 
   res <- task_times(ids, ctx)
   expect_is(res, "data.frame")
@@ -54,6 +59,7 @@ test_that("single task", {
   expect_true(is_id(t))
   expect_equal(task_list(ctx), t)
   expect_equal(task_status(t, ctx), TASK_PENDING)
+  expect_equal(task_context(t, ctx), ctx$id)
 
   expect_is(task_result(t, ctx, TRUE), "UnfetchableTask")
   expect_error(task_result(t, ctx), "unfetchable: PENDING")
