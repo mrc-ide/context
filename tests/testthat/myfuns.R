@@ -8,3 +8,11 @@ g <- function(x) {
   }
   x
 }
+
+loop <- function(a, n) {
+  for (i in seq_len(n)) {
+    message(i)
+    a <- a + a
+  }
+  a
+}
