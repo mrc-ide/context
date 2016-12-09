@@ -28,9 +28,9 @@ start_parallel_cluster <- function(n, ctx) {
     ## Ideally these will load the context so that they're good to go.
     context_start <- function(root, id) {
       context_log_start()
-      context_load(context_handle(root, id))
+      context_load(context_read(id, root))
+      invisible()
     }
-    stop("this needs a ton of work")
     invisible(parallel::clusterCall(par$cl, ".libPaths", .libPaths()))
     invisible(parallel::clusterCall(par$cl, context_start, ctx$root, ctx$id))
     parallel::setDefaultCluster(par$cl)
@@ -44,11 +44,14 @@ start_parallel_cluster <- function(n, ctx) {
 ##' @rdname start_parallel_cluster
 ##' @export
 stop_parallel_cluster <- function() {
-  if (!is.null(par$cl)) {
+  registered <- !is.null(par$cl)
+  if (registered) {
     context_log("cluster", sprintf("Stopping %d nodes", length(par$cl)))
     parallel::stopCluster(par$cl)
+    parallel::setDefaultCluster(NULL)
     par$cl <- NULL
   }
+  registered
 }
 
 ##' @rdname start_parallel_cluster
