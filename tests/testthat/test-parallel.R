@@ -21,6 +21,11 @@ test_that("parallel cluster", {
   expect_false(any(vlapply(res, function(x) "packge:context" %in% x)))
 
   expect_equal(cl, parallel_cluster())
+
+  expect_error(start_parallel_cluster(2L, ctx),
+               "Parallel cluster already running")
+  expect_equal(cl, parallel_cluster())
+
   expect_true(stop_parallel_cluster())
 
   expect_error(parallel_cluster(), "Cluster has not been started yet")
