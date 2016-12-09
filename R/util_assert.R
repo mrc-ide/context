@@ -4,22 +4,10 @@ assert_scalar <- function(x, name = deparse(substitute(x))) {
   }
 }
 
-assert_logical <- function(x, name = deparse(substitute(x))) {
-  if (!is.logical(x)) {
-    stop(sprintf("%s must be logical", name), call. = FALSE)
-  }
-}
-
 assert_nonmissing <- function(x, name = deparse(substitute(x))) {
   if (any(is.na(x))) {
     stop(sprintf("%s must not be NA", name), call. = FALSE)
   }
-}
-
-assert_scalar_logical <- function(x, name = deparse(substitute(x))) {
-  assert_scalar(x, name)
-  assert_logical(x, name)
-  assert_nonmissing(x, name)
 }
 
 assert_character <- function(x, name = deparse(substitute(x))) {
@@ -34,60 +22,8 @@ assert_scalar_character <- function(x, name = deparse(substitute(x))) {
   assert_nonmissing(x, name)
 }
 
-assert_numeric <- function(x, name = deparse(substitute(x))) {
-  if (!is.numeric(x)) {
-    stop(sprintf("%s must be numeric", name), call. = FALSE)
-  }
-}
-
-assert_is <- function(x, name = deparse(substitute(x))) {
-  if (!is.numeric(x)) {
-    stop(sprintf("%s must be numeric", name), call. = FALSE)
-  }
-}
-
-assert_scalar_numeric <- function(x, name = deparse(substitute(x))) {
-  assert_scalar(x, name)
-  assert_numeric(x, name)
-  assert_nonmissing(x, name)
-}
-
-assert_size <- function(x, strict = FALSE, name = deparse(substitute(x))) {
-  assert_scalar(x, name)
-  assert_integer(x, strict, name)
-  assert_nonmissing(x, name)
-  assert_nonnegative(x, name)
-}
-
-assert_nonnegative <- function(x, name = deparse(substitute(x))) {
-  if (x < 0) {
-    stop(sprintf("%s must be nonnegative", name), call. = FALSE)
-  }
-}
-
-assert_integer <- function(x, strict = FALSE, name = deparse(substitute(x))) {
-  if (!(is.integer(x))) {
-    usable_as_integer <-
-      !strict && is.numeric(x) && (max(abs(as.integer(x) - x)) < 1e-8)
-    if (!usable_as_integer) {
-      stop(sprintf("%s must be integer", name), call. = FALSE)
-    }
-  }
-}
-
 assert_is <- function(x, type, name = deparse(substitute(x))) {
   if (!(inherits(x, type))) {
     stop("%s must inherit from %s", name, paste(type, collapse = " / "))
   }
-}
-
-match_value <- function(x, choices, name = deparse(substitute(x))) {
-  assert_scalar_character(x, name)
-  i <- match(x, choices)
-  if (is.na(i)) {
-    stop(sprintf("%s must be one of {%s}",
-                 name, paste(choices, collapse = ", ")),
-         call. = FALSE)
-  }
-  choices[[i]]
 }
