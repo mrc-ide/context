@@ -31,17 +31,17 @@ file_remove <- function(...) {
 
 print_ad_hoc <- function(x) {
   cl <- class(x)[[1]]
-  x <- unclass(x)
-  i <- vlapply(unclass(x), is.raw)
+  xp <- unclass(x)
+  i <- vlapply(xp, is.raw)
   if (any(i)) {
-    x[i] <- sprintf("raw <%d bytes>", lengths(x[i]))
+    xp[i] <- sprintf("raw <%d bytes>", lengths(xp[i]))
   }
-  i <- vlapply(x, is.atomic) & lengths(x) > 1L
+  i <- vlapply(xp, is.atomic) & lengths(xp) > 1L
   if (any(i)) {
-    x[i] <- vcapply(x[i], function(el)
+    xp[i] <- vcapply(xp[i], function(el)
       paste(sprintf("\n   - %s", el), collapse = ""))
   }
-  members <- paste(sprintf(" - %s: %s\n", names(x), unname(x)), collapse = "")
+  members <- paste(sprintf(" - %s: %s\n", names(xp), unname(xp)), collapse = "")
   cat(sprintf("<%s>\n%s", cl, members))
   invisible(x)
 }
@@ -71,7 +71,7 @@ platform <- function() {
   R.version[["platform"]]
 }
 r_version <- function(n) {
-  if (n < 0L || n > 3L) {
+  if (n < 1L || n > 3L) {
     stop("Invalid n")
   }
   getRversion()[1, seq_len(n)]
@@ -125,20 +125,23 @@ capture_log <- function(expr, filename) {
 
 call_trace <- function(skip_outer = 0, skip_inner = 0) {
   calls <- sys.calls()
+  limitedLabels(trim_calls(calls, skip_outer, skip_inner))
+}
 
+trim_calls <- function(calls, skip_outer = 0, skip_inner = 0) {
   if (skip_outer > length(calls)) {
-    return(character(0))
+    return(list())
   } else if (skip_outer > 0L) {
     calls <- calls[-seq_len(skip_outer)]
   }
 
   if (skip_inner > length(calls)) {
-    return(character(0))
+    return(list())
   } else if (skip_inner > 0L) {
     calls <- calls[-seq(by = 1, length.out = skip_inner, to = length(calls))]
   }
 
-  limitedLabels(calls)
+  calls
 }
 
 collector <- function(init = list()) {

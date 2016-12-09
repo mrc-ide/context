@@ -11,8 +11,13 @@ path_config <- function(root) {
 path_bin <- function(root) {
   file.path(root, "bin")
 }
-path_library <- function(root, platform = NULL) {
-  file.path(root, "R", platform %||% platform(), r_version(2))
+path_library <- function(root, platform = NULL, version = NULL) {
+  if (is.null(version)) {
+    version_str <- as.character(r_version(2))
+  } else {
+    version_str <- as.character(version)
+  }
+  file.path(root, "lib", platform %||% platform(), version_str)
 }
 
 ## TODO: belongs in pathr, also used in remotefile / filestorr

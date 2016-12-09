@@ -40,3 +40,50 @@ test_that("is_directory", {
   expect_false(is_directory("noisy.R"))
   expect_false(is_directory(tempfile()))
 })
+
+test_that("r_version", {
+  v <- unclass(getRversion())[[1]]
+  expect_equal(r_version(1), numeric_version(v[[1]]),
+               check.attributes = FALSE)
+  expect_equal(r_version(2), numeric_version(paste(v[1:2], collapse = ".")),
+               check.attributes = FALSE)
+  expect_equal(r_version(3), numeric_version(paste(v[1:3], collapse = ".")),
+               check.attributes = FALSE)
+  expect_error(r_version(0), "Invalid n")
+  expect_error(r_version(4), "Invalid n")
+})
+
+test_that("trim_calls", {
+  f1 <- function(x) f2(x)
+  f2 <- function(x) f3(x)
+  f3 <- function(x) f4(x)
+  f4 <- function(x) {
+    if (isTRUE(x)) sys.calls() else call_trace()
+  }
+
+  calls <- f1(TRUE)
+  expect_equal(trim_calls(calls, 0, 0), calls)
+
+  n <- length(calls)
+  m <- floor(n / 2)
+  expect_equal(trim_calls(calls, n, 0), list())
+  expect_equal(trim_calls(calls, n + 1, 0), list())
+  expect_equal(trim_calls(calls, 0, n), list())
+  expect_equal(trim_calls(calls, 0, n + 1), list())
+  expect_equal(trim_calls(calls, m, n - m), list())
+  expect_equal(trim_calls(calls, m + 1, n - m), list())
+
+  expect_equal(trim_calls(calls, 1, 0), calls[-1])
+  expect_equal(trim_calls(calls, 0, 1), calls[-n])
+  expect_equal(trim_calls(calls, 1, 1), calls[-c(1, n)])
+})
+
+test_that("print_ad_hoc", {
+  expect_output(print_ad_hoc(list(a = raw(4))),
+                "a: raw <4 bytes>", fixed = TRUE)
+  expect_output(print_ad_hoc(list(a = 1:2)),
+                "a: \n   - 1\n   - 2", fixed = TRUE)
+  x <- list(a = raw(4))
+  capture.output(xx <- print_ad_hoc(x))
+  expect_identical(xx, x)
+})

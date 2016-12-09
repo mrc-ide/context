@@ -65,3 +65,13 @@ test_that("print", {
   on.exit(unlink(path, recursive = TRUE))
   expect_output(print(root), "<context_root>", fixed = TRUE)
 })
+
+test_that("library path", {
+  path <- tempfile()
+  expect_equal(path_library(path),
+               file.path(path, "lib", platform(), r_version(2)))
+  expect_equal(path_library(path, "foo"),
+               file.path(path, "lib", "foo", r_version(2)))
+  expect_equal(path_library(path, version = "1.2.3"),
+               file.path(path, "lib", platform(), "1.2.3"))
+})
