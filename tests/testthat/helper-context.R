@@ -9,7 +9,10 @@ env_chain <- function(e, stop_at=list(.GlobalEnv, emptyenv())) {
 
 cleanup <- function(root) {
   if (file.exists(path_config(root))) {
-    suppressWarnings(context_db_get(root))$driver$destroy()
+    db <- tryCatch(context_db_get(root), error = function(e) NULL)
+    if (!is.null(db)) {
+      db$driver$destroy()
+    }
   }
   unlink(root, recursive = TRUE)
   ## This prunes libPaths down to the set of files that exist, so with

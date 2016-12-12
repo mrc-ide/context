@@ -172,3 +172,19 @@ Rscript <- function(...) {
   Sys.setenv("R_TESTS" = "")
   system2(file.path(R.home(), "bin", "Rscript"), ...)
 }
+
+## The R time objects really want me poke my eyes out.  Perhaps there
+## is a better way of doing this?  Who knows?
+unlist_times <- function(x) {
+  if (length(x) == 0L) {
+    structure(numeric(0), class = c("POSIXct", "POSIXt"), tzone = "UTC")
+  } else {
+    tmp <- vnapply(x, identity)
+    attributes(tmp) <- attributes(x[[1L]])
+    tmp
+  }
+}
+
+empty_time <- function() {
+  Sys.time()[-1]
+}

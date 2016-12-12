@@ -24,6 +24,28 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
   ret
 }
 
+context_info <- function(root, error = TRUE) {
+  ids <- context_list(root, error = error)
+  if (length(ids) == 0L) {
+    ret <- data.frame(id = character(0), name = character(0),
+                      created = empty_time(),
+                      stringsAsFactors = FALSE)
+  } else {
+    db <- context_db_get(root)
+    times <- unlist_times(db$mget(ids, "context_date_created"))
+    dat <- db$mget(ids, "contexts")
+    names <- vcapply(dat, "[[", "name")
+    ret <- data.frame(id = ids, name = names, created = times,
+                      stringsAsFactors = FALSE)
+    ret <- ret[order(ret$created), ]
+    rownames(ret) <- NULL
+  }
+  ret
+}
+
+## TODO: it might be nice to list these by time optinally, but that
+## interacts badly with getting the names too, because those are not
+## stored as a lookup.
 context_list <- function(root, names = FALSE, error = TRUE) {
   if (error) {
     db <- context_db_get(root)

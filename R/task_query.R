@@ -110,11 +110,11 @@ task_times <- function(ids, root, unit_elapsed = "secs", sorted = TRUE) {
   db <- context_db_get(root)
   n <- length(ids)
   if (length(ids) == 0L) {
-    empty_time <- Sys.time()[-1]
+    t <- empty_time()
     ret <- data.frame(task_id = character(0),
-                      submitted = empty_time,
-                      started = empty_time,
-                      finished = empty_time,
+                      submitted = t,
+                      started = t,
+                      finished = t,
                       waiting = numeric(0),
                       running = numeric(0),
                       idle = numeric(0),

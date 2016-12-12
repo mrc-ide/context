@@ -63,7 +63,7 @@ test_that("auto", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
 
-  ctx <- context_save(path, auto=TRUE)
+  ctx <- context_save(path, auto = TRUE)
   expect_true(ctx$db$exists(ctx$id, "contexts"))
   expect_true(ctx$db$driver$exists_object(ctx$id))
   expect_is(ctx$local, "environment")
@@ -171,7 +171,10 @@ test_that("context_db", {
 })
 
 test_that("environment backed context", {
-  ctx <- context_save(tempfile(), storage_type = "environment")
+  path <- tempfile()
+  on.exit(cleanup(path))
+
+  ctx <- context_save(path, storage_type = "environment")
   expect_is(ctx$db, "storr")
   expect_equal(ctx$db$driver$type(), "environment")
 
@@ -184,6 +187,7 @@ test_that("environment backed context", {
 
 test_that("context_list", {
   path <- tempfile()
+  on.exit(cleanup(path))
 
   expect_error(context_list(path),
                "Context root not set up at")
@@ -204,6 +208,35 @@ test_that("context_list", {
   expect_equal(sort(context_list(path)), sort(c(ctx1$id, ctx2$id)))
   expect_equal(sort(context_list(path, names = TRUE)),
                sort(c(ctx1$name, ctx2$name)))
+})
+
+test_that("context_info", {
+  path <- tempfile()
+  on.exit(cleanup(path))
+
+  expect_error(context_info(path, error = TRUE),
+               "Context root not set up")
+  info <- context_info(path, error = FALSE)
+  expect_equal(nrow(info), 0)
+  expect_equal(names(info), c("id", "name", "created"))
+  expect_equal(info$id, character(0))
+  expect_equal(info$name, character(0))
+  expect_equal(info$created, empty_time())
+
+  ctx1 <- context_save(path)
+  Sys.sleep(0.1)
+  ctx2 <- context_save(path)
+  Sys.sleep(0.1)
+  ctx3 <- context_save(path)
+
+  info <- context_info(path)
+
+  expect_equal(info$id,
+               c(ctx1$id, ctx2$id, ctx3$id))
+  expect_equal(info$name,
+               c(ctx1$name, ctx2$name, ctx3$name))
+  expect_is(info$created, "POSIXt")
+  expect_true(all(as.numeric(diff(info$created), "secs") > 0))
 })
 
 test_that("compression works", {
@@ -231,6 +264,7 @@ test_that("compression works", {
 test_that("print", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
+
   ctx <- context_save(path, envir = .GlobalEnv)
   expect_output(print(ctx), "<context>", fixed = TRUE)
 })
@@ -238,6 +272,7 @@ test_that("print", {
 test_that("name can't be id", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
+
   expect_error(context_save(path, name = ids::random_id(), envir = .GlobalEnv),
                "name cannot be an id")
 })
@@ -256,6 +291,7 @@ test_that("auto does not allow package listing", {
 test_that("non-attached packages", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
+
   ctx <- context_save(path, envir = .GlobalEnv,
                       packages = list(loaded = "testthat"))
   expect_equal(ctx$packages,
@@ -265,6 +301,7 @@ test_that("non-attached packages", {
 test_that("packages validation", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
+
   expect_error(context_save(path, envir = .GlobalEnv,
                             packages = list(foo = "a")),
                "Unknown names for 'packages': foo", fixed = TRUE)
