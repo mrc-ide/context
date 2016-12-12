@@ -24,6 +24,7 @@ assert_scalar_character <- function(x, name = deparse(substitute(x))) {
 
 assert_is <- function(x, type, name = deparse(substitute(x))) {
   if (!(inherits(x, type))) {
-    stop("%s must inherit from %s", name, paste(type, collapse = " / "))
+    stop(sprintf("%s must inherit from %s",
+                 name, paste(type, collapse = " / ")))
   }
 }
