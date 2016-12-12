@@ -68,3 +68,37 @@ test_that("parallel", {
   expect_equal(length(res2$workers), 2)
   expect_false(res2$host %in% res2$workers)
 })
+
+## This tests the issue that Ilaria found; when a package uses
+## startCluster(), it should find the set of packages that we want it
+## to find (so that if this is running on a provisioned context, then
+## the cross installed packages are all found)
+test_that("manual parallel cluster", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  ctx <- context_save(path, sources = "myfuns-parallel.R")
+  t <- task_save(quote(manual_parallel_test()), ctx)
+
+  full <- file.path(path_bin(path), "task_run")
+  res1 <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  paths1 <- task_result(t, ctx)
+
+  ## Then, we create the directory that would the the library path:
+  dir.create(path_library(path), recursive = TRUE)
+
+  res2 <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  paths2 <- task_result(t, ctx)
+
+  ## This is not ideal, but under devtools::test() (but not under
+  ## running tests interactively) R_LIBS is set and changes the order
+  ## of the paths here.  So we test that _any_ of the library paths
+  ## are consistent with the library path having been set when we
+  ## really should test for the first one.
+  expect_false(any(string_starts_with(paths1[[1]], path)))
+  expect_true(any(string_starts_with(paths2[[1]], path)))
+
+  if (!nzchar(Sys.getenv("R_LIBS"))) {
+    expect_false(string_starts_with(paths1[[1]][[1]], path))
+    expect_true(string_starts_with(paths2[[1]][[1]], path))
+  }
+})

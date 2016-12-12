@@ -17,7 +17,10 @@ path_library <- function(root, platform = NULL, version = NULL) {
   } else {
     version_str <- as.character(version)
   }
-  file.path(root, "lib", platform %||% platform(), version_str)
+  if (is.null(platform)) {
+    platform <- platform()
+  }
+  file.path(root, "lib", platform, version_str)
 }
 
 ## TODO: belongs in pathr, also used in remotefile / filestorr

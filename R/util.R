@@ -156,9 +156,9 @@ find_functions <- function(fun, env) {
   seen <- character(0)
   test <- list(fun)
   while (length(test) > 0L) {
-    new <- setdiff(intersect(codetools::findGlobals(test[[1]]), ours), seen)
+    new <- setdiff(intersect(all.vars(body(test[[1L]]), TRUE), ours), seen)
     seen <- c(seen, new)
-    test <- c(test[-1], lapply(new, get, env, inherits=FALSE))
+    test <- c(test[-1L], lapply(new, get, env, inherits=FALSE))
   }
   sort(seen)
 }

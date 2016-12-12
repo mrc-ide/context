@@ -52,7 +52,7 @@ write_script_task_run <- function(path_bin) {
 bootstrap_context <- function(args = commandArgs(TRUE),
                               name = "context", n = 0L) {
   args <- parse_command_args(args, name, n)
-  use_local_library(args$root, FALSE)
+  use_local_library(path_library(args$root), FALSE)
   if (!requireNamespace("context", quietly = TRUE)) {
     stop("Could not find context package; aborting startup")
   }
@@ -64,7 +64,11 @@ use_local_library <- function(lib, create = FALSE) {
     dir.create(lib, FALSE, TRUE)
   }
   if (file.exists(lib)) {
+    ## TODO: if we're dealing with adding existing lib paths here then
+    ## they need to be joined with ':' on unix and ';' on Windows -
+    ## see .Platform$path.sep
     .libPaths(union(lib, .libPaths()))
+    Sys.setenv("R_LIBS_USER" = lib)
     context_log("lib", lib)
   }
 }
