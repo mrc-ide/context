@@ -1,4 +1,4 @@
-context("utils")
+context("util")
 
 test_that("capture_log", {
   filename <- tempfile()
