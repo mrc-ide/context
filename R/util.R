@@ -177,7 +177,7 @@ Rscript <- function(...) {
 ## is a better way of doing this?  Who knows?
 unlist_times <- function(x) {
   if (length(x) == 0L) {
-    structure(numeric(0), class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    empty_time()
   } else {
     tmp <- vnapply(x, identity)
     attributes(tmp) <- attributes(x[[1L]])

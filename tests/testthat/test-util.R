@@ -101,3 +101,11 @@ test_that("assertions", {
 
   expect_error(assert_is(1, "R6"), "must inherit from R6")
 })
+
+test_that("unlist times", {
+  t1 <- Sys.time()
+  t2 <- t1 + 2
+  expect_equal(unlist_times(list(t1)), t1)
+  expect_equal(unlist_times(list(t1, t2)), c(t1, t2))
+  expect_equal(unlist_times(list()), empty_time())
+})
