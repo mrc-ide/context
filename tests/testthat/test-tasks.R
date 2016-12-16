@@ -24,7 +24,9 @@ test_that("tasks in empty context", {
 
   expect_equal(task_status(id, ctx), TASK_MISSING)
   expect_equal(task_status(ids, ctx), rep(TASK_MISSING, length(ids)))
-  expect_equal(task_status(character(0), ctx), character(0))
+  expect_equal(task_status(character(0), ctx, named = FALSE), character(0))
+  expect_equal(task_status(character(0), ctx, named = TRUE),
+               setNames(character(0), character(0)))
 
   ## This affects task_load, task_expr, task_function_name
   expect_error(task_read(id, ctx), "not found")
@@ -58,7 +60,8 @@ test_that("single task", {
 
   expect_true(is_id(t))
   expect_equal(task_list(ctx), t)
-  expect_equal(task_status(t, ctx), TASK_PENDING)
+  expect_equal(task_status(t, ctx, TRUE), setNames(TASK_PENDING, t))
+  expect_equal(task_status(t, ctx, FALSE), TASK_PENDING)
   expect_equal(task_context(t, ctx), ctx$id)
 
   expect_is(task_result(t, ctx, TRUE), "UnfetchableTask")

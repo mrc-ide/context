@@ -11,9 +11,13 @@ task_list <- function(root) {
 ##' @param named Name the output with the task ids?
 ##' @export
 task_status <- function(ids, root, named = FALSE) {
+  if (length(ids) == 0L) {
+    return(if (named) setNames(character(0), character(0)) else character(0))
+  }
   db <- context_db_get(root)
-  vcapply(db$mget(ids, "task_status", missing = TASK_MISSING),
-          identity, USE.NAMES = named)
+  st <- vcapply(db$mget(ids, "task_status", missing = TASK_MISSING),
+                identity, USE.NAMES = FALSE)
+  if (named) setNames(st, ids) else st
 }
 
 ##' Fetch result from completed task.
@@ -58,8 +62,13 @@ task_expr <- function(id, root, locals = FALSE) {
 
 ##' @rdname task_expr
 ##' @export
-task_function_name <- function(id, root) {
-  paste(deparse(task_expr(id, root, FALSE)[[1L]]), collapse = " ")
+task_function_name <- function(ids, root) {
+  if (length(ids) == 1L) {
+    paste(deparse(task_expr(id, root, FALSE)[[1L]]), collapse = " ")
+  } else {
+    ## TODO: do this with a vectorised lookup, perhaps?
+    vcapply(ids, task_function_name, root)
+  }
 }
 
 ##' Return the log of a task, if enabled.

@@ -1,10 +1,4 @@
-## like rrqueue:::prepare_expression() followed by
-## rrqueue::save_expression().
-##
-## TODO: this needs harmonising with store_expression in rrq as that's
-## optimised to allow bulk writes efficiently.
-store_expression <- function(expr, envir, db) {
-  id <- ids::random_id()
+prepare_expression <- function(expr, envir, db) {
   fun <- expr[[1]]
   args <- expr[-1]
 
@@ -17,10 +11,11 @@ store_expression <- function(expr, envir, db) {
                      unname(unlist(lapply(args[is_call], find_symbols))))
   }
 
-  ret <- list(expr = expr, id = id)
+  ret <- list(expr = expr)
 
   if (length(symbols) > 0L) {
-    local <- vlapply(symbols, exists, envir, inherits = FALSE, USE.NAMES = FALSE)
+    local <- vlapply(symbols, exists, envir, inherits = FALSE,
+                     USE.NAMES = FALSE)
     if (any(!local)) {
       test <- symbols[!local]
       ## TODO: Doing this *properly* requires that we know what was
