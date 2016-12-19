@@ -410,3 +410,16 @@ test_that("task_exists", {
   expect_equal(task_exists(c(t1, t2), ctx), rep(TRUE, 2))
   expect_equal(task_exists(c(t1, t3, t2), ctx), c(TRUE, FALSE, TRUE))
 })
+
+test_that("invalid task", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  ## Not a great message:
+  expect_error(task_save(sin(1), ctx),
+               "expr must inherit from call")
+  expect_error(task_save(pi, ctx),
+               "expr must inherit from call")
+  expect_error(task_save(quote(sin), ctx),
+               "expr must inherit from call")
+})

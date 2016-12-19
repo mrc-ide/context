@@ -31,6 +31,7 @@ task_save <- function(expr, context, envir = parent.frame()) {
   ## think.  With more than one task we can either do 3 mset updates,
   ## n updates or or one massive one.
   assert_is(context, "context")
+  assert_is(expr, "call")
   db <- context_db_get(context)
   dat <- prepare_expression(expr, envir, db)
   dat$id <- ids::random_id()
