@@ -155,6 +155,11 @@ task_times <- function(ids, root, unit_elapsed = "secs", sorted = TRUE) {
   ret
 }
 
+task_exists <- function(ids, root) {
+  db <- context_db_get(root)
+  db$exists(ids, "tasks")
+}
+
 UnfetchableTask <- function(task_id, status) {
   msg <- sprintf("task %s is unfetchable: %s", task_id, status)
   structure(list(message = msg, task_id = task_id, task_status = status),

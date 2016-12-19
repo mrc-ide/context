@@ -114,8 +114,3 @@ task_read <- function(id, root) {
   ret$db <- db
   ret
 }
-
-task_exists <- function(ids, root) {
-  db <- context_db_get(root)
-  db$exists(ids, "tasks")
-}

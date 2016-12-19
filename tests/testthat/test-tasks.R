@@ -375,3 +375,38 @@ test_that("fetch task result", {
   expect_equal(task_result(t, ctx$root), sin(1))
   expect_equal(task_status(t, ctx$root), TASK_COMPLETE)
 })
+
+test_that("task_function_name", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  t1 <- task_save(quote(sin(1)), ctx)
+  t2 <- task_save(quote(cos(1)), ctx)
+
+  expect_equal(task_function_name(character(0), ctx),
+               setNames(character(0), character(0)))
+  expect_equal(task_function_name(c(t1, t2), ctx),
+               setNames(c("sin", "cos"), c(t1, t2)))
+  expect_equal(task_function_name(c(t1, t1), ctx),
+               setNames(c("sin", "sin"), c(t1, t1)))
+  expect_error(task_function_name(ids::random_id(), ctx),
+               "not found")
+
+  ## Names pass through:
+  expect_equal(task_function_name(c(a = t1, b = t2), ctx),
+               setNames(c("sin", "cos"), c("a", "b")))
+})
+
+test_that("task_exists", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  t1 <- task_save(quote(sin(1)), ctx)
+  t2 <- task_save(quote(cos(1)), ctx)
+  t3 <- ids::random_id()
+
+  expect_equal(task_exists(character(0), ctx), logical(0))
+  expect_equal(task_exists(t1, ctx), TRUE)
+  expect_equal(task_exists(c(t1, t2), ctx), rep(TRUE, 2))
+  expect_equal(task_exists(c(t1, t3, t2), ctx), c(TRUE, FALSE, TRUE))
+})
