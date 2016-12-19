@@ -64,7 +64,7 @@ task_expr <- function(id, root, locals = FALSE) {
 ##' @export
 task_function_name <- function(ids, root) {
   if (length(ids) == 1L) {
-    paste(deparse(task_expr(id, root, FALSE)[[1L]]), collapse = " ")
+    paste(deparse(task_expr(ids, root, FALSE)[[1L]]), collapse = " ")
   } else {
     ## TODO: do this with a vectorised lookup, perhaps?
     vcapply(ids, task_function_name, root)
