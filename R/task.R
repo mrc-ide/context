@@ -53,6 +53,7 @@ task_save_bulk <- function(template, x, i, context, envir = parent.frame()) {
   if (!all(i > 0 & i < length(template))) {
     stop("Invalid index")
   }
+
   if (length(x) == 0L) {
     return(character(0))
   }
@@ -85,7 +86,8 @@ task_save_bulk <- function(template, x, i, context, envir = parent.frame()) {
 ##' @export
 ##' @return \code{TRUE} if a task was actually deleted.
 task_delete <- function(ids, root) {
-  db <- context_db_get(root)
+  root <- context_root_get(root)
+  db <- root$db
   n <- length(ids)
   ns <- c("tasks", "task_status", "task_results")
   if (n == 1L) {
@@ -95,11 +97,13 @@ task_delete <- function(ids, root) {
     res <- db$del(rep(ids, each = m), rep(ns, n))
     res <- apply(matrix(res, m, n), 2, any)
   }
+  ## TODO: delete the log if it is present (for this reason, this
+  ## function takes 'root' not 'db')
   invisible(res)
 }
 
-task_context <- function(ids, root) {
-  db <- context_db_get(root)
+task_context <- function(ids, db) {
+  db <- context_db_get(db)
   n <- length(ids)
   vcapply(db$mget(ids, "task_context", missing = NA_character_), identity)
 }
@@ -109,8 +113,8 @@ print.task <- function(x, ...) {
   print_ad_hoc(x)
 }
 
-task_read <- function(id, root) {
-  db <- context_db_get(root)
+task_read <- function(id, db) {
+  db <- context_db_get(db)
   ret <- db$get(id, "tasks")
   ret$db <- db
   ret

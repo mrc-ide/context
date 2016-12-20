@@ -24,14 +24,14 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
   ret
 }
 
-context_info <- function(root, error = TRUE) {
-  ids <- context_list(root, error = error)
+context_info <- function(db, error = TRUE) {
+  ids <- context_list(db, error = error)
   if (length(ids) == 0L) {
     ret <- data.frame(id = character(0), name = character(0),
                       created = empty_time(),
                       stringsAsFactors = FALSE)
   } else {
-    db <- context_db_get(root)
+    db <- context_db_get(db)
     times <- unlist_times(db$mget(ids, "context_date_created"))
     dat <- db$mget(ids, "contexts")
     names <- vcapply(dat, "[[", "name")
@@ -46,11 +46,11 @@ context_info <- function(root, error = TRUE) {
 ## TODO: it might be nice to list these by time optinally, but that
 ## interacts badly with getting the names too, because those are not
 ## stored as a lookup.
-context_list <- function(root, names = FALSE, error = TRUE) {
+context_list <- function(db, names = FALSE, error = TRUE) {
   if (error) {
-    db <- context_db_get(root)
+    db <- context_db_get(db)
   } else {
-    db <- tryCatch(context_db_get(root), error = function(e) NULL)
+    db <- tryCatch(context_db_get(db), error = function(e) NULL)
     if (is.null(db)) {
       return(character(0))
     }
@@ -194,10 +194,10 @@ context_name <- function(name) {
 ## the R CMD check tests work.  Better would be to mock sessionInfo
 ## data so that we can create a few sensible mock ups and send that
 ## through.
-detect_loaded_packages <- function(obj = sessionInfo()) {
-  loaded <- names(obj$loadedOnly)[!vlapply(obj$loadedOnly, function(x)
+detect_loaded_packages <- function(info = sessionInfo()) {
+  loaded <- names(info$loadedOnly)[!vlapply(info$loadedOnly, function(x)
     identical(x$Priority, "base"))]
-  attached <- names(obj$otherPkgs)
+  attached <- names(info$otherPkgs)
   ## This is defensive: ?sessionInfo does not make any guarantees
   ## about package loading.
   ord <- sub("^package:", "", search())

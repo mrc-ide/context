@@ -1,8 +1,8 @@
 ##' @rdname task
 ##' @export
 ##' @param root root
-task_list <- function(root) {
-  context_db_get(root)$list("tasks")
+task_list <- function(db) {
+  context_db_get(db)$list("tasks")
 }
 
 ##' Task status
@@ -10,11 +10,11 @@ task_list <- function(root) {
 ##' @param handle Task handle
 ##' @param named Name the output with the task ids?
 ##' @export
-task_status <- function(ids, root, named = FALSE) {
+task_status <- function(ids, db, named = FALSE) {
   if (length(ids) == 0L) {
     return(if (named) setNames(character(0), character(0)) else character(0))
   }
-  db <- context_db_get(root)
+  db <- context_db_get(db)
   st <- vcapply(db$mget(ids, "task_status", missing = TASK_MISSING),
                 identity, USE.NAMES = FALSE)
   if (named) setNames(st, ids) else st
@@ -28,8 +28,8 @@ task_status <- function(ids, root, named = FALSE) {
 ##'   completed?  Used internally, and not generally needed.
 ##'
 ##' @export
-task_result <- function(id, root, sanitise = FALSE) {
-  db <- context_db_get(root)
+task_result <- function(id, db, sanitise = FALSE) {
+  db <- context_db_get(db)
   status <- task_status(id, db, FALSE)
   if (status == "COMPLETE" || status == "ERROR") {
     db$get(id, "task_results")
@@ -51,8 +51,8 @@ task_result <- function(id, root, sanitise = FALSE) {
 ##'   attribute "locals")
 ##'
 ##' @export
-task_expr <- function(id, root, locals = FALSE) {
-  t <- task_read(id, root)
+task_expr <- function(id, db, locals = FALSE) {
+  t <- task_read(id, db)
   ret <- t$expr
   if (locals) {
     attr(ret, "locals") <- t$objects
@@ -62,12 +62,12 @@ task_expr <- function(id, root, locals = FALSE) {
 
 ##' @rdname task_expr
 ##' @export
-task_function_name <- function(ids, root) {
+task_function_name <- function(ids, db) {
   if (length(ids) == 1L) {
-    paste(deparse(task_expr(ids, root, FALSE)[[1L]]), collapse = " ")
+    paste(deparse(task_expr(ids, db, FALSE)[[1L]]), collapse = " ")
   } else {
     ## TODO: do this with a vectorised lookup, perhaps?
-    vcapply(ids, task_function_name, root)
+    vcapply(ids, task_function_name, db)
   }
 }
 
@@ -79,7 +79,8 @@ task_function_name <- function(ids, root) {
 ##' @inheritParams task_handle
 ##' @export
 task_log <- function(id, root) {
-  db <- context_db_get(root)
+  root <- context_root_get(root)
+  db <- root$db
   ## TODO: I wonder if it's sensible to allow context to set a global
   ## log path here?
   path <- tryCatch(db$get(id, "log_path"),
@@ -87,7 +88,7 @@ task_log <- function(id, root) {
   ## TODO: Need to check if this is a relative path -- pathr contains
   ## things for this.
   if (is_relative_path(path)) {
-    path <- file.path(context_root_get(root)$path, path)
+    path <- file.path(root$path, path)
   }
   if (is_directory(path)) {
     path <- file.path(path, id)
@@ -115,8 +116,8 @@ task_log <- function(id, root) {
 ##'
 ##' @export
 ##' @author Rich FitzJohn
-task_times <- function(ids, root, unit_elapsed = "secs", sorted = TRUE) {
-  db <- context_db_get(root)
+task_times <- function(ids, db, unit_elapsed = "secs", sorted = TRUE) {
+  db <- context_db_get(db)
   n <- length(ids)
   if (length(ids) == 0L) {
     t <- empty_time()
@@ -155,8 +156,8 @@ task_times <- function(ids, root, unit_elapsed = "secs", sorted = TRUE) {
   ret
 }
 
-task_exists <- function(ids, root) {
-  db <- context_db_get(root)
+task_exists <- function(ids, db) {
+  db <- context_db_get(db)
   db$exists(ids, "tasks")
 }
 

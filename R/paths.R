@@ -1,17 +1,17 @@
 ## Helpers for paths
-path_version <- function(root) {
-  file.path(root, "context_version")
+path_version <- function(path_root) {
+  file.path(path_root, "context_version")
 }
-path_db <- function(root) {
-  file.path(root, "db")
+path_db <- function(path_root) {
+  file.path(path_root, "db")
 }
-path_config <- function(root) {
-  file.path(root, "config")
+path_config <- function(path_root) {
+  file.path(path_root, "config")
 }
-path_bin <- function(root) {
-  file.path(root, "bin")
+path_bin <- function(path_root) {
+  file.path(path_root, "bin")
 }
-path_library <- function(root, platform = NULL, version = NULL) {
+path_library <- function(path_root, platform = NULL, version = NULL) {
   if (is.null(version)) {
     version_str <- as.character(r_version(2))
   } else {
@@ -20,7 +20,7 @@ path_library <- function(root, platform = NULL, version = NULL) {
   if (is.null(platform)) {
     platform <- platform()
   }
-  file.path(root, "lib", platform, version_str)
+  file.path(path_root, "lib", platform, version_str)
 }
 
 ## TODO: belongs in pathr, also used in remotefile / filestorr
