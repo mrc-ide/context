@@ -11,6 +11,8 @@ test_that("simple", {
   ids <- task_save_bulk(template, 1:5, 1L, ctx)
   expect_false(any(duplicated(ids)))
 
+  expect_is(task_times(ids, ctx)$submitted, "POSIXt")
+
   expect_equal(task_list(ctx), sort(ids))
 
   expect_equal(lapply(ids, task_run, ctx), as.list(sin(1:5)))

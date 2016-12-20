@@ -75,7 +75,10 @@ task_save_bulk <- function(template, x, i, context, envir = parent.frame()) {
   tasks <- lapply(x, rewrite_task)
   ids <- vcapply(tasks, "[[", "id")
   ns <- c("tasks", "task_status", "task_context", "task_time_sub")
-  send <- c(tasks, rep(TASK_PENDING, n), rep(context$id, n), rep(Sys.time(), n))
+  send <- c(tasks,
+            rep(list(TASK_PENDING), n),
+            rep(list(context$id), n),
+            rep(list(Sys.time()), n))
   db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
   ids
 }
