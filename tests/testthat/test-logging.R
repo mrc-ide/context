@@ -34,3 +34,13 @@ test_that("parse_context_log", {
   res <- capture.output(print(log, TRUE))
   expect_true(!identical(crayon::strip_style(res), res))
 })
+
+test_that("parse failed log", {
+  c('Error in bootstrap_context(name = "task_run", n = 1L) : ',
+  '  Could not find context package; aborting startup',
+  'Calls: local ... eval.parent -> eval -> eval -> eval -> eval -> bootstrap_context',
+  'Execution halted') -> str
+  dat <- parse_context_log(str)
+  expect_equal(dat$str, "<top level error>", fixed = TRUE)
+  expect_output(print(dat), "Error in bootstrap_context")
+})

@@ -59,17 +59,24 @@ parse_context_log <- function(x) {
   re <- "^\\[ (.{9}) \\](.*)$"
   i <- grep(re, x)
 
-  title <- trimws(sub(re, "\\1", x[i]))
-  value <- sub(re, "\\2", x[i])
+  if (length(i) == 0L && length(x) > 0L) {
+    str <- title <- "<top level error>"
+    value <- ""
+    body <- list(x)
+  } else {
+    str <- x[i]
+    title <- trimws(sub(re, "\\1", x[i]))
+    value <- sub(re, "\\2", x[i])
 
-  ## split the rest of the file up among these:
-  j <- c(i[-1], length(x))
-  tmp <- vector("list", length(i))
-  f <- function(idx) {
-    x[setdiff(i[[idx]]:j[[idx]], i)]
+    ## split the rest of the file up among these:
+    j <- c(i[-1], length(x))
+    tmp <- vector("list", length(i))
+    f <- function(idx) {
+      x[setdiff(i[[idx]]:j[[idx]], i)]
+    }
+    body <- lapply(seq_along(i), f)
   }
-  body <- lapply(seq_along(i), f)
-  ret <- list(str = x[i], title = title, value = value, body = body)
+  ret <- list(str = str, title = title, value = value, body = body)
   class(ret) <- "context_log"
   ret
 }
