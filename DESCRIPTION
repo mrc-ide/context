@@ -14,13 +14,13 @@ Imports:
     crayon,
     curl,
     ids,
-    provisionr,
     storr (>= 1.0.3),
     uuid
 Suggests:
     codetools,
     knitr,
     parallel,
+    provisionr,
     rmarkdown,
     testthat (>= 0.11.0)
 Remotes:

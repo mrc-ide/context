@@ -4,10 +4,10 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
                          name = NULL) {
   root <- context_root_init(path, storage_type, storage_args)
   db <- root$db
-  ret <- context_build(packages, sources, auto, package_sources, envir, name)
   if (!is.null(package_sources)) {
-    stop("FIXME") # here, or in build, need to check and build the drat
+    assert_is(package_sources, "package_sources")
   }
+  ret <- context_build(packages, sources, auto, package_sources, envir, name)
   id <- db$set_by_value(ret, namespace = "contexts", use_cache = FALSE)
   ret$id <- id
   db$set(ret$name, ret, namespace = "contexts_by_name")
@@ -86,7 +86,10 @@ context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
     ## priority, really.
     ##
     ## We'll let '...' be used here I think.
-    browser()
+    ##
+    ## In this case we'd be looking to do a installation into the
+    ## default library and do missing packages only by default.
+    ## browser()
     stop("FIXME")
   }
 
@@ -120,7 +123,8 @@ context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
 ################################################################################
 ## internals
 
-context_build <- function(packages, sources, auto, package_sources, envir, name) {
+context_build <- function(packages, sources, auto, package_sources, envir,
+                          name) {
   name <- context_name(name)
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
@@ -165,10 +169,10 @@ context_build <- function(packages, sources, auto, package_sources, envir, name)
   }
 
   if (!is.null(package_sources)) {
-    browser()
+    assert_is(package_sources, "package_sources")
   }
-
   ret$package_sources <- package_sources
+
   if (!is.GlobalEnv(envir)) {
     ret$local <- envir
   }

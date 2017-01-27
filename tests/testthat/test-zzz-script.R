@@ -102,3 +102,21 @@ test_that("manual parallel cluster", {
     expect_true(string_starts_with(paths2[[1]][[1]], path))
   }
 })
+
+test_that("bootstrap", {
+  path <- tempfile()
+
+  ctx <- context_save(path)
+  provision_context(ctx, quiet = TRUE)
+
+  t <- task_save(quote(sin(1)), ctx)
+
+  ## Need to provision this context.
+  full <- file.path(path_bin(path), "task_run")
+  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  log <- parse_context_log(res)
+  expect_equal(trimws(log$value[which(log$title == "lib")]),
+               path_library(path))
+
+  expect_equal(task_result(t, ctx), sin(1))
+})

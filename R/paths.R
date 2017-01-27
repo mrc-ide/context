@@ -22,6 +22,9 @@ path_library <- function(path_root, platform = NULL, version = NULL) {
   }
   file.path(path_root, "lib", platform, version_str)
 }
+path_drat <- function(path_root) {
+  file.path(normalizePath(path_root, mustWork = TRUE), "drat")
+}
 
 ## TODO: belongs in pathr, also used in remotefile / filestorr
 ##' Test if path is absolute or relative.

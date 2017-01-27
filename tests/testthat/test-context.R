@@ -71,22 +71,23 @@ test_that("auto", {
 })
 
 test_that("package_sources", {
-  skip("rework")
-  Sys.setenv(R_TESTS="")
+  Sys.setenv(R_TESTS = "")
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
 
-  src <- package_sources(github="richfitz/kitten")
-  handle <- context_save(path, packages="kitten",
-                         package_sources=src)
+  src <- provisionr::package_sources(github = "richfitz/kitten")
+  handle <- context_save(path, packages = "kitten",
+                         package_sources = src)
+  expect_is(handle$package_sources, "package_sources")
+  expect_false(handle$package_sources$needs_build())
+  ## src is unchanged:
+  expect_null(src$local_drat)
+  expect_true(src$needs_build())
 
-  obj <- context_read(handle)
-  expect_equal(obj$package_sources$local_drat, path_drat(ctx$path))
-  expect_equal(obj$packages, list(attached="kitten", loaded=character(0)))
-
-  tmp <- context_load(handle, quiet=TRUE)
-  on.exit(unloadNamespace("kitten"), add=TRUE)
-  expect_true("kitten" %in% .packages())
+  ## Then check that this is all OK
+  obj <- context_read(handle$id, path)
+  expect_equal(obj$package_sources$local_drat, path_drat(path))
+  expect_equal(obj$packages, list(attached = "kitten", loaded = character(0)))
 })
 
 test_that("source files", {
@@ -143,31 +144,6 @@ test_that("storage type", {
   ctx <- context_save(path, storage_type = "rds")
   expect_error(context_save(path, storage_type = "redis"),
                "Incompatible storage types")
-})
-
-test_that("context_db", {
-  skip("rework, possibly")
-  ctx <- context_save(tempfile())
-  db <- ctx$db
-  db$set_by_value(runif(10))
-  ok <- function(x) {
-    inherits(x, "storr") &&
-      x$driver$type() == "rds" &&
-      identical(x$driver$path, db$driver$path) &&
-      identical(x$list_hashes(), db$list_hashes()) &&
-      identical(x$list(), db$list())
-  }
-
-  expect_true(ok(context_db(ctx)))
-  expect_true(ok(context_db(ctx$path)))
-  expect_true(ok(context_db(ctx$db)))
-  expect_true(ok(context_db(list(path=ctx$path, db=ctx$db))))
-  expect_true(ok(context_db(list(path=ctx$path))))
-  expect_true(ok(context_db(list(db=ctx$db))))
-  expect_error(ok(context_db(character(0))), "Cannot determine context path")
-  expect_error(ok(context_db(c(ctx$path, ctx$path))),
-               "Cannot determine context path")
-  expect_error(ok(context_db(1L)), "Cannot determine context path")
 })
 
 test_that("environment backed context", {
