@@ -70,6 +70,17 @@ process_id <- function() {
 platform <- function() {
   R.version[["platform"]]
 }
+
+r_platform_name <- function(platform = NULL) {
+  if (is.null(platform)) {
+    ## TODO: this needs serious work for mavericks; as is, this will
+    ## work OK for windows/linux (which is all I need right now).
+    tolower(Sys.info()[["sysname"]])
+  } else {
+    match_value(platform, valid_platforms())
+  }
+}
+
 r_version <- function(n) {
   if (n < 1L || n > 3L) {
     stop("Invalid n")
@@ -187,4 +198,9 @@ unlist_times <- function(x) {
 
 empty_time <- function() {
   Sys.time()[-1]
+}
+
+## See provisionr
+valid_platforms <- function() {
+  c("windows", "macosx", "macosx/mavericks", "linux")
 }

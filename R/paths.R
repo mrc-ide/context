@@ -15,12 +15,13 @@ path_library <- function(path_root, platform = NULL, version = NULL) {
   if (is.null(version)) {
     version_str <- as.character(r_version(2))
   } else {
-    version_str <- as.character(version)
+    if (!inherits(version, "numeric_version")) {
+      version <- numeric_version(version)
+    }
+    version_str <- as.character(version[1, 1:2])
   }
-  if (is.null(platform)) {
-    platform <- platform()
-  }
-  file.path(path_root, "lib", platform, version_str)
+  platform_str <- r_platform_name(platform)
+  file.path(path_root, "lib", platform_str, version_str)
 }
 path_drat <- function(path_root) {
   file.path(normalizePath(path_root, mustWork = TRUE), "drat")
