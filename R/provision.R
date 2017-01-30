@@ -1,6 +1,7 @@
 provision_context <- function(ctx, platform = NULL, version = NULL,
                               quiet = FALSE, allow_missing = FALSE) {
   loadNamespace("provisionr")
+  path_root <- ctx$root$path
   ## TODO: this needs to be fixed to get things from the appropriate
   ## place; the dide-tools drat will be a decent spot I think.
   url_context <-
@@ -15,12 +16,12 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
 
   if (!is.null(src) && src$needs_build()) {
     ## Perhaps use an existing drat file if one exists already?
-    path_drat <- src$path_drat %||% path_drat(context$root$path)
+    path_drat <- src$path_drat %||% path_drat(path_root)
     src$build(file.path(path_drat, "drat"))
   }
 
   packages <- c("context", ctx$packages$attached, ctx$packages$loaded)
-  path_lib <- path_library(path)
+  path_lib <- path_library(path_root)
   installed_action <- "skip"
 
   res <- provisionr::provision_library(

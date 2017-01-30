@@ -108,32 +108,6 @@ test_that("single task", {
   expect_equal(task_run(t, ctx), eval(expr))
 })
 
-test_that("task_list", {
-  skip("rework this")
-  path <- tempfile("cluster_")
-  x <- list(quote(sin(1)), quote(sin(2)))
-  ctx <- context_save(auto = TRUE, path = path)
-  obj <- task_save_list(x, ctx)
-  expect_is(obj, "task_handle")
-  expect_equal(length(obj), length(x))
-
-  expect_identical(task_status(obj),
-                   rep(TASK_PENDING, length(x)))
-  expect_identical(task_status(obj, TRUE),
-                   setNames(rep(TASK_PENDING, length(x)),
-                            obj$id))
-
-  ## subsetting:
-  el <- obj[[1]]
-  expect_is(el, "task_handle")
-  expect_equal(el$id, obj$id[[1]])
-  expect_identical(obj[1:2], obj)
-
-  tmp <- lapply(seq_along(obj), function(i) task_read(obj[[i]]))
-  ctx <- vcapply(tmp, "[[", "context_id")
-  expect_identical(ctx[[1]], ctx[[2]])
-})
-
 test_that("task_delete (single)", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))

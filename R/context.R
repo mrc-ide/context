@@ -89,7 +89,6 @@ context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
     ##
     ## In this case we'd be looking to do a installation into the
     ## default library and do missing packages only by default.
-    ## browser()
     stop("FIXME")
   }
 

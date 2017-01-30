@@ -75,18 +75,19 @@ test_that("package_sources", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
 
+  drat <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/kitten")
   handle <- context_save(path, packages = "kitten",
                          package_sources = src)
   expect_is(handle$package_sources, "package_sources")
-  expect_false(handle$package_sources$needs_build())
+  expect_true(handle$package_sources$needs_build())
   ## src is unchanged:
   expect_null(src$local_drat)
   expect_true(src$needs_build())
 
   ## Then check that this is all OK
   obj <- context_read(handle$id, path)
-  expect_equal(obj$package_sources$local_drat, path_drat(path))
+  expect_null(obj$package_sources$local_drat)
   expect_equal(obj$packages, list(attached = "kitten", loaded = character(0)))
 })
 
