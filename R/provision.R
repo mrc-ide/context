@@ -30,15 +30,16 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
   } else {
     src <- ctx$package_sources$clone()
     src$repos <- c(url_context, src$repos)
-    stop("FIXME")
   }
 
   if (!is.null(src) && src$needs_build()) {
     ## Perhaps use an existing drat file if one exists already?
     path_drat <- src$path_drat %||% path_drat(path_root)
-    src$build(file.path(path_drat, "drat"))
+    src$build(path_drat)
   }
 
+  ## TODO: when using non-disk storage, queuers, etc, this will need
+  ## updating.
   packages <- c("context", ctx$packages$attached, ctx$packages$loaded)
 
   path_lib <- path_library(path_root, platform, version)
@@ -50,5 +51,5 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
     check_dependencies = TRUE, installed_action = installed_action,
     allow_missing = allow_missing, quiet = quiet)
 
-  res$missing
+  invisible(res)
 }

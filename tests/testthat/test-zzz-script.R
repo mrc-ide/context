@@ -120,3 +120,33 @@ test_that("bootstrap", {
 
   expect_equal(task_result(t, ctx), sin(1))
 })
+
+test_that("provision - source github", {
+  path <- tempfile()
+  src <- provisionr::package_sources(github = "richfitz/kitten")
+  ctx <- context_save(path, packages = "kitten", package_sources = src)
+  res <- provision_context(ctx, quiet = TRUE)
+  expect_true(file.exists(file.path(path, "drat")))
+  expect_equal(provisionr:::drat_storr(file.path(path, "drat"))$list(),
+               "github::richfitz/kitten")
+  expect_true("kitten" %in% dir(path_library(path)))
+})
+
+test_that("provision - binary github", {
+  path <- tempfile()
+  src <- provisionr::package_sources(github = "richfitz/seagull")
+  ctx <- context_save(path, packages = "seagull", package_sources = src)
+  res <- provision_context(ctx, "windows", quiet = TRUE, allow_missing = TRUE)
+
+  expect_true(file.exists(file.path(path, "drat")))
+  expect_equal(provisionr:::drat_storr(file.path(path, "drat"))$list(),
+               "github::richfitz/seagull")
+
+  expect_true("context" %in% dir(path_library(path, "windows")))
+  expect_false("seagull" %in% dir(path_library(path, "windows")))
+
+  m <- res$missing
+  full <- file.path(path, "drat", "src", "contrib",
+                    sprintf("%s_%s.tar.gz", m[, "Package"], m[, "Version"]))
+  expect_true(file.exists(full))
+})
