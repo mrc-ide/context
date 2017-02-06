@@ -4,7 +4,7 @@
 \alias{task_times}
 \title{Fetch task times}
 \usage{
-task_times(ids, root, unit_elapsed = "secs", sorted = TRUE)
+task_times(ids, db, unit_elapsed = "secs", sorted = TRUE)
 }
 \arguments{
 \item{unit_elapsed}{Elapsed time unit.  The default is "secs".

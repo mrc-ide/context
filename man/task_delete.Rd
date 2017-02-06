@@ -4,7 +4,7 @@
 \alias{task_delete}
 \title{Delete a task}
 \usage{
-task_delete(id, root)
+task_delete(ids, root)
 }
 \arguments{
 \item{handle}{A task handle}

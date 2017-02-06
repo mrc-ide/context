@@ -5,9 +5,9 @@
 \alias{task_function_name}
 \title{Fetch task expression}
 \usage{
-task_expr(id, root, locals = FALSE)
+task_expr(id, db, locals = FALSE)
 
-task_function_name(id, root)
+task_function_name(ids, db)
 }
 \arguments{
 \item{locals}{Return locals bound to the expression (as an

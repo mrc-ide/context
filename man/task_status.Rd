@@ -4,7 +4,7 @@
 \alias{task_status}
 \title{Task status}
 \usage{
-task_status(id, root, named = FALSE)
+task_status(ids, db, named = FALSE)
 }
 \arguments{
 \item{named}{Name the output with the task ids?}

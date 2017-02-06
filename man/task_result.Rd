@@ -4,7 +4,7 @@
 \alias{task_result}
 \title{Fetch task result}
 \usage{
-task_result(id, root, sanitise = FALSE)
+task_result(id, db, sanitise = FALSE)
 }
 \arguments{
 \item{sanitise}{Should we avoid throwing an error if a task is not

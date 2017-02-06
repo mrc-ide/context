@@ -7,7 +7,7 @@
 \usage{
 task_save(expr, context, envir = parent.frame())
 
-task_list(root)
+task_list(db)
 }
 \arguments{
 \item{expr}{An expression to save}
