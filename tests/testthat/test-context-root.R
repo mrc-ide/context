@@ -69,9 +69,9 @@ test_that("print", {
 test_that("library path", {
   path <- tempfile()
   expect_equal(path_library(path),
-               file.path(path, "lib", platform(), r_version(2)))
-  expect_equal(path_library(path, "foo"),
-               file.path(path, "lib", "foo", r_version(2)))
+               file.path(path, "lib", r_platform_name(), r_version(2)))
+  expect_equal(path_library(path, "windows"),
+               file.path(path, "lib", "windows", r_version(2)))
   expect_equal(path_library(path, version = "1.2.3"),
-               file.path(path, "lib", platform(), "1.2.3"))
+               file.path(path, "lib", r_platform_name(), "1.2"))
 })

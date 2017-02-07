@@ -11,6 +11,9 @@ path_config <- function(path_root) {
 path_bin <- function(path_root) {
   file.path(path_root, "bin")
 }
+
+## TODO: together with r_platform_name, this needs to deal with the
+## case of mac binaries (macosx/mavericks is not a good name here).
 path_library <- function(path_root, platform = NULL, version = NULL) {
   if (is.null(version)) {
     version_str <- as.character(r_version(2))

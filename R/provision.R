@@ -32,8 +32,10 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
     src$repos <- c(url_context, src$repos)
   }
 
-  if (!is.null(src)) {
-    src$build(src$local_drat %||% path_drat(path_root))
+  if (!is.null(src) && is.null(src$local_drat)) {
+    ## No need to clone here because we're guaranteed a freshly
+    ## created/cloned package sources by here.
+    src$local_drat <- path_drat(path_root)
   }
 
   ## TODO: when using non-disk storage, queuers, etc, this will need

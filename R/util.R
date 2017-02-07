@@ -67,14 +67,15 @@ hostname <- function() {
 process_id <- function() {
   Sys.getpid()
 }
-platform <- function() {
-  R.version[["platform"]]
-}
 
 r_platform_name <- function(platform = NULL) {
   if (is.null(platform)) {
     ## TODO: this needs serious work for mavericks; as is, this will
     ## work OK for windows/linux (which is all I need right now).
+    ## Currently this yields "darwin" for all osx.  There's not a lot
+    ## of guidance about how we detect if the system is mavericks or
+    ## not (.Platform$pkgType says it should *not* be used to identify
+    ## platform).
     tolower(Sys.info()[["sysname"]])
   } else {
     match_value(platform, valid_platforms())
