@@ -150,3 +150,22 @@ test_that("provision - binary github", {
                     sprintf("%s_%s.tar.gz", m[, "Package"], m[, "Version"]))
   expect_true(file.exists(full))
 })
+
+test_that("re-provision drat", {
+  path <- tempfile()
+  src <- provisionr::package_sources(github = "richfitz/kitten")
+  ctx <- context_save(path, packages = "kitten", package_sources = src)
+  res <- provision_context(ctx, quiet = TRUE)
+
+  expect_true(file.exists(file.path(path, "drat")))
+  expect_equal(provisionr:::drat_storr(file.path(path, "drat"))$list(),
+               "github::richfitz/kitten")
+  expect_true("kitten" %in% dir(path_library(path)))
+
+  expect_silent(res2 <- provision_context(ctx, quiet = TRUE))
+  expect_null(res2)
+
+  ## The src element is _not_ updated with the new location
+  expect_null(src$local_drat)
+  expect_true(src$needs_build())
+})

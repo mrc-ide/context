@@ -32,10 +32,8 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
     src$repos <- c(url_context, src$repos)
   }
 
-  if (!is.null(src) && src$needs_build()) {
-    ## Perhaps use an existing drat file if one exists already?
-    path_drat <- src$path_drat %||% path_drat(path_root)
-    src$build(path_drat)
+  if (!is.null(src)) {
+    src$build(src$local_drat %||% path_drat(path_root))
   }
 
   ## TODO: when using non-disk storage, queuers, etc, this will need
