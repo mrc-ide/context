@@ -205,3 +205,18 @@ empty_time <- function() {
 valid_platforms <- function() {
   c("windows", "macosx", "macosx/mavericks", "linux")
 }
+
+## Not necessarily the fastest, but it should do.
+df_to_list <- function(x, use_names) {
+  keep <- c("names", "class", "row.names")
+  at <- attributes(x)
+  attributes(x) <- at[intersect(names(at), keep)]
+  ret <- unname(lapply(split(x, seq_len(nrow(x))), as.list))
+  if (!use_names) {
+    ret <- lapply(ret, unname)
+  }
+  if (is.character(at$row.names)) {
+    names(ret) <- at$row.names
+  }
+  ret
+}

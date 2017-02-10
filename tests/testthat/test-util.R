@@ -109,3 +109,15 @@ test_that("unlist times", {
   expect_equal(unlist_times(list(t1, t2)), c(t1, t2))
   expect_equal(unlist_times(list()), empty_time())
 })
+
+test_that("df_to_list", {
+  df <- data.frame(a = 1:5, b = runif(5))
+  cmp <- mapply(list, a = df[[1]], b = df[[2]], SIMPLIFY = FALSE)
+  expect_equal(df_to_list(df, TRUE), cmp)
+  expect_equal(df_to_list(df, FALSE), lapply(cmp, unname))
+
+  rownames(df) <- LETTERS[1:5]
+  expect_equal(df_to_list(df, TRUE), setNames(cmp, LETTERS[1:5]))
+  expect_equal(df_to_list(df, FALSE),
+               setNames(lapply(cmp, unname), LETTERS[1:5]))
+})
