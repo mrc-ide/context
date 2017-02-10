@@ -86,14 +86,15 @@ test_that("prepare; error cases", {
 ## This is the simplest case; where we only have a single element to
 ## add.
 test_that("simple", {
-  ctx <- context_save(tempfile(),
-                      storage_type = "environment")
+  ctx <- context_save(tempfile(), storage_type = "environment")
   on.exit(unlink(ctx$root$path, recursive = TRUE))
 
-  template <- quote(sin(NULL))
-  ids <- task_save_bulk(template, 1:5, 1L, ctx)
+  ids <- task_bulk_save(1:5, quote(sin), ctx)
+  expect_is(ids, "character")
+  expect_equal(length(ids), 5)
   expect_false(any(duplicated(ids)))
 
+  expect_equal(task_status(ids, ctx), rep("PENDING", length(ids)))
   expect_is(task_times(ids, ctx)$submitted, "POSIXt")
 
   expect_equal(task_list(ctx), sort(ids))

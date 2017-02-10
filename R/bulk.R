@@ -7,9 +7,13 @@ task_bulk_prepare <- function(X, FUN, DOTS, do.call, use_names,
 ## This is the new replacement bulk uploader.  It exists to support
 ## queuer only really, though will need to be exported (and that will
 ## be a bit weird).
-task_bulk_save <- function(x, context) {
+task_bulk_save <- function(X, FUN, context, DOTS = NULL,
+                           do.call = FALSE, use_names = TRUE,
+                           envir = parent.frame()) {
   db <- context$db
   context_id <- context$id
+
+  dat <- task_bulk_prepare(X, FUN, DOTS, do.call, use_names, envir, db)
 
   build_task <- function(x) {
     x$id <- ids::random_id()
@@ -18,9 +22,9 @@ task_bulk_save <- function(x, context) {
     x
   }
 
-  n <- length(x)
+  n <- length(dat)
   context_log("bulk", sprintf("Creating %s tasks", n))
-  tasks <- lapply(x, build_task)
+  tasks <- lapply(dat, build_task)
   ids <- vcapply(tasks, "[[", "id")
   ns <- c("tasks", "task_status", "task_context", "task_time_sub")
   send <- c(tasks,
@@ -74,6 +78,9 @@ task_bulk_prepare_X <- function(X, do.call, use_names) {
 }
 
 task_bulk_prepare_expr <- function(X, FUN, DOTS, do.call) {
+  if (!is.symbol(FUN)) {
+    stop("Expected 'FUN' to be a symbol")
+  }
   if (do.call) {
     ## These assumptions about the first element are tested above
     len <- length(X[[1L]])
