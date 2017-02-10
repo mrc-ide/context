@@ -21,16 +21,6 @@ cleanup <- function(root) {
   .libPaths(.libPaths())
 }
 
-capture_messages <- function(expr) {
-  msgs <- character(0)
-  res <- withCallingHandlers(expr, message=function(e) {
-    msgs <<- c(msgs, e$message)
-    e
-  })
-  attr(msgs, "result") <- res
-  msgs
-}
-
 skip_if_no_fork <- function() {
   if (exists("mcfork", getNamespace("parallel"))) {
     return()
@@ -45,6 +35,6 @@ missing_time <- function(n = 1) {
 ## Don't download when we're running locally, please.
 if (Sys.info()[["user"]] == "rich") {
   if (file.exists("../../DESCRIPTION")) {
-    Sys.setenv("CONTEXT_SOURCE_PATH"=normalizePath("../../"))
+    Sys.setenv("CONTEXT_SOURCE_PATH" = normalizePath("../../"))
   }
 }

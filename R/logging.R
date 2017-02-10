@@ -70,7 +70,6 @@ parse_context_log <- function(x) {
 
     ## split the rest of the file up among these:
     j <- c(i[-1], length(x))
-    tmp <- vector("list", length(i))
     f <- function(idx) {
       x[setdiff(i[[idx]]:j[[idx]], i)]
     }

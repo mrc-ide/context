@@ -147,7 +147,8 @@ context_build <- function(packages, sources, auto, package_sources, envir,
       if (!all(vlapply(packages, is.character))) {
         stop("All elements of 'packages' must be a character vector")
       }
-      packages <- modifyList(list(attached = character(0), loaded = character(0)),
+      packages <- modifyList(list(attached = character(0),
+                                  loaded = character(0)),
                              packages)
     } else {
       stop("Incorrect type for 'packages'")
@@ -198,9 +199,11 @@ context_name <- function(name) {
 ## data so that we can create a few sensible mock ups and send that
 ## through.
 detect_loaded_packages <- function(info = sessionInfo()) {
-  loaded <- names(info$loadedOnly)[!vlapply(info$loadedOnly, function(x)
+  loaded_only <- info[["loadedOnly"]]
+
+  loaded <- names(loaded_only)[!vlapply(loaded_only, function(x)
     identical(x$Priority, "base"))]
-  attached <- names(info$otherPkgs)
+  attached <- names(info[["otherPkgs"]])
   ## This is defensive: ?sessionInfo does not make any guarantees
   ## about package loading.
   ord <- sub("^package:", "", search())

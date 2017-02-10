@@ -107,7 +107,6 @@ task_delete <- function(ids, root) {
 
 task_context <- function(ids, db) {
   db <- context_db_get(db)
-  n <- length(ids)
   vcapply(db$mget(ids, "task_context", missing = NA_character_), identity)
 }
 

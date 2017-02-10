@@ -49,7 +49,7 @@ is_relative_path <- function(path) {
 relative_paths <- function(filename, dir=getwd()) {
   msg <- !file.exists(filename)
   if (any(msg)) {
-    stop("files do not exist: ", paste(filename[msg], collapse=", "))
+    stop("files do not exist: ", paste(filename[msg], collapse = ", "))
   }
 
   filename_abs <- clean_path(normalizePath(filename))
@@ -58,12 +58,12 @@ relative_paths <- function(filename, dir=getwd()) {
   ok <- string_starts_with(filename_abs, paste0(dir, "/"))
   if (!all(ok)) {
     stop("files above working directory: ",
-         paste(filename[!ok], collapse=", "))
+         paste(filename[!ok], collapse = ", "))
   }
 
   substr(filename_abs, nchar(dir) + 2L, nchar(filename_abs))
 }
 
 clean_path <- function(x) {
-  sub("/+$", "", gsub("\\", "/", x, fixed=TRUE))
+  sub("/+$", "", gsub("\\", "/", x, fixed = TRUE))
 }

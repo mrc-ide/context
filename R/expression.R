@@ -1,6 +1,7 @@
+## Consider also looking in the *context* environment for variables
+## that we can skipped over?  See the note below.
 prepare_expression <- function(expr, envir, db) {
-  fun <- expr[[1]]
-  args <- expr[-1]
+  args <- expr[-1L]
 
   is_call <- vlapply(args, is.call)
   is_symbol <- vlapply(args, is.symbol)
@@ -61,7 +62,8 @@ find_symbols <- function(expr, hide_errors = TRUE) {
 
   f <- function(e) {
     if (!is.recursive(e)) {
-      if (!is.symbol(e)) { # A literal of some type
+      if (!is.symbol(e)) {
+        ## A literal of some type
         return()
       }
       symbols <<- c(symbols, deparse(e))

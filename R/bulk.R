@@ -1,19 +1,18 @@
-task_bulk_prepare <- function(X, FUN, DOTS, do.call, use_names,
-                              envir, db) {
-  XX <- task_bulk_prepare_X(X, do.call, use_names)
-  task_bulk_prepare_expr(XX, FUN, DOTS, do.call)
+task_bulk_prepare <- function(X, FUN, DOTS, do_call, use_names, envir, db) {
+  XX <- task_bulk_prepare_X(X, do_call, use_names)
+  task_bulk_prepare_expr(XX, FUN, DOTS, do_call, envir, db)
 }
 
 ## This is the new replacement bulk uploader.  It exists to support
 ## queuer only really, though will need to be exported (and that will
 ## be a bit weird).
 task_bulk_save <- function(X, FUN, context, DOTS = NULL,
-                           do.call = FALSE, use_names = TRUE,
+                           do_call = FALSE, use_names = TRUE,
                            envir = parent.frame()) {
   db <- context$db
   context_id <- context$id
 
-  dat <- task_bulk_prepare(X, FUN, DOTS, do.call, use_names, envir, db)
+  dat <- task_bulk_prepare(X, FUN, DOTS, do_call, use_names, envir, db)
 
   build_task <- function(x) {
     x$id <- ids::random_id()
@@ -35,7 +34,7 @@ task_bulk_save <- function(X, FUN, context, DOTS = NULL,
   ids
 }
 
-task_bulk_prepare_X <- function(X, do.call, use_names) {
+task_bulk_prepare_X <- function(X, do_call, use_names) {
   if (is.data.frame(X)) {
     if (ncol(X) == 0L) {
       stop("'X' must have at least one column")
@@ -43,11 +42,11 @@ task_bulk_prepare_X <- function(X, do.call, use_names) {
     if (nrow(X) == 0L) {
       stop("'X' must have at least one row")
     }
-    X <- df_to_list(X, use_names || !do.call)
+    X <- df_to_list(X, use_names || !do_call)
   } else if (is.atomic(X) && !is.null(X)) {
     X <- as.list(unname(X))
   } else if (is.list(X)) {
-    if (do.call) {
+    if (do_call) {
       lens <- lengths(X)
       if (length(unique(lens)) != 1L) {
         stop("Every element of 'X' must have the same length")
@@ -62,7 +61,7 @@ task_bulk_prepare_X <- function(X, do.call, use_names) {
       ## This would be useful in the case of moving the ifelse from
       ## the rewrite function below.
       ##
-      ## if (lens[[1]] == 0L && !do.call) {
+      ## if (lens[[1]] == 0L && !do_call) {
       ##   X <- lapply(X, list)
       ## }
     }
@@ -77,11 +76,11 @@ task_bulk_prepare_X <- function(X, do.call, use_names) {
   X
 }
 
-task_bulk_prepare_expr <- function(X, FUN, DOTS, do.call) {
+task_bulk_prepare_expr <- function(X, FUN, DOTS, do_call, envir, db) {
   if (!is.symbol(FUN)) {
     stop("Expected 'FUN' to be a symbol")
   }
-  if (do.call) {
+  if (do_call) {
     ## These assumptions about the first element are tested above
     len <- length(X[[1L]])
     nms <- names(X[[1L]])
@@ -98,7 +97,7 @@ task_bulk_prepare_expr <- function(X, FUN, DOTS, do.call) {
   ## are being iterated over are nontrivial in size.  Consider
   ## detecting this and dumping them into the locals if they're big.
   rewrite_expr <- function(x) {
-    if (do.call) {
+    if (do_call) {
       template$expr[idx] <- x
       if (!is.null(names(x))) {
         names(template$expr[idx]) <- names(x)

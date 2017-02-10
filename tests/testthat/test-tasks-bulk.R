@@ -17,12 +17,12 @@ test_that("prepare; named single arg", {
 test_that("prepare", {
   x <- list(c(1, 2), c(3, 4))
 
-  ## Not do.call
+  ## Not do_call
   cmp <- lapply(unname(x), function(el) list(expr = bquote(foo(.(el)))))
   expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, FALSE), cmp)
   expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, TRUE), cmp)
 
-  ## do.call
+  ## do_call
   cmp <- lapply(x, function(el) list(expr = as.call(c(list(quote(foo)), el))))
   expect_equal(task_bulk_prepare(x, quote(foo), NULL, TRUE, FALSE), cmp)
   expect_equal(task_bulk_prepare(x, quote(foo), NULL, TRUE, TRUE), cmp)
@@ -31,19 +31,19 @@ test_that("prepare", {
 test_that("prepare; data.frame", {
   df <- data.frame(a = 1:5, b = runif(5))
 
-  ## not do.call, preserving and dropping names:
+  ## not do_call, preserving and dropping names:
   cmp <- lapply(df_to_list(df, TRUE), function(el)
     list(expr = bquote(foo(.(el)))))
   expect_equal(task_bulk_prepare(df, quote(foo), NULL, FALSE, TRUE),
                cmp)
   expect_equal(task_bulk_prepare(df, quote(foo), NULL, FALSE, FALSE), cmp)
 
-  ## do.call, preserving names
+  ## do_call, preserving names
   cmp <- lapply(df_to_list(df, TRUE), function(el)
     list(expr = as.call(c(list(quote(foo)), el))))
   expect_equal(task_bulk_prepare(df, quote(foo), NULL, TRUE, TRUE), cmp)
 
-  ## do.call, dropping names
+  ## do_call, dropping names
   cmp <- lapply(df_to_list(df, TRUE), function(el)
     list(expr = as.call(c(list(quote(foo)), unname(el)))))
   expect_equal(task_bulk_prepare(df, quote(foo), NULL, TRUE, FALSE), cmp)
@@ -69,6 +69,7 @@ test_that("prepare; error cases", {
                "X must be a data.frame or list", fixed = TRUE)
 
   ## Zero length
+  df <- data.frame(a = 1:5, b = runif(5))
   expect_error(
     task_bulk_prepare(df[integer(0), ], quote(foo), NULL, FALSE, TRUE),
     "'X' must have at least one row", fixed = TRUE)
@@ -110,45 +111,38 @@ test_that("bulk, multiple arguments", {
 
   X <- expand.grid(x = as.numeric(1:3), rate = as.numeric(1:3),
                    KEEP.OUT.ATTRS = FALSE)
-  XX <- unname(lapply(split(X, seq_len(nrow(X))), as.list))
+  ids <- task_bulk_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                        do_call = TRUE, use_names = FALSE)
 
-  template <- quote(dgamma(NULL, NULL, shape = 2))
-  ids <- task_save_bulk(template, XX, 1:2, ctx)
   expect_equal(task_expr(ids[[1]], ctx),
                quote(dgamma(1, 1, shape = 2)))
   expect_equal(task_expr(ids[[5]], ctx),
-               bquote(dgamma(.(XX[[5]][[1]]), .(XX[[5]][[2]]), shape = 2)))
-
-  template2 <- quote(dgamma(NULL, shape = 2))
-  expect_error(task_save_bulk(template2, XX, 1, ctx),
-               "All 'x' must be length 1")
-  XX2 <- unname(lapply(split(X, seq_len(nrow(X))), function(x)
-                       list(unlist(x, use.names = FALSE))))
-  ids2 <- task_save_bulk(template2, XX2, 1, ctx)
-
-  expect_equal(task_expr(ids2[[1]], ctx),
-               quote(dgamma(c(1, 1), shape = 2)))
-  expect_equal(task_expr(ids2[[5]], ctx),
-               bquote(dgamma(c(.(XX[[5]][[1]]), .(XX[[5]][[2]])), shape = 2)))
+               bquote(dgamma(.(X[[c(1, 5)]]), .(X[[c(2, 5)]]), shape = 2)))
 })
 
-test_that("empty", {
+test_that("local variables", {
   ctx <- context_save(tempfile(),
                       storage_type = "environment")
   on.exit(unlink(ctx$root$path, recursive = TRUE))
 
-  template <- quote(sin(NULL))
-  expect_equal(task_save_bulk(template, list(), 1, ctx), character(0))
-})
+  e <- environment()
+  e$shape <- 2
 
-test_that("invalid index", {
-  ctx <- context_save(tempfile(),
-                      storage_type = "environment")
-  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  X <- expand.grid(x = as.numeric(1:3), rate = as.numeric(1:3),
+                   KEEP.OUT.ATTRS = FALSE)
+  ids <- task_bulk_save(X, quote(dgamma), ctx,
+                        DOTS = list(shape = quote(shape)),
+                        do_call = TRUE, use_names = FALSE)
 
-  template <- quote(sin(NULL))
-  expect_error(task_save_bulk(template, list(1), 0, ctx),
-               "Invalid index")
-  expect_error(task_save_bulk(template, list(1), 2, ctx),
-               "Invalid index")
+  ## As above:
+  expect_equal(task_expr(ids[[1]], ctx),
+               quote(dgamma(1, 1, shape = shape)))
+  expect_equal(task_expr(ids[[5]], ctx),
+               bquote(dgamma(.(X[[c(1, 5)]]), .(X[[c(2, 5)]]), shape = shape)))
+
+  res <- task_expr(ids[[1]], ctx$db, TRUE)
+  locals <- attr(res, "locals")
+  expect_equal(locals, c(shape = ctx$db$hash_object(shape)))
+  expect_equal(ctx$db$get(locals), e$shape)
+  expect_equal(ctx$db$export(list()), setNames(list(e$shape), locals))
 })

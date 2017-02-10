@@ -2,7 +2,6 @@ context_root_init <- function(path, storage_type = NULL, storage_args = NULL) {
   fv <- path_version(path)
   written <- package_version(if (file.exists(fv)) readLines(fv) else "0.0")
   installed <- packageVersion("context")
-  init <- is.na(installed) || written < installed
   if (is.na(installed) || written < installed) {
     if (!dir.exists(path)) {
       dir.create(path, FALSE, TRUE)

@@ -170,14 +170,14 @@ find_functions <- function(fun, env) {
   while (length(test) > 0L) {
     new <- setdiff(intersect(all.vars(body(test[[1L]]), TRUE), ours), seen)
     seen <- c(seen, new)
-    test <- c(test[-1L], lapply(new, get, env, inherits=FALSE))
+    test <- c(test[-1L], lapply(new, get, env, inherits = FALSE))
   }
   sort(seen)
 }
 
 fun_to_str <- function(x, env) {
   paste0(x, " <- ",
-         paste(deparse(get(x, env, inherits=FALSE)), collapse="\n"))
+         paste(deparse(get(x, env, inherits = FALSE)), collapse = "\n"))
 }
 
 Rscript <- function(...) {
