@@ -105,6 +105,7 @@ test_that("manual parallel cluster", {
 })
 
 test_that("bootstrap", {
+  skip_if_not_installed("provisionr")
   path <- tempfile()
 
   ctx <- context_save(path)
@@ -123,6 +124,7 @@ test_that("bootstrap", {
 })
 
 test_that("provision - source github", {
+  skip_if_not_installed("provisionr")
   path <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/kitten")
   ctx <- context_save(path, packages = "kitten", package_sources = src)
@@ -134,6 +136,7 @@ test_that("provision - source github", {
 })
 
 test_that("provision - binary github", {
+  skip_if_not_installed("provisionr")
   path <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/seagull")
   ctx <- context_save(path, packages = "seagull", package_sources = src)
@@ -153,6 +156,7 @@ test_that("provision - binary github", {
 })
 
 test_that("re-provision drat", {
+  skip_if_not_installed("provisionr")
   path <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/kitten")
   ctx <- context_save(path, packages = "kitten", package_sources = src)

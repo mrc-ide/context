@@ -71,6 +71,8 @@ test_that("auto", {
 })
 
 test_that("package_sources", {
+  ## TODO: move into one of the zzz cases?
+  skip_if_not_installed("provisionr")
   Sys.setenv(R_TESTS = "")
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
