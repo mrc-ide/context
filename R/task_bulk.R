@@ -31,7 +31,7 @@ task_bulk_save <- function(X, FUN, context, DOTS = NULL,
             rep(list(context$id), n),
             rep(list(Sys.time()), n))
   db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
-  ids
+  setNames(ids, names(X))
 }
 
 task_bulk_prepare_X <- function(X, do_call, use_names) {
@@ -77,8 +77,8 @@ task_bulk_prepare_X <- function(X, do_call, use_names) {
 }
 
 task_bulk_prepare_expr <- function(X, FUN, DOTS, do_call, envir, db) {
-  if (!is.symbol(FUN)) {
-    stop("Expected 'FUN' to be a symbol")
+  if (!bulk_callable(FUN)) {
+    stop("Expected 'FUN' to be a symbol or fully qualified name")
   }
   if (do_call) {
     ## These assumptions about the first element are tested above
@@ -109,4 +109,8 @@ task_bulk_prepare_expr <- function(X, FUN, DOTS, do_call, envir, db) {
   }
 
   lapply(X, rewrite_expr)
+}
+
+bulk_callable <- function(FUN) {
+  is.symbol(FUN) || (is.call(FUN) && identical(FUN[[1L]], quote(`::`)))
 }

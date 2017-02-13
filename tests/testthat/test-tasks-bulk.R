@@ -104,6 +104,16 @@ test_that("simple", {
   expect_equal(lapply(ids, task_result, ctx), as.list(sin(1:5)))
 })
 
+test_that("named", {
+  ctx <- context_save(tempfile(), storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+
+  x <- setNames(1:5, letters[1:5])
+  ids <- task_bulk_save(x, quote(sin), ctx)
+  expect_is(ids, "character")
+  expect_equal(names(ids), names(x))
+})
+
 test_that("bulk, multiple arguments", {
   ctx <- context_save(tempfile(),
                       storage_type = "environment")
