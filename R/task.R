@@ -43,46 +43,6 @@ task_save <- function(expr, context, envir = parent.frame()) {
   dat$id
 }
 
-## This pretty much exists to support queuer.
-task_save_bulk <- function(template, x, i, context, envir = parent.frame()) {
-  db <- context$db
-
-  dat <- prepare_expression(template, envir, db)
-  dat$context_id <- context$id
-
-  if (!all(i > 0 & i < length(template))) {
-    stop("Invalid index")
-  }
-
-  if (length(x) == 0L) {
-    return(character(0))
-  }
-  if (!all(lengths(x) == length(i))) {
-    stop("All 'x' must be length ", length(i))
-  }
-
-  ## check that i is in range here, first.
-  i <- i + 1L
-  rewrite_task <- function(x) {
-    dat$expr[i] <- x
-    dat$id <- ids::random_id()
-    class(dat) <- "task"
-    dat
-  }
-
-  n <- length(x)
-  context_log("bulk", sprintf("Creating %s tasks", n))
-  tasks <- lapply(x, rewrite_task)
-  ids <- vcapply(tasks, "[[", "id")
-  ns <- c("tasks", "task_status", "task_context", "task_time_sub")
-  send <- c(tasks,
-            rep(list(TASK_PENDING), n),
-            rep(list(context$id), n),
-            rep(list(Sys.time()), n))
-  db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
-  ids
-}
-
 ##' Delete a task, including its results.
 ##' @title Delete a task
 ##' @param handle A task handle
