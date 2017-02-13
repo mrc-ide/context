@@ -11,3 +11,4 @@ docker
 ^update_web\.sh$
 ^inst/web$
 ^inst/staticdocs$
+^\.lintr$

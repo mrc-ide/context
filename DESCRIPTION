@@ -12,17 +12,15 @@ Depends:
     R (>= 3.2.2)
 Imports:
     crayon,
-    curl,
     ids,
-    storr (>= 1.0.3),
-    uuid
+    storr (>= 1.0.3)
 Suggests:
     codetools,
     knitr,
     parallel,
     provisionr,
     rmarkdown,
-    testthat (>= 0.11.0)
+    testthat
 Remotes:
     richfitz/provisionr,
     richfitz/storr@develop
