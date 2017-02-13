@@ -1,6 +1,22 @@
 ## Consider also looking in the *context* environment for variables
 ## that we can skipped over?  See the note below.
-prepare_expression <- function(expr, envir, db) {
+
+## The function_value argument here is used where `expr` is going to
+## take a function that is not addressable by *name*; in that case we
+## take a function itself (as "function_value"), serialise it and
+## replace the function call with the hash.  The function will be
+## serialised into the calling environment on deserialisation.
+##
+## This includes the remote possibility of a collision, but with the
+## size of the keyspace used for hashes hopefully it's negligable.
+##
+## Because of the approach used here, `expr` can contain anything; I'd
+## suggest not saving the contents of the function itself, but
+## something like `NULL` will work just fine:
+##
+##   as.call(list(NULL, quote(a)))
+##   # NULL(a)
+prepare_expression <- function(expr, envir, db, function_value = NULL) {
   args <- expr[-1L]
 
   is_call <- vlapply(args, is.call)
@@ -13,6 +29,13 @@ prepare_expression <- function(expr, envir, db) {
   }
 
   ret <- list(expr = expr)
+
+  if (!is.null(function_value)) {
+    assert_is(function_value, "function")
+    hash <- db$set_by_value(function_value, "objects")
+    ret$function_hash <- setNames(hash, hash)
+    ret$expr[[1L]] <- as.name(hash) # small chance of collision, but unlikely
+  }
 
   if (length(symbols) > 0L) {
     local <- vlapply(symbols, exists, envir, inherits = FALSE,
@@ -49,10 +72,11 @@ prepare_expression <- function(expr, envir, db) {
 }
 
 ## Mostly similar to rrqueue::restore_expression
-restore_locals <- function(dat, parent) {
+restore_locals <- function(dat, parent, db) {
   e <- new.env(parent = parent)
-  if (!is.null(dat$objects)) {
-    context_db_get(dat)$export(e, dat$objects, "objects")
+  restore <- c(dat$function_hash, dat$objects)
+  if (length(restore) > 0L) {
+    db$export(e, restore, "objects")
   }
   e
 }

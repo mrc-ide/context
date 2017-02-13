@@ -28,7 +28,6 @@ test_that("tasks in empty context", {
   expect_equal(task_status(character(0), ctx, named = TRUE),
                setNames(character(0), character(0)))
 
-  ## This affects task_load, task_expr, task_function_name
   expect_error(task_read(id, ctx), "not found")
   expect_error(task_log(id, ctx), "Logging not enabled")
 
@@ -88,7 +87,8 @@ test_that("single task", {
   expect_equal(task_function_name(t, path), "sin")
 
   e <- new.env()
-  dat <- task_load(t, ctx, e, load_context = TRUE, install = FALSE)
+  parent <- context_load(ctx, e, install = FALSE)
+  dat <- task_load(t, ctx, parent, FALSE)
 
   expect_is(dat$db, "storr")
   expect_equal(dat$expr, expr)
@@ -99,9 +99,9 @@ test_that("single task", {
   ## a situation where our *globals* aren't in the right place.  Such
   ## is life; I don't see what else we can do about that.
   expect_equal(ls(dat$envir), character(0))
-  expect_identical(parent.env(dat$envir), dat$envir_context)
+  expect_identical(parent.env(dat$envir), parent)
   if (!identical(environment(), .GlobalEnv)) {
-    expect_false(identical(dat$envir_context, e))
+    expect_false(identical(dat$parent, e))
     expect_equal(ls(e), ls(.GlobalEnv))
   }
 
@@ -164,17 +164,18 @@ test_that("local variables", {
   expect_equal(unname(dat$objects), ctx$db$hash_object(x))
 
   e <- new.env(parent = .GlobalEnv)
-  dat <- task_load(t, ctx, envir = e)
+  parent <- context_load(ctx, e, install = FALSE)
+  dat <- task_load(t, ctx, parent)
 
   expect_identical(ls(dat$envir), "x")
   expect_identical(dat$envir$x, x)
-  expect_identical(parent.env(dat$envir), dat$envir_context)
+  expect_identical(parent.env(dat$envir), parent)
 
   expect_equal(task_expr(t, ctx), expr)
   expect_equal(task_expr(t, ctx, TRUE),
                structure(expr, locals = dat$objects))
 
-  res <- task_run(t, ctx, envir = e)
+  res <- task_run(t, ctx, envir = e, load_context = FALSE)
   expect_equal(res, sin(1))
 })
 
@@ -396,4 +397,26 @@ test_that("invalid task", {
                "expr must inherit from call")
   expect_error(task_save(quote(sin), ctx),
                "expr must inherit from call")
+})
+
+test_that("trigger_load", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment",
+                      sources = "myfuns.R",
+                      envir = .GlobalEnv) # required because of bugs
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+  t <- task_save(quote(sin(1)), ctx)
+
+  ## With load
+  ## TODO: this is _not_ right.
+  e1 <- new.env(parent = .GlobalEnv)
+  dat <- task_load(t, ctx$root, e1, TRUE)
+  expect_identical(parent.env(dat$envir), e1)
+  expect_true("f" %in% names(e1))
+
+  ## Without
+  e2 <- new.env(parent = .GlobalEnv)
+  dat <- task_load(t, ctx$root, e2, FALSE)
+  expect_identical(parent.env(dat$envir), e2)
+  expect_false("f" %in% names(e2))
 })

@@ -14,8 +14,6 @@
 ##'
 ##' @param print_error Print information about an error if one occurs?
 ##'
-##' @inheritParams task_load
-##'
 ##' @export
 task_run <- function(id, root, envir = .GlobalEnv, filename = NULL,
                      print_error = TRUE, install = FALSE, load_context = TRUE) {
@@ -28,7 +26,8 @@ task_run <- function(id, root, envir = .GlobalEnv, filename = NULL,
   db <- root$db
   context_log("root", root$path)
   context_log("task", id)
-  dat <- task_load(id, root, envir, load_context, install)
+
+  dat <- task_load(id, root, envir, load_context)
   context_log("expr", capture.output(print(dat$expr)))
   context_log("start", Sys_time())
   db$set(id, TASK_RUNNING, "task_status")
@@ -64,15 +63,16 @@ task_run <- function(id, root, envir = .GlobalEnv, filename = NULL,
   invisible(value)
 }
 
-task_load <- function(id, root, envir, load_context = TRUE, install = FALSE) {
+## Right, this is a bit of a faff because loading a task must
+## (optionally) load a *context* because we don't know what context
+## the task was saved into until we read it.
+task_load <- function(id, root, parent, load_context = FALSE) {
   root <- context_root_get(root)
   dat <- task_read(id, root)
   if (load_context) {
     context <- context_read(dat$context_id, root)
-    dat$envir_context <- context_load(context, envir, install)
-  } else {
-    dat$envir_context <- envir
+    parent <- context_load(context, parent)
   }
-  dat$envir <- restore_locals(dat, dat$envir_context)
+  dat$envir <- restore_locals(dat, parent, root$db)
   dat
 }

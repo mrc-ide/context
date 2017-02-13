@@ -77,6 +77,7 @@ context_read <- function(identifier, root, ..., db = NULL) {
 
 context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
   assert_is(ctx, "context")
+  assert_is(envir, "environment")
   context_log("context", ctx$id)
 
   if (install) {
@@ -174,6 +175,9 @@ context_build <- function(packages, sources, auto, package_sources, envir,
   ret$package_sources <- package_sources
 
   if (!is.GlobalEnv(envir)) {
+    ## TODO: I don't think that this is a good idea, and does not
+    ## match how this is being used.  OTOH, some sort of ability to
+    ## *properly* export environments will be useful for Jeff's case.
     ret$local <- envir
   }
   ret$auto <- auto
