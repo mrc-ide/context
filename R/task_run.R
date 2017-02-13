@@ -1,7 +1,6 @@
 ##' Run a task
 ##' @title Run a task
 ##' @param handle Task handle
-##' @param install Install packages when constructing context?
 ##' @param envir Environment to load global variables into.
 ##'
 ##' @param filename Filename to log \emph{all} output to.  This will
@@ -16,11 +15,11 @@
 ##'
 ##' @export
 task_run <- function(id, root, envir = .GlobalEnv, filename = NULL,
-                     print_error = TRUE, install = FALSE, load_context = TRUE) {
+                     print_error = TRUE, load_context = TRUE) {
   if (!is.null(filename)) {
     return(capture_log(
       task_run(id, root, envir, print_error = print_error,
-               install = install, load_context = load_context), filename))
+               load_context = load_context), filename))
   }
   root <- context_root_get(root)
   db <- root$db

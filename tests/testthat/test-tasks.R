@@ -87,7 +87,7 @@ test_that("single task", {
   expect_equal(task_function_name(t, path), "sin")
 
   e <- new.env()
-  parent <- context_load(ctx, e, install = FALSE)
+  parent <- context_load(ctx, e)
   dat <- task_load(t, ctx, parent, FALSE)
 
   expect_is(dat$db, "storr")
@@ -164,7 +164,7 @@ test_that("local variables", {
   expect_equal(unname(dat$objects), ctx$db$hash_object(x))
 
   e <- new.env(parent = .GlobalEnv)
-  parent <- context_load(ctx, e, install = FALSE)
+  parent <- context_load(ctx, e)
   dat <- task_load(t, ctx, parent)
 
   expect_identical(ls(dat$envir), "x")
