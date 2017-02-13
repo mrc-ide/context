@@ -77,20 +77,27 @@ task_bulk_prepare_X <- function(X, do_call, use_names) {
 }
 
 task_bulk_prepare_expr <- function(X, FUN, DOTS, do_call, envir, db) {
-  if (!bulk_callable(FUN)) {
-    stop("Expected 'FUN' to be a symbol or fully qualified name")
+  if (bulk_callable(FUN)) {
+    function_name <- FUN
+    function_value <- NULL
+  } else if (is.function(FUN)) {
+    function_value <- FUN
+    function_name <- NULL
+  } else {
+    stop("Expected 'FUN' to be a symbol, fully qualified name or function")
   }
   if (do_call) {
     ## These assumptions about the first element are tested above
     len <- length(X[[1L]])
     nms <- names(X[[1L]])
-    template <- as.call(c(list(FUN), setNames(rep(list(NULL), len), nms), DOTS))
+    args <- setNames(rep(list(NULL), len), nms)
+    template <- as.call(c(list(function_name), args, DOTS))
     idx <- seq_len(len) + 1L
   } else {
-    template <- as.call(c(list(FUN), list(NULL), DOTS))
+    template <- as.call(c(list(function_name), list(NULL), DOTS))
     idx <- 2L
   }
-  template <- context::prepare_expression(template, envir, db)
+  template <- prepare_expression(template, envir, db, function_value)
 
   ## TODO: I'm not 100% sure that this is a great idea; by running the
   ## object itself into the call we hit trouble if the objects that

@@ -156,3 +156,25 @@ test_that("local variables", {
   expect_equal(ctx$db$get(locals), e$shape)
   expect_equal(ctx$db$export(list()), setNames(list(e$shape), locals))
 })
+
+test_that("function-by-value", {
+  ctx <- context_save(tempfile(), storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+
+  ids <- task_bulk_save(1:5, function(x) x * 2, ctx)
+  expect_is(ids, "character")
+  expect_equal(length(ids), 5)
+  expect_false(any(duplicated(ids)))
+
+  expect_equal(task_status(ids, ctx), rep("PENDING", length(ids)))
+  expect_is(task_times(ids, ctx)$submitted, "POSIXt")
+
+  expect_equal(task_list(ctx), sort(ids))
+
+  nm <- unname(task_function_name(ids, ctx))
+  expect_equal(length(unique(nm)), 1L)
+  expect_true(is_id(nm[[1]]))
+
+  expect_equal(lapply(ids, task_run, ctx), as.list(1:5 * 2))
+  expect_equal(lapply(ids, task_result, ctx), as.list(1:5 * 2))
+})
