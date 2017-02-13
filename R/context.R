@@ -2,24 +2,39 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
                          package_sources = NULL, envir = parent.frame(),
                          storage_type = NULL, storage_args = NULL,
                          name = NULL) {
+  name <- context_name(name)
   root <- context_root_init(path, storage_type, storage_args)
   db <- root$db
   if (!is.null(package_sources)) {
     assert_is(package_sources, "package_sources")
   }
-  ret <- context_build(packages, sources, auto, package_sources, envir, name)
+  ret <- context_build(packages, sources, auto, package_sources, envir)
   id <- db$set_by_value(ret, namespace = "contexts", use_cache = FALSE)
-  ret$id <- id
-  db$set(ret$name, ret, namespace = "contexts_by_name")
+
+  ## Then we'll create a pair of 1:1 mappings for the context
+  ##   context_by_name
+  ##   name_by_context
+  if (is.null(name) && db$exists(id, "name_by_context")) {
+    name <- db$get(id, "name_by_context")
+  } else {
+    name <- context_name(name)
+    db$set(id, name, "name_by_context")
+  }
+  db$set(name, id, "context_by_name")
+
   now <- Sys.time()
   db$set(id, now, namespace = "context_date")
   if (!db$exists(id, "context_date_created")) {
     db$set(id, now, namespace = "context_date_created")
     context_log("save:id", id)
-    context_log("save:name", ret$name)
+    context_log("save:name", name)
   }
+
+  ret$id <- id
+  ret$name <- name
   ret$root <- root
   ret$db <- db
+
   class(ret) <- "context"
   ret
 }
@@ -32,10 +47,9 @@ context_info <- function(db, error = TRUE) {
                       stringsAsFactors = FALSE)
   } else {
     db <- context_db_get(db)
-    times <- unlist_times(db$mget(ids, "context_date_created"))
-    dat <- db$mget(ids, "contexts")
-    names <- vcapply(dat, "[[", "name")
-    ret <- data.frame(id = ids, name = names, created = times,
+    time <- unlist_times(db$mget(ids, "context_date_created"))
+    name <- vcapply(db$mget(ids, "name_by_context"), "[[", 1L)
+    ret <- data.frame(id = ids, name = name, created = time,
                       stringsAsFactors = FALSE)
     ret <- ret[order(ret$created), ]
     rownames(ret) <- NULL
@@ -55,7 +69,7 @@ context_list <- function(db, names = FALSE, error = TRUE) {
       return(character(0))
     }
   }
-  db$list(if (names) "contexts_by_name" else "contexts")
+  db$list(if (names) "context_by_name" else "contexts")
 }
 
 ##' @export
@@ -65,13 +79,23 @@ print.context <- function(x, ...) {
 
 context_read <- function(identifier, root, ..., db = NULL) {
   root <- context_root_get(root, db)
-  ns <- if (is_id(identifier)) "contexts" else "contexts_by_name"
-  dat <- root$db$get(identifier, ns)
+  db <- root$db
+
   if (is_id(identifier)) {
-    dat$id <- identifier
+    id <- identifier
+    name <- db$get(identifier, "name_by_context")
+  } else {
+    id <- db$get(identifier, "context_by_name")
+    name <- identifier
   }
+
+  dat <- root$db$get(id, "contexts")
+
+  dat$id <- id
+  dat$name <- name
   dat$root <- root
   dat$db <- root$db
+
   dat
 }
 
@@ -123,15 +147,12 @@ context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
 ################################################################################
 ## internals
 
-context_build <- function(packages, sources, auto, package_sources, envir,
-                          name) {
-  name <- context_name(name)
+context_build <- function(packages, sources, auto, package_sources, envir) {
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
       stop("Do not specify 'packages' or 'sources' if using auto")
     }
     ret <- list(
-      name = name,
       packages = detect_loaded_packages(),
       global = serialise_image())
   } else {
@@ -154,8 +175,7 @@ context_build <- function(packages, sources, auto, package_sources, envir,
     } else {
       stop("Incorrect type for 'packages'")
     }
-    ret <- list(name = name,
-                packages = packages)
+    ret <- list(packages = packages)
     if (!is.null(sources)) {
       ## Here, we _do_ need to check that all source files are
       ## *relative* paths, and we'll need to arrange to copy things

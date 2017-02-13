@@ -79,7 +79,7 @@ context_db_init <- function(path, type, args) {
     ## naming system but that's disruptive now.
     id <- ids::random_id()
     db$set("id", id, "_context")
-    context_log("init", paste("initialised:", id))
+    context_log("init", sprintf("%s at %s", id, path))
   }
   db
 }

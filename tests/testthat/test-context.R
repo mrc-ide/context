@@ -204,9 +204,9 @@ test_that("context_info", {
 
   ctx1 <- context_save(path)
   Sys.sleep(0.1)
-  ctx2 <- context_save(path)
+  ctx2 <- context_save(path, packages = "ape")
   Sys.sleep(0.1)
-  ctx3 <- context_save(path)
+  ctx3 <- context_save(path, packages = "kitten")
 
   info <- context_info(path)
 
@@ -290,4 +290,30 @@ test_that("packages validation", {
   expect_error(context_save(path, envir = .GlobalEnv,
                             packages = TRUE),
                "Incorrect type for 'packages'", fixed = TRUE)
+})
+
+test_that("name logic", {
+  Sys.setenv(R_TESTS = "")
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  ctx1 <- context_save(path, envir = .GlobalEnv)
+  expect_is(ctx1, "context")
+  expect_is(ctx1$name, "character")
+
+  ctx2 <- context_save(path, envir = .GlobalEnv, name = NULL)
+  expect_equal(ctx2$name, ctx2$name)
+
+  ctx3 <- context_save(path, envir = .GlobalEnv,
+                       name = ids::adjective_animal())
+  expect_true(ctx3$name != ctx2$name)
+  expect_equal(ctx3$id, ctx2$id)
+
+  v <- setdiff(names(ctx1), c("db", "root", "local"))
+
+  ## Load by new name:
+  expect_equal(context_read(ctx3$name, path)[v], ctx3[v])
+  ## Load by old name:
+  expect_equal(context_read(ctx1$name, path)[v], ctx1[v])
+  ## Load by id, gets new name
+  expect_equal(context_read(ctx3$id, path)[v], ctx3[v])
 })
