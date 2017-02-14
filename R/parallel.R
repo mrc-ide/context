@@ -15,7 +15,8 @@ context_par <- new.env(parent = emptyenv())
 ##' @param ctx The context to initialise on each cluster node.
 ##'
 ##' @export
-start_parallel_cluster <- function(n, ctx) {
+##' @rdname parallel_cluster
+parallel_cluster_start <- function(n, ctx) {
   if (is.null(context_par$cl)) {
     context_log("cluster", "Starting cluster")
     ## Log to <base>/workers/<context_id>_<pid>_%d I think
@@ -42,9 +43,9 @@ start_parallel_cluster <- function(n, ctx) {
   invisible(context_par$cl)
 }
 
-##' @rdname start_parallel_cluster
+##' @rdname parallel_cluster
 ##' @export
-stop_parallel_cluster <- function() {
+parallel_cluster_stop <- function() {
   registered <- !is.null(context_par$cl)
   if (registered) {
     context_log("cluster", sprintf("Stopping %d nodes", length(context_par$cl)))
@@ -55,7 +56,7 @@ stop_parallel_cluster <- function() {
   registered
 }
 
-##' @rdname start_parallel_cluster
+##' @rdname parallel_cluster
 ##' @export
 parallel_cluster <- function() {
   context_par$cl %||% stop("Cluster has not been started yet")

@@ -1,18 +1,42 @@
-task_bulk_prepare <- function(X, FUN, DOTS, do_call, use_names, envir, db) {
-  XX <- task_bulk_prepare_X(X, do_call, use_names)
-  task_bulk_prepare_expr(XX, FUN, DOTS, do_call, envir, db)
+##' Prepare many expressions
+##' @title Prepare many expressions
+##'
+##' @param X Something to iterate over; a vector, list or data.frame
+##'   (in the case of a data.frame, iteration will be row-by-row)
+##'
+##' @param FUN A function to apply to each element (or row) of
+##'   \code{X}
+##'
+##' @param DOTS Additional arguments to apply with each elements of
+##'   \code{X}
+##'
+##' @param do_call Treat each element of \code{X} as a \code{do.call} call
+##'
+##' @param use_names When preparing a data.frame, retain column names
+##'   as argument names when using \code{do_call}.  If \code{FALSE}
+##'   then positional matching will be used.
+##'
+##' @inheritParams prepare_expression
+##'
+##' @export
+bulk_prepare_expression <- function(X, FUN, DOTS, do_call, use_names,
+                                    envir, db) {
+  XX <- bulk_prepare_expression_X(X, do_call, use_names)
+  do_bulk_prepare_expression(XX, FUN, DOTS, do_call, envir, db)
 }
 
-## This is the new replacement bulk uploader.  It exists to support
-## queuer only really, though will need to be exported (and that will
-## be a bit weird).
-task_bulk_save <- function(X, FUN, context, DOTS = NULL,
+##' Save bulk tasks
+##' @title Save bulk tasks
+##' @param context A context
+##' @inheritParams bulk_prepare_expression
+##' @export
+bulk_task_save <- function(X, FUN, context, DOTS = NULL,
                            do_call = FALSE, use_names = TRUE,
                            envir = parent.frame()) {
   db <- context$db
   context_id <- context$id
 
-  dat <- task_bulk_prepare(X, FUN, DOTS, do_call, use_names, envir, db)
+  dat <- bulk_prepare_expression(X, FUN, DOTS, do_call, use_names, envir, db)
 
   build_task <- function(x) {
     x$id <- ids::random_id()
@@ -34,7 +58,7 @@ task_bulk_save <- function(X, FUN, context, DOTS = NULL,
   setNames(ids, names(X))
 }
 
-task_bulk_prepare_X <- function(X, do_call, use_names) {
+bulk_prepare_expression_X <- function(X, do_call, use_names) {
   if (is.data.frame(X)) {
     if (ncol(X) == 0L) {
       stop("'X' must have at least one column")
@@ -76,7 +100,7 @@ task_bulk_prepare_X <- function(X, do_call, use_names) {
   X
 }
 
-task_bulk_prepare_expr <- function(X, FUN, DOTS, do_call, envir, db) {
+do_bulk_prepare_expression <- function(X, FUN, DOTS, do_call, envir, db) {
   if (bulk_callable(FUN)) {
     function_name <- FUN
     function_value <- NULL

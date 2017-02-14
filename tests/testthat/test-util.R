@@ -37,7 +37,7 @@ test_that("absolute paths", {
 
 test_that("is_directory", {
   expect_true(is_directory("."))
-  expect_false(is_directory("noisy.R"))
+  expect_false(is_directory("test-util.R"))
   expect_false(is_directory(tempfile()))
 })
 

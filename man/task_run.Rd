@@ -4,11 +4,12 @@
 \alias{task_run}
 \title{Run a task}
 \usage{
-task_run(id, root, envir = .GlobalEnv, filename = NULL,
-  print_error = TRUE, install = FALSE, load_context = TRUE)
+task_run(id, context, filename = NULL)
 }
 \arguments{
-\item{envir}{Environment to load global variables into.}
+\item{id}{A task identifier}
+
+\item{context}{A context object}
 
 \item{filename}{Filename to log \emph{all} output to.  This will
 sink the message stream as well as the output stream, so if
@@ -17,12 +18,6 @@ print no output to the console, which will make debugging more
 difficult when run interactively.  However, when run
 non-interactively, especially on remote servers, this will allow
 collection of diagnostics that facilitate debugging.}
-
-\item{print_error}{Print information about an error if one occurs?}
-
-\item{install}{Install packages when constructing context?}
-
-\item{handle}{Task handle}
 }
 \description{
 Run a task

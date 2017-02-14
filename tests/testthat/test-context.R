@@ -1,5 +1,7 @@
 context("contexts")
 
+## TODO need to check that resaving a context
+
 ## This needs quite bit more testing, but this will take a while to
 ## work up; the underlying code is largely drawn from well tested
 ## packages, but because this affects the global search path (and
@@ -35,6 +37,9 @@ test_that("simplest case", {
     expect_identical(names(e), character(0))
     expect_false(identical(res, environment()))
   }
+
+  ctx2 <- context_save(path, envir = .GlobalEnv)
+  expect_equal(ctx2[v], ctx[v])
 })
 
 test_that("load contexts", {
@@ -54,19 +59,21 @@ test_that("load contexts", {
   v <- c("name", "id", "packages", "auto")
   expect_equal(dat[v], ctx[v])
 
-  e <- context_load(ctx, envir = new.env())
-  expect_is(e, "environment")
-  expect_equal(ls(e), character(0))
+  obj <- context_load(ctx, envir = new.env())
+  expect_is(obj, "context")
+  expect_is(obj$envir, "environment")
+  expect_equal(ls(obj$envir), character(0))
 })
 
 test_that("auto", {
+  ## TODO: consider dropping auto entirely?
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
 
   ctx <- context_save(path, auto = TRUE)
   expect_true(ctx$db$exists(ctx$id, "contexts"))
   expect_true(ctx$db$driver$exists_object(ctx$id))
-  expect_is(ctx$local, "environment")
+  expect_null(ctx$local)# should be environment if done correctly
   expect_is(ctx$global, "raw")
 })
 
@@ -171,22 +178,25 @@ test_that("context_list", {
   expect_error(context_list(path),
                "Context root not set up at")
   expect_equal(context_list(path, error = FALSE), character(0))
-  expect_equal(context_list(path, error = FALSE, names = TRUE),
-               character(0))
+  expect_equal(context_list(path, error = FALSE, named = TRUE),
+               setNames(character(0), character(0)))
 
   context_root_init(path)
 
   expect_equal(context_list(path), character(0))
-  expect_equal(context_list(path, names = TRUE), character(0))
+  expect_equal(context_list(path, named = TRUE),
+               setNames(character(0), character(0)))
 
   ctx1 <- context_save(path)
   expect_equal(context_list(path), ctx1$id)
-  expect_equal(context_list(path, names = TRUE), ctx1$name)
+  expect_equal(context_list(path, named = TRUE),
+               setNames(ctx1$id, ctx1$name))
+  Sys.sleep(0.1)
 
-  ctx2 <- context_save(path)
-  expect_equal(sort(context_list(path)), sort(c(ctx1$id, ctx2$id)))
-  expect_equal(sort(context_list(path, names = TRUE)),
-               sort(c(ctx1$name, ctx2$name)))
+  ctx2 <- context_save(path, packages = "ape")
+  expect_equal(context_list(path), c(ctx1$id, ctx2$id))
+  expect_equal(context_list(path, named = TRUE),
+               setNames(c(ctx1$id, ctx2$id), c(ctx1$name, ctx2$name)))
 })
 
 test_that("context_info", {
@@ -220,18 +230,25 @@ test_that("context_info", {
 
 test_that("compression works", {
   ctx1 <- context_save(tempfile(), storage_args = list(compress = TRUE))
+  ctx1_run <- context_load(ctx1, envir = new.env(parent = .GlobalEnv))
+
   expect_true(ctx1$db$driver$compress)
   expr <- quote(rep(1:10, each = 100))
   t1 <- task_save(expr, ctx1)
-  res1 <- task_run(t1, ctx1, envir = new.env(parent = .GlobalEnv))
+
+  res1 <- task_run(t1, ctx1_run)
+
   hash1 <- ctx1$db$get_hash(t1, "task_results")
   s1 <- file.size(ctx1$db$driver$name_hash(hash1))
 
   ctx2 <- context_save(tempfile(), storage_args = list(compress = FALSE))
+  ctx2_run <- context_load(ctx2, envir = new.env(parent = .GlobalEnv))
+
   expect_false(ctx2$db$driver$compress)
   expr <- quote(rep(1:10, each = 100))
   t2 <- task_save(expr, ctx2)
-  res2 <- task_run(t2, ctx2, envir = new.env(parent = .GlobalEnv))
+  res2 <- task_run(t2, ctx2_run)
+
   hash2 <- ctx2$db$get_hash(t2, "task_results")
   s2 <- file.size(ctx2$db$driver$name_hash(hash2))
 
@@ -262,7 +279,7 @@ test_that("auto does not allow package listing", {
   expect_error(context_save(path, auto = TRUE, packages = "testthat",
                             envir = .GlobalEnv),
                "Do not specify 'packages' or 'sources' if using auto")
-  expect_error(context_save(path, auto = TRUE, sources = "noisy.R",
+  expect_error(context_save(path, auto = TRUE, sources = "myfuns.R",
                             envir = .GlobalEnv),
                "Do not specify 'packages' or 'sources' if using auto")
 })

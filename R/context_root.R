@@ -1,3 +1,26 @@
+##' Find the context root.  Designed for internal use
+##' @title Find context root
+##' @param root An object; either a character string (interpreted as a
+##'   path), a \code{context_root} object (such as returned by this
+##'   function) or a list/environment object with a \code{root}
+##'   element that is a \code{context_root} object.
+##' @param db Optionally, a copy of the storr database (if already
+##'   opened).  Do not specify this unless you \emph{definitely} have
+##'   the correct database in hand.
+##' @export
+context_root_get <- function(root, db = NULL) {
+  if (is.character(root)) {
+    root <- context_root(root, db)
+  } else if (inherits(root, "context_root")) {
+  } else if (is.recursive(root) && inherits(root$root, "context_root")) {
+    ## who uses this branch now?
+    root <- root$root
+  } else {
+    stop("Invalid context root")
+  }
+  root
+}
+
 context_root_init <- function(path, storage_type = NULL, storage_args = NULL) {
   fv <- path_version(path)
   written <- package_version(if (file.exists(fv)) readLines(fv) else "0.0")
@@ -13,18 +36,6 @@ context_root_init <- function(path, storage_type = NULL, storage_args = NULL) {
   }
   db <- context_db_init(path, storage_type, storage_args)
   context_root(path, db)
-}
-
-context_root_get <- function(root, db = NULL) {
-  if (is.character(root)) {
-    root <- context_root(root, db)
-  } else if (inherits(root, "context_root")) {
-  } else if (is.recursive(root) && inherits(root$root, "context_root")) {
-    root <- root$root
-  } else {
-    stop("Invalid context root")
-  }
-  root
 }
 
 context_db_get <- function(root) {

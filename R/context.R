@@ -1,8 +1,46 @@
+##' Save a context
+##' @title Save a context
+##'
+##' @param path Path to save the context in
+##'
+##' @param packages Optional character vector of packages to save into
+##'   the context.  Alternatively, can be a list with elements
+##'   \code{loaded} and \code{attached} if you want to ensure some
+##'   packages are loaded but not attached.
+##'
+##' @param sources Character vector of source files to read in.  These
+##'   should define functions and (perhaps) other "global" objects,
+##'   but should not do any serious computation.
+##'
+##' @param auto Attempt to create the context automatically.  In this
+##'   case, do not specify either \code{packages} or \code{sources}.
+##'
+##' @param package_sources Optional information about where to find
+##'   non-CRAN packages.
+##'
+##' @param envir The current environment.  This is used to copy
+##'   \emph{local} enviroments around, as these are needed even in the
+##'   case of non-automatic contexts.  For \code{context_load} this is
+##'   the environment into which the global environment is copied.
+##'   Specify a non-global environment here to avoid clobbering the
+##'   workspace, but at the risk that some environments may not
+##'   restore exactly as desired.
+##'
+##' @param storage_type Character vector indicating the storage type
+##'   to use.  Options are \code{"rds"} (the default) and
+##'   \code{"environment"} (for testing and local use).
+##'
+##' @param storage_args Arguments passed through to the storage driver
+##'
+##' @param name An optional name for the context.  This will be
+##'   printed with the context in some situations (such as
+##'   \code{\link{context_info}})
+##'
+##' @export
 context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
-                         package_sources = NULL, envir = parent.frame(),
+                         package_sources = NULL, envir = NULL,
                          storage_type = NULL, storage_args = NULL,
                          name = NULL) {
-  name <- context_name(name)
   root <- context_root_init(path, storage_type, storage_args)
   db <- root$db
   if (!is.null(package_sources)) {
@@ -39,37 +77,58 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
   ret
 }
 
-context_info <- function(db, error = TRUE) {
-  ids <- context_list(db, error = error)
-  if (length(ids) == 0L) {
-    ret <- data.frame(id = character(0), name = character(0),
-                      created = empty_time(),
-                      stringsAsFactors = FALSE)
-  } else {
-    db <- context_db_get(db)
-    time <- unlist_times(db$mget(ids, "context_date_created"))
-    name <- vcapply(db$mget(ids, "name_by_context"), "[[", 1L)
-    ret <- data.frame(id = ids, name = name, created = time,
-                      stringsAsFactors = FALSE)
-    ret <- ret[order(ret$created), ]
-    rownames(ret) <- NULL
+##' List saved contexts
+##' @title List save contexts
+##'
+##' @param db Something for which a context database can be created;
+##'   this can the the path to the context, a \code{context_root}
+##'   object, or a \code{context} object.
+##'
+##' @param named Logical, indicating if the context name should be used
+##'   to name the output vector.
+##'
+##' @param error Throw an error if the context database cannot be
+##'   connected constructed (e.g., if the path given does not exist).
+##'
+##' @export
+##' @author Rich FitzJohn
+context_list <- function(db, named = FALSE, error = TRUE) {
+  dat <- context_info(db, error)
+  id <- dat$id
+  if (named) {
+    names(id) <- dat$name
   }
-  ret
+  id
 }
 
-## TODO: it might be nice to list these by time optinally, but that
-## interacts badly with getting the names too, because those are not
-## stored as a lookup.
-context_list <- function(db, names = FALSE, error = TRUE) {
+##' @export
+##' @rdname context_list
+context_info <- function(db, error = TRUE) {
+  ## TODO: it might be nice to list these by time optinally, but that
+  ## interacts badly with getting the names too, because those are not
+  ## stored as a lookup.
   if (error) {
     db <- context_db_get(db)
+    id <- db$list("contexts")
   } else {
     db <- tryCatch(context_db_get(db), error = function(e) NULL)
     if (is.null(db)) {
-      return(character(0))
+      id <- character(0)
     }
   }
-  db$list(if (names) "context_by_name" else "contexts")
+
+  if (length(id) == 0L) {
+    name <- character(0)
+    time <- empty_time()
+  } else {
+    name <- vcapply(db$mget(id, "name_by_context"), identity)
+    time <- unlist_times(db$mget(id, "context_date_created"))
+  }
+  ret <- data.frame(id = id, name = name, created = time,
+                    stringsAsFactors = FALSE)
+  ret <- ret[order(ret$created), ]
+  rownames(ret) <- NULL
+  ret
 }
 
 ##' @export
@@ -77,7 +136,14 @@ print.context <- function(x, ...) {
   print_ad_hoc(x)
 }
 
-context_read <- function(identifier, root, ..., db = NULL) {
+##' Read a context
+##' @title Read a context
+##' @param identifier Either the id or name of a context (see
+##'   \code{\link{context_list}})
+##' @param root Something interpetable as the context root; either
+##' @param db Optionally, a database (if known already)
+##' @export
+context_read <- function(identifier, root, db = NULL) {
   root <- context_root_get(root, db)
   db <- root$db
 
@@ -99,23 +165,29 @@ context_read <- function(identifier, root, ..., db = NULL) {
   dat
 }
 
-context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
+##' Load a context
+##' @title Load a context
+##' @param ctx A context object, as read by \code{\link{context_read}}
+##' @param envir The environment to source files into
+##' @export
+context_load <- function(ctx, envir = .GlobalEnv) {
   assert_is(ctx, "context")
   assert_is(envir, "environment")
+  if (!is.null(ctx$envir)) {
+    ## TODO: something here to switch between different behaviours?
+    return(ctx)
+  }
   context_log("context", ctx$id)
 
-  if (install) {
-    ## TODO: here, install *missing* packages for the current
-    ## environment.  This was originally intended for the case where
-    ## we'd spin things up remotely, so this is not very high
-    ## priority, really.
-    ##
-    ## We'll let '...' be used here I think.
-    ##
-    ## In this case we'd be looking to do a installation into the
-    ## default library and do missing packages only by default.
-    stop("FIXME")
-  }
+  ## TODO: here, install *missing* packages for the current
+  ## environment.  This was originally intended for the case where
+  ## we'd spin things up remotely, so this is not very high
+  ## priority, really.
+  ##
+  ## We'll let '...' be used here I think.
+  ##
+  ## In this case we'd be looking to do a installation into the
+  ## default library and do missing packages only by default.
 
   context_log("library", paste0(ctx$packages$attached, collapse = ", "))
   for (p in rev(setdiff(ctx$packages$attached, .packages()))) {
@@ -136,12 +208,17 @@ context_load <- function(ctx, envir = .GlobalEnv, install = FALSE, ...) {
     deserialise_image(ctx$global, envir = envir)
   }
 
+  ## I am really not sure tht this is a sensible thing to be doing.
+  ## The context should probably not capture the local environment on
+  ## save?
   if (!is.null(ctx$local)) {
     context_log("local", "")
-    ctx$local
+    ctx$envir <- ctx$local
   } else {
-    envir
+    ctx$envir <- envir
   }
+
+  ctx
 }
 
 ################################################################################
@@ -151,6 +228,9 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
       stop("Do not specify 'packages' or 'sources' if using auto")
+    }
+    if (!is.null(envir)) {
+      stop("FIXME")
     }
     ret <- list(
       packages = detect_loaded_packages(),
@@ -194,7 +274,8 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
   }
   ret$package_sources <- package_sources
 
-  if (!is.GlobalEnv(envir)) {
+  if (!is.null(envir) && !is.GlobalEnv(envir)) {
+    assert_is(envir, "environment")
     ## TODO: I don't think that this is a good idea, and does not
     ## match how this is being used.  OTOH, some sort of ability to
     ## *properly* export environments will be useful for Jeff's case.

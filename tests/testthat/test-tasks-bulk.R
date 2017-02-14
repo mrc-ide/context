@@ -3,15 +3,15 @@ context("tasks - bulk")
 test_that("prepare; single arg", {
   x <- 1:4
   cmp <- lapply(x, function(el) list(expr = bquote(foo(.(el)))))
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, TRUE, FALSE), cmp)
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, TRUE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, FALSE, FALSE), cmp)
 })
 
 test_that("prepare; named single arg", {
   x <- setNames(1:4, letters[1:4])
   cmp <- lapply(unname(x), function(el) list(expr = bquote(foo(.(el)))))
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, TRUE, FALSE), cmp)
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, TRUE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, FALSE, FALSE), cmp)
 })
 
 test_that("prepare", {
@@ -19,13 +19,13 @@ test_that("prepare", {
 
   ## Not do_call
   cmp <- lapply(unname(x), function(el) list(expr = bquote(foo(.(el)))))
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, FALSE), cmp)
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, TRUE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, FALSE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, FALSE, TRUE), cmp)
 
   ## do_call
   cmp <- lapply(x, function(el) list(expr = as.call(c(list(quote(foo)), el))))
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, TRUE, FALSE), cmp)
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, TRUE, TRUE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, TRUE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(x, quote(foo), NULL, TRUE, TRUE), cmp)
 })
 
 test_that("prepare; data.frame", {
@@ -34,53 +34,58 @@ test_that("prepare; data.frame", {
   ## not do_call, preserving and dropping names:
   cmp <- lapply(df_to_list(df, TRUE), function(el)
     list(expr = bquote(foo(.(el)))))
-  expect_equal(task_bulk_prepare(df, quote(foo), NULL, FALSE, TRUE),
+  expect_equal(bulk_prepare_expression(df, quote(foo), NULL, FALSE, TRUE),
                cmp)
-  expect_equal(task_bulk_prepare(df, quote(foo), NULL, FALSE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(df, quote(foo), NULL, FALSE, FALSE), cmp)
 
   ## do_call, preserving names
   cmp <- lapply(df_to_list(df, TRUE), function(el)
     list(expr = as.call(c(list(quote(foo)), el))))
-  expect_equal(task_bulk_prepare(df, quote(foo), NULL, TRUE, TRUE), cmp)
+  expect_equal(bulk_prepare_expression(df, quote(foo), NULL, TRUE, TRUE), cmp)
 
   ## do_call, dropping names
   cmp <- lapply(df_to_list(df, TRUE), function(el)
     list(expr = as.call(c(list(quote(foo)), unname(el)))))
-  expect_equal(task_bulk_prepare(df, quote(foo), NULL, TRUE, FALSE), cmp)
+  expect_equal(bulk_prepare_expression(df, quote(foo), NULL, TRUE, FALSE), cmp)
 })
 
 test_that("prepare; uneven length lists", {
   x <- list(1, c(1, 2))
   cmp <- lapply(x, function(el) list(expr = bquote(foo(.(el)))))
-  expect_equal(task_bulk_prepare(x, quote(foo), NULL, FALSE, TRUE),
-               cmp)
+  expect_equal(
+    bulk_prepare_expression(x, quote(foo), NULL, FALSE, TRUE),
+    cmp)
 
   ## Error case
-  expect_error(task_bulk_prepare(list(1, 1:2), quote(foo), NULL, TRUE, TRUE),
-               "Every element of 'X' must have the same length")
+  expect_error(
+    bulk_prepare_expression(list(1, 1:2), quote(foo), NULL, TRUE, TRUE),
+    "Every element of 'X' must have the same length")
 })
 
 test_that("prepare; error cases", {
-  expect_error(task_bulk_prepare(NULL, quote(foo), NULL, TRUE, TRUE),
-               "X must be a data.frame or list", fixed = TRUE)
-  expect_error(task_bulk_prepare(quote(sin), quote(foo), NULL, TRUE, TRUE),
-               "X must be a data.frame or list", fixed = TRUE)
-  expect_error(task_bulk_prepare(quote(1 + 2), quote(foo), NULL, TRUE, TRUE),
-               "X must be a data.frame or list", fixed = TRUE)
+  expect_error(
+    bulk_prepare_expression(NULL, quote(foo), NULL, TRUE, TRUE),
+    "X must be a data.frame or list", fixed = TRUE)
+  expect_error(
+    bulk_prepare_expression(quote(sin), quote(foo), NULL, TRUE, TRUE),
+    "X must be a data.frame or list", fixed = TRUE)
+  expect_error(
+    bulk_prepare_expression(quote(1 + 2), quote(foo), NULL, TRUE, TRUE),
+    "X must be a data.frame or list", fixed = TRUE)
 
   ## Zero length
   df <- data.frame(a = 1:5, b = runif(5))
   expect_error(
-    task_bulk_prepare(df[integer(0), ], quote(foo), NULL, FALSE, TRUE),
+    bulk_prepare_expression(df[integer(0), ], quote(foo), NULL, FALSE, TRUE),
     "'X' must have at least one row", fixed = TRUE)
   expect_error(
-    task_bulk_prepare(df[, integer(0)], quote(foo), NULL, FALSE, TRUE),
+    bulk_prepare_expression(df[, integer(0)], quote(foo), NULL, FALSE, TRUE),
     "'X' must have at least one column", fixed = TRUE)
   expect_error(
-    task_bulk_prepare(list(), quote(foo), NULL, FALSE, TRUE),
+    bulk_prepare_expression(list(), quote(foo), NULL, FALSE, TRUE),
     "'X' must have at least one element", fixed = TRUE)
   expect_error(
-    task_bulk_prepare(list(list(), list()), quote(foo), NULL, TRUE, TRUE),
+    bulk_prepare_expression(list(list(), list()), quote(foo), NULL, TRUE, TRUE),
     "Elements of 'X' must have at least one element", fixed = TRUE)
 })
 
@@ -88,9 +93,10 @@ test_that("prepare; error cases", {
 ## add.
 test_that("simple", {
   ctx <- context_save(tempfile(), storage_type = "environment")
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   on.exit(unlink(ctx$root$path, recursive = TRUE))
 
-  ids <- task_bulk_save(1:5, quote(sin), ctx)
+  ids <- bulk_task_save(1:5, quote(sin), ctx)
   expect_is(ids, "character")
   expect_equal(length(ids), 5)
   expect_false(any(duplicated(ids)))
@@ -100,7 +106,7 @@ test_that("simple", {
 
   expect_equal(task_list(ctx), sort(ids))
 
-  expect_equal(lapply(ids, task_run, ctx), as.list(sin(1:5)))
+  expect_equal(lapply(ids, task_run, ctx_run), as.list(sin(1:5)))
   expect_equal(lapply(ids, task_result, ctx), as.list(sin(1:5)))
 })
 
@@ -109,7 +115,7 @@ test_that("named", {
   on.exit(unlink(ctx$root$path, recursive = TRUE))
 
   x <- setNames(1:5, letters[1:5])
-  ids <- task_bulk_save(x, quote(sin), ctx)
+  ids <- bulk_task_save(x, quote(sin), ctx)
   expect_is(ids, "character")
   expect_equal(names(ids), names(x))
 })
@@ -121,7 +127,7 @@ test_that("bulk, multiple arguments", {
 
   X <- expand.grid(x = as.numeric(1:3), rate = as.numeric(1:3),
                    KEEP.OUT.ATTRS = FALSE)
-  ids <- task_bulk_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+  ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
                         do_call = TRUE, use_names = FALSE)
 
   expect_equal(task_expr(ids[[1]], ctx),
@@ -140,7 +146,7 @@ test_that("local variables", {
 
   X <- expand.grid(x = as.numeric(1:3), rate = as.numeric(1:3),
                    KEEP.OUT.ATTRS = FALSE)
-  ids <- task_bulk_save(X, quote(dgamma), ctx,
+  ids <- bulk_task_save(X, quote(dgamma), ctx,
                         DOTS = list(shape = quote(shape)),
                         do_call = TRUE, use_names = FALSE)
 
@@ -159,9 +165,10 @@ test_that("local variables", {
 
 test_that("function-by-value", {
   ctx <- context_save(tempfile(), storage_type = "environment")
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   on.exit(unlink(ctx$root$path, recursive = TRUE))
 
-  ids <- task_bulk_save(1:5, function(x) x * 2, ctx)
+  ids <- bulk_task_save(1:5, function(x) x * 2, ctx)
   expect_is(ids, "character")
   expect_equal(length(ids), 5)
   expect_false(any(duplicated(ids)))
@@ -175,6 +182,6 @@ test_that("function-by-value", {
   expect_equal(length(unique(nm)), 1L)
   expect_true(is_id(nm[[1]]))
 
-  expect_equal(lapply(ids, task_run, ctx), as.list(1:5 * 2))
+  expect_equal(lapply(ids, task_run, ctx_run), as.list(1:5 * 2))
   expect_equal(lapply(ids, task_result, ctx), as.list(1:5 * 2))
 })

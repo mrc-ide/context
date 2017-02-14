@@ -2,18 +2,18 @@
 % Please edit documentation in R/task_query.R
 \name{task_expr}
 \alias{task_expr}
-\alias{task_function_name}
 \title{Fetch task expression}
 \usage{
 task_expr(id, db, locals = FALSE)
-
-task_function_name(ids, db)
 }
 \arguments{
+\item{id}{Single task identifier}
+
+\item{db}{Something that can be converted to a context db object
+(a database, root or context).}
+
 \item{locals}{Return locals bound to the expression (as an
 attribute "locals")}
-
-\item{handle}{A task handle}
 }
 \description{
 Fetch expression for a task

@@ -6,6 +6,13 @@
 \usage{
 task_log(id, root)
 }
+\arguments{
+\item{id}{Single task identifier}
+
+\item{root}{A context root (not just the db as in
+\code{\link{task_result}} as we need to know the actual path to
+the root).  A \code{context} object is also OK.}
+}
 \description{
 Return the log of a task, if enabled.
 }

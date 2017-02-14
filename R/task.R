@@ -45,7 +45,8 @@ task_save <- function(expr, context, envir = parent.frame()) {
 
 ##' Delete a task, including its results.
 ##' @title Delete a task
-##' @param handle A task handle
+##' @inheritParams task_status
+##' @inheritParams task_log
 ##' @export
 ##' @return \code{TRUE} if a task was actually deleted.
 task_delete <- function(ids, root) {

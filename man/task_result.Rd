@@ -4,13 +4,16 @@
 \alias{task_result}
 \title{Fetch task result}
 \usage{
-task_result(id, db, sanitise = FALSE)
+task_result(id, db, allow_incomplete = FALSE)
 }
 \arguments{
-\item{sanitise}{Should we avoid throwing an error if a task is not
-completed?  Used internally, and not generally needed.}
+\item{id}{Single task identifier}
 
-\item{handle}{A task handle}
+\item{db}{Something that can be converted to a context db object
+(a database, root or context).}
+
+\item{allow_incomplete}{Should we avoid throwing an error if a task is not
+completed?  Used internally, and not generally needed.}
 }
 \description{
 Fetch result from completed task.

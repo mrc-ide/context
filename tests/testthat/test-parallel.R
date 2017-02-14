@@ -6,7 +6,7 @@ test_that("parallel cluster", {
   ctx <- context_save(path, sources = "myfuns-parallel.R")
 
   context_log_start()
-  cl <- start_parallel_cluster(2L, ctx)
+  cl <- parallel_cluster_start(2L, ctx)
 
   source("myfuns-parallel.R", local = TRUE)
   res <- get_cluster_pids()
@@ -22,14 +22,14 @@ test_that("parallel cluster", {
 
   expect_equal(cl, parallel_cluster())
 
-  expect_error(start_parallel_cluster(2L, ctx),
+  expect_error(parallel_cluster_start(2L, ctx),
                "Parallel cluster already running")
   expect_equal(cl, parallel_cluster())
 
-  expect_true(stop_parallel_cluster())
+  expect_true(parallel_cluster_stop())
 
   expect_error(parallel_cluster(), "Cluster has not been started yet")
-  expect_false(stop_parallel_cluster())
+  expect_false(parallel_cluster_stop())
 
   expect_error(parallel::clusterCall(NULL, "loadedNamespaces"),
                "registered")

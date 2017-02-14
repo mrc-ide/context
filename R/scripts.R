@@ -128,13 +128,16 @@ main_task_run <- function(args = commandArgs(TRUE)) {
     context_log("parallel",
                 sprintf("running as parallel job [%d cores]", cores))
     context_id <- task_context(task_id, root)
-    start_parallel_cluster(cores, context_read(context_id, root))
-    on.exit(stop_parallel_cluster())
+    parallel_cluster_start(cores, context_read(context_id, root))
+    on.exit(parallel_cluster_stop())
   } else {
     context_log("parallel", "running as single core job")
   }
 
-  res <- task_run(task_id, root, envir = .GlobalEnv)
+  context_id <- task_context_id(task_id, root)
+  ctx <- context_load(context_read(context_id, root, root$db),
+                      .GlobalEnv)
+  res <- task_run(task_id, ctx)
 
   propagate_error <- toupper(Sys.getenv("CONTEXT_PROPAGATE_ERROR")) == "TRUE"
 

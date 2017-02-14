@@ -28,6 +28,8 @@ test_that("tasks in empty context", {
   expect_equal(task_status(character(0), ctx, named = TRUE),
                setNames(character(0), character(0)))
 
+  expect_equal(task_context_id(character(0), ctx), character(0))
+
   expect_error(task_read(id, ctx), "not found")
   expect_error(task_log(id, ctx), "Logging not enabled")
 
@@ -82,13 +84,14 @@ test_that("single task", {
   expect_equal(dat$context_id, ctx$id)
   expect_equal(dat$expr, expr)
   expect_null(dat$objects)
+  expect_equal(task_context_id(t, path), ctx$id)
 
   expect_equal(task_expr(t, path), expr)
   expect_equal(task_function_name(t, path), "sin")
 
   e <- new.env()
-  parent <- context_load(ctx, e)
-  dat <- task_load(t, ctx, parent, FALSE)
+  ctx_run <- context_load(ctx, e)
+  dat <- task_load(t, ctx_run)
 
   expect_is(dat$db, "storr")
   expect_equal(dat$expr, expr)
@@ -99,13 +102,13 @@ test_that("single task", {
   ## a situation where our *globals* aren't in the right place.  Such
   ## is life; I don't see what else we can do about that.
   expect_equal(ls(dat$envir), character(0))
-  expect_identical(parent.env(dat$envir), parent)
+  expect_identical(parent.env(dat$envir), ctx_run$envir)
   if (!identical(environment(), .GlobalEnv)) {
     expect_false(identical(dat$parent, e))
     expect_equal(ls(e), ls(.GlobalEnv))
   }
 
-  expect_equal(task_run(t, ctx), eval(expr))
+  expect_equal(task_run(t, ctx_run), eval(expr))
 })
 
 test_that("task_delete (single)", {
@@ -164,18 +167,18 @@ test_that("local variables", {
   expect_equal(unname(dat$objects), ctx$db$hash_object(x))
 
   e <- new.env(parent = .GlobalEnv)
-  parent <- context_load(ctx, e)
-  dat <- task_load(t, ctx, parent)
+  ctx_run <- context_load(ctx, e)
+  dat <- task_load(t, ctx_run)
 
   expect_identical(ls(dat$envir), "x")
   expect_identical(dat$envir$x, x)
-  expect_identical(parent.env(dat$envir), parent)
+  expect_identical(parent.env(dat$envir), ctx_run$envir)
 
   expect_equal(task_expr(t, ctx), expr)
   expect_equal(task_expr(t, ctx, TRUE),
                structure(expr, locals = dat$objects))
 
-  res <- task_run(t, ctx, envir = e, load_context = FALSE)
+  res <- task_run(t, ctx_run)
   expect_equal(res, sin(1))
 })
 
@@ -199,7 +202,8 @@ test_that("task_run & times", {
   expect_equal(ctx$db$list("task_time_end"), character(0))
 
   e <- new.env(parent = environment())
-  res <- task_run(t, ctx, envir = e)
+  ctx_run <- context_load(ctx, e)
+  res <- task_run(t, ctx_run)
   expect_identical(res, list(x, y))
 
   expect_equal(ctx$db$list("task_time_sub"), t)
@@ -233,16 +237,17 @@ test_that("complex expressions", {
   expect_equal(tmp$expr, expr)
   expect_equal(sort(names(tmp$objects)), c("n", "x", "y"))
 
-  res <- task_run(t, ctx)
+  res <- task_run(t, context_load(ctx, new.env(parent = .GlobalEnv)))
   expect_equal(res, eval(expr))
 })
 
 test_that("stack trace", {
   ## context_log_start()
   ctx <- context_save(tempfile(), storage_type = "environment")
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   t <- task_save(quote(readLines("asdfa.txt")), ctx)
   ## Warning is not suppressed:
-  expect_warning(res <- task_run(t, ctx, print_error = FALSE), "No such file")
+  expect_warning(res <- task_run(t, ctx_run), "No such file")
   expect_is(res, "context_task_error")
   expect_is(res$trace, "character")
   expect_match(tail(res$trace, 2)[[1]], "^readLines")
@@ -252,34 +257,30 @@ test_that("stack trace, no warning", {
   ctx <- context_save(tempfile(), storage_type = "environment",
                       sources = "myfuns.R")
   t <- task_save(quote(f(-10)), ctx)
+
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   context_log_start()
   on.exit(context_log_stop())
-  expect_message(res <- task_run(t, ctx, print_error = TRUE),
+  expect_message(res <- task_run(t, ctx_run),
                  "Need positive x")
 })
 
 test_that("long expr", {
-  ## TODO: this is obviously missing a second half where something
-  ## that went *wrong* was printed.  Not sure what that is though!
   ctx <- context_save(tempfile(), storage_type = "environment")
   task <- task_save(quote(list(a_label = "a value",
                                another_label = pi,
                                one_more = c(exp(1), pi, 123.12312),
                                last_one = "a very long string here to wrap")),
                     ctx)
-})
 
-test_that("load_context", {
-  ctx <- context_save(tempfile(),
-                      sources = "noisy.R",
-                      storage_type = "environment")
-  t <- task_save(quote(times_two(2)), ctx)
-  expect_message(env <- context_load(ctx), "NOISY")
-
-  expect_silent(ans <- task_run(t, ctx, load_context = FALSE, envir = env))
-  expect_equal(ans, 4)
-  expect_message(ans <- task_run(t, ctx, load_context = TRUE), "NOISY")
-  expect_equal(ans, 4)
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
+  context_log_start()
+  on.exit(context_log_stop())
+  msg <- capture_messages(res <- task_run(task, ctx_run))
+  msg <- strsplit(paste(msg, collapse = ""), "\n")[[1]]
+  dat <- parse_context_log(sub("\n$", "", msg))
+  expect_true("..." %in% dat$title)
+  expect_equal(dat$title[[which(dat$title == "expr") + 1L]], "...")
 })
 
 test_that("print", {
@@ -294,6 +295,7 @@ test_that("capture output", {
   on.exit(context_log_stop())
   ctx <- context_save(tempfile(),
                       storage_type = "environment")
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   t <- task_save(quote(sin(2)), ctx)
   logfile <- tempfile()
 
@@ -304,7 +306,7 @@ test_that("capture output", {
   ## Solution via:
   ## https://github.com/hadley/testthat/issues/460
   res <- withCallingHandlers(
-    task_run(t, ctx, filename = logfile),
+    task_run(t, ctx_run, filename = logfile),
     message = function(e) cat(conditionMessage(e), file = stderr(), sep = ""))
   expect_equal(res, sin(2))
   expect_true(file.exists(logfile))
@@ -330,22 +332,20 @@ test_that("capture output", {
   expect_error(task_log(t, ctx), "Logfile does not exist at")
 })
 
-test_that("run without loading", {
+test_that("can't run without loading", {
   ctx <- context_save(tempfile(),
                       storage_type = "environment")
-  on.exit(unlink(ctx$root$path, recursive = TRUE))
-  e <- list2env(list(a = 1), parent = emptyenv())
-  t <- task_save(quote(sin(a)), ctx, e)
-  expect_equal(task_run(t, ctx$root, .GlobalEnv, load_context = FALSE),
-               sin(e$a))
+  t <- task_save(quote(sin(1)), ctx)
+  expect_error(task_run(t, ctx), "context is not loaded")
 })
 
 test_that("fetch task result", {
   ctx <- context_save(tempfile(),
                       storage_type = "environment")
+  ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   on.exit(unlink(ctx$root$path, recursive = TRUE))
   t <- task_save(quote(sin(1)), ctx)
-  expect_equal(task_run(t, ctx$root, .GlobalEnv), sin(1))
+  expect_equal(task_run(t, ctx_run), sin(1))
 
   expect_equal(task_result(t, ctx$root), sin(1))
   expect_equal(task_status(t, ctx$root), TASK_COMPLETE)
@@ -397,26 +397,4 @@ test_that("invalid task", {
                "expr must inherit from call")
   expect_error(task_save(quote(sin), ctx),
                "expr must inherit from call")
-})
-
-test_that("trigger_load", {
-  ctx <- context_save(tempfile(),
-                      storage_type = "environment",
-                      sources = "myfuns.R",
-                      envir = .GlobalEnv) # required because of bugs
-  on.exit(unlink(ctx$root$path, recursive = TRUE))
-  t <- task_save(quote(sin(1)), ctx)
-
-  ## With load
-  ## TODO: this is _not_ right.
-  e1 <- new.env(parent = .GlobalEnv)
-  dat <- task_load(t, ctx$root, e1, TRUE)
-  expect_identical(parent.env(dat$envir), e1)
-  expect_true("f" %in% names(e1))
-
-  ## Without
-  e2 <- new.env(parent = .GlobalEnv)
-  dat <- task_load(t, ctx$root, e2, FALSE)
-  expect_identical(parent.env(dat$envir), e2)
-  expect_false("f" %in% names(e2))
 })

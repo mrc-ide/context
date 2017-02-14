@@ -1,21 +1,41 @@
-## Consider also looking in the *context* environment for variables
-## that we can skipped over?  See the note below.
+## TODO Consider also looking in the *context* environment for
+## variables that we can skipped over?  See the note below.
 
-## The function_value argument here is used where `expr` is going to
-## take a function that is not addressable by *name*; in that case we
-## take a function itself (as "function_value"), serialise it and
-## replace the function call with the hash.  The function will be
-## serialised into the calling environment on deserialisation.
-##
-## This includes the remote possibility of a collision, but with the
-## size of the keyspace used for hashes hopefully it's negligable.
-##
-## Because of the approach used here, `expr` can contain anything; I'd
-## suggest not saving the contents of the function itself, but
-## something like `NULL` will work just fine:
-##
-##   as.call(list(NULL, quote(a)))
-##   # NULL(a)
+##' Prepare expression for evaluation in context
+##'
+##' The \code{function_value} argument here is used where \code{expr} is
+##' going to take a function that is not addressable by \emph{name}; in
+##' that case we take a function itself (as "function_value"),
+##' serialise it and replace the function call with the hash.  The
+##' function will be serialised into the calling environment on
+##' deserialisation.
+##'
+##' This includes the remote possibility of a collision, but with the
+##' size of the keyspace used for hashes hopefully it's negligable.
+##'
+##' Because of the approach used here, \code{expr} can contain
+##' anything; I'd suggest not saving the contents of the function
+##' itself, but something like \code{NULL} will work just fine:
+##'
+##' \preformatted{
+##'   as.call(list(NULL, quote(a)))
+##'   # NULL(a)
+##' }
+##'
+##' @title Prepare expression
+##'
+##' @param expr A quoted expression consisting of a single function
+##'   call.
+##'
+##' @param envir An environment to find variables local to the expression
+##'
+##' @param db A database to store locals
+##'
+##' @param function_value Optionally, the \emph{value} of a function
+##'   where the expression should involve an anonymous function.  In
+##'   this case the function in \code{expr} will be replaced.
+##'
+##' @export
 prepare_expression <- function(expr, envir, db, function_value = NULL) {
   args <- expr[-1L]
 
@@ -71,8 +91,22 @@ prepare_expression <- function(expr, envir, db, function_value = NULL) {
   ret
 }
 
-## Mostly similar to rrqueue::restore_expression
+##' Restore locals created by \code{\link{prepare_expression}}.
+##' @title Restore locals
+##'
+##' @param dat An expression that has been through
+##'   \code{prepare_expression}.  Key elements are
+##'   \code{function_hash} and \code{objects}
+##'
+##' @param parent The parent environment to restore locals to
+##'
+##' @param db The database used to prepare the expression
+##'
+##' @export
 restore_locals <- function(dat, parent, db) {
+  ## TODO: task_read is not exported, so this does not make a huge
+  ## amount of sense.  rrq shares the same interface, so uses this.
+  ## It might be easiest just to copy this over instead.
   e <- new.env(parent = parent)
   restore <- c(dat$function_hash, dat$objects)
   if (length(restore) > 0L) {

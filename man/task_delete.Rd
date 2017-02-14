@@ -7,7 +7,11 @@
 task_delete(ids, root)
 }
 \arguments{
-\item{handle}{A task handle}
+\item{ids}{Vector of task ids}
+
+\item{root}{A context root (not just the db as in
+\code{\link{task_result}} as we need to know the actual path to
+the root).  A \code{context} object is also OK.}
 }
 \value{
 \code{TRUE} if a task was actually deleted.
