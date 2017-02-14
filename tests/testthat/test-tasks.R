@@ -29,6 +29,8 @@ test_that("tasks in empty context", {
                setNames(character(0), character(0)))
 
   expect_equal(task_context_id(character(0), ctx), character(0))
+  expect_equal(task_context_id(id, ctx), NA_character_)
+  expect_equal(task_context_id(ids, ctx), rep(NA_character_, length(ids)))
 
   expect_error(task_read(id, ctx), "not found")
   expect_error(task_log(id, ctx), "Logging not enabled")

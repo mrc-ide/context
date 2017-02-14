@@ -184,7 +184,7 @@ task_times <- function(ids, db, unit_elapsed = "secs", sorted = TRUE) {
 ##' @export
 task_context_id <- function(ids, db) {
   db <- context_db_get(db)
-  vcapply(db$mget(ids, "task_context"), identity)
+  vcapply(db$mget(ids, "task_context", missing = NA_character_), identity)
 }
 
 UnfetchableTask <- function(task_id, status) {
