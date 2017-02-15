@@ -106,7 +106,7 @@ task_function_name <- function(ids, db) {
 ##'   the root).  A \code{context} object is also OK.
 ##'
 ##' @export
-task_log <- function(id, root) {
+task_log <- function(id, root, parse = TRUE) {
   root <- context_root_get(root)
   db <- root$db
   path <- tryCatch(db$get(id, "log_path"),
@@ -120,7 +120,8 @@ task_log <- function(id, root) {
   if (!file.exists(path)) {
     stop("Logfile does not exist at ", path)
   }
-  parse_context_log(readLines(path, warn = FALSE))
+  txt <- readLines(path, warn = FALSE)
+  if (parse) parse_context_log(txt) else txt
 }
 
 ##' Fetch times taken to queue, run, and since running a task.

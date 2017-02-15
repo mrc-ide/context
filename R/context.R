@@ -170,11 +170,14 @@ context_read <- function(identifier, root, db = NULL) {
 ##' @param ctx A context object, as read by \code{\link{context_read}}
 ##' @param envir The environment to source files into
 ##' @export
-context_load <- function(ctx, envir = .GlobalEnv) {
+context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
   assert_is(ctx, "context")
   assert_is(envir, "environment")
-  if (!is.null(ctx$envir)) {
-    ## TODO: something here to switch between different behaviours?
+  if (!is.null(ctx$envir) && !refresh) {
+    ## There's an issue here where refresh will not work quite as
+    ## expected because we might slurp into the global environment in
+    ## which spare things might be left over if the contexts are not
+    ## additive.
     return(ctx)
   }
   context_log("context", ctx$id)
