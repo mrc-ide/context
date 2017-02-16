@@ -233,7 +233,21 @@ context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
     ctx$envir <- envir
   }
 
+  context_cache$last_loaded_context <- ctx
+
   ctx
+}
+
+##' Return the last loaded context
+##' @title Return last loaded context
+##' @param error Throw an error if no context has been loaded
+##' @export
+last_loaded_context <- function(error = TRUE) {
+  ret <- context_cache$last_loaded_context
+  if (error && is.null(ret)) {
+    stop("No context has been loaded")
+  }
+  ret
 }
 
 ################################################################################

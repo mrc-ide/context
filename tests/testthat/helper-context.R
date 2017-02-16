@@ -19,6 +19,7 @@ cleanup <- function(root) {
   ## the above should do a reasonable job of trimming any additions
   ## because the actual directories will have been deleted.
   .libPaths(.libPaths())
+  context_cache$last_loaded_context <- NULL
 }
 
 skip_if_no_fork <- function() {

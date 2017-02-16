@@ -43,7 +43,7 @@ context_log <- function(topic, value) {
       str <- paste(str, collapse = "\n")
     }
     message(str)
-    if (!is.null(context_par$cl)) {
+    if (!is.null(context_cache$cl)) {
       ## Logging is rare enough that we should communicate with
       ## workers; the cost is relatively low.  It might be worth
       ## making this an option though.
@@ -52,7 +52,7 @@ context_log <- function(topic, value) {
       ## that can happen) then this will hang or cause things to error
       ## out.  OTOH, given that the underlying computations will use a
       ## cluster, we would simply hang there instead...
-      parallel::clusterCall(context_par$cl, "message", str)
+      parallel::clusterCall(context_cache$cl, "message", str)
     }
   }
 }

@@ -358,3 +358,16 @@ test_that("set unique value", {
   expect_equal(ctx4$unique_value, uvb)
   expect_equal(ctx5$unique_value, uvb)
 })
+
+test_that("last context", {
+  Sys.setenv(R_TESTS = "")
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+
+  expect_null(last_loaded_context(FALSE))
+  expect_error(last_loaded_context(TRUE), "No context has been loaded")
+
+  ctx1 <- context_save(path, envir = .GlobalEnv)
+  ctx1 <- context_load(ctx1, new.env(parent = .GlobalEnv))
+  expect_identical(last_loaded_context(), ctx1)
+})
