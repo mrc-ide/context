@@ -4,7 +4,7 @@
 \alias{task_log}
 \title{Return task log}
 \usage{
-task_log(id, root)
+task_log(id, root, parse = TRUE)
 }
 \arguments{
 \item{id}{Single task identifier}

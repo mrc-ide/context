@@ -4,7 +4,7 @@
 \alias{context_load}
 \title{Load a context}
 \usage{
-context_load(ctx, envir = .GlobalEnv)
+context_load(ctx, envir = .GlobalEnv, refresh = FALSE)
 }
 \arguments{
 \item{ctx}{A context object, as read by \code{\link{context_read}}}

@@ -36,17 +36,29 @@
 ##'   printed with the context in some situations (such as
 ##'   \code{\link{context_info}})
 ##'
+##' @param unique_value A unique value to add to your context to
+##'   distinguish it from other contexts with otherwise identical
+##'   contents.  This is mostly useful in conjunction with \code{rrq}
+##'   where in a multiuser setting you might end up with two people
+##'   creating identical contexts and therefore sharing a queue!  By
+##'   adding a unique value (your name, a number, whatever) the
+##'   generated context ID will be arbitrarily different and you'll
+##'   avoid collisions.  Any R object can be used here (string,
+##'   number, vector, whatever).  Your username would be a good
+##'   choice.
+##'
 ##' @export
 context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
                          package_sources = NULL, envir = NULL,
                          storage_type = NULL, storage_args = NULL,
-                         name = NULL) {
+                         name = NULL, unique_value = NULL) {
   root <- context_root_init(path, storage_type, storage_args)
   db <- root$db
   if (!is.null(package_sources)) {
     assert_is(package_sources, "package_sources")
   }
-  ret <- context_build(packages, sources, auto, package_sources, envir)
+  ret <- context_build(packages, sources, auto, package_sources,
+                       unique_value, envir)
   id <- db$set_by_value(ret, namespace = "contexts", use_cache = FALSE)
 
   ## Then we'll create a pair of 1:1 mappings for the context
@@ -227,7 +239,8 @@ context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
 ################################################################################
 ## internals
 
-context_build <- function(packages, sources, auto, package_sources, envir) {
+context_build <- function(packages, sources, auto, package_sources,
+                          unique_value, envir) {
   if (auto) {
     if (!is.null(packages) || !is.null(sources)) {
       stop("Do not specify 'packages' or 'sources' if using auto")
@@ -276,6 +289,7 @@ context_build <- function(packages, sources, auto, package_sources, envir) {
     assert_is(package_sources, "package_sources")
   }
   ret$package_sources <- package_sources
+  ret$unique_value <- unique_value
 
   if (!is.null(envir) && !is.GlobalEnv(envir)) {
     assert_is(envir, "environment")
