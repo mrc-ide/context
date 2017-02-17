@@ -85,9 +85,13 @@ bootstrap_context <- function(args = commandArgs(TRUE),
     options(context.log = TRUE)
   }
   args <- parse_command_args(args, name, n)
-  context_log("bootstrap", Sys_time())
+  context_log("hello", Sys_time())
   context_log("wd", getwd())
-  use_local_library(path_library(args$root), FALSE)
+  if (nzchar(Sys.getenv("CONTEXT_BOOTSTRAP"))) {
+    context_log("bootstrap", "")
+    use_local_library(path_library(args$root), FALSE)
+  }
+
   if (!requireNamespace("context", quietly = TRUE)) {
     stop("Could not find context package; aborting startup")
   }
@@ -106,7 +110,9 @@ use_local_library <- function(lib, create = FALSE) {
     Sys.setenv("R_LIBS_USER" = lib)
     context_log("lib", lib)
   } else {
-    context_log("WARNING", sprintf("*** library not found at %s ***", lib))
+    warning(sprintf("library not found at %s", lib,
+                    call. = FALSE, immediate. = TRUE))
+    context_log("lib", sprintf("warning: library not found at %s", lib))
   }
 }
 

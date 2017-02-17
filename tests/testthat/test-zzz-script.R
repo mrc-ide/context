@@ -76,6 +76,10 @@ test_that("parallel", {
 test_that("manual parallel cluster", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
+
+  Sys.setenv(CONTEXT_BOOTSTRAP = "TRUE")
+  on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
+
   ctx <- context_save(path, sources = "myfuns-parallel.R")
   t <- task_save(quote(manual_parallel_test()), ctx)
 
@@ -117,10 +121,30 @@ test_that("bootstrap", {
   full <- file.path(path_bin(path), "task_run")
   res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
   log <- parse_context_log(res)
+
+  expect_false(any(log$title == "bootstrap"))
+  expect_false(any(log$title == "lib"))
+  expect_equal(task_result(t, ctx), sin(1))
+
+  Sys.setenv(CONTEXT_BOOTSTRAP = "TRUE")
+  on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
+
+  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  log <- parse_context_log(res)
+
+  expect_true(any(log$title == "bootstrap"))
+  expect_true(any(log$title == "lib"))
   expect_equal(trimws(log$value[which(log$title == "lib")]),
                path_library(path))
-
   expect_equal(task_result(t, ctx), sin(1))
+
+  unlink(path_library(path), recursive = TRUE)
+  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  log <- parse_context_log(res)
+
+  i <- which(log$title == "lib")
+  expect_match(log$value[[i]], "library not found at")
+  expect_match(log$body[[i]], "library not found at", all = FALSE)
 })
 
 test_that("provision - source github", {
