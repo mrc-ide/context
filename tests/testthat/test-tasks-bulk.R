@@ -185,3 +185,19 @@ test_that("function-by-value", {
   expect_equal(lapply(ids, task_run, ctx_run), as.list(1:5 * 2))
   expect_equal(lapply(ids, task_result, ctx), as.list(1:5 * 2))
 })
+
+test_that("heterogenous list do_call fails", {
+  expect_error(
+    bulk_prepare_expression_X(list(list(a = 1), list(a = 1, b = 2)), TRUE),
+    "Every element of 'X' must have the same length")
+  expect_error(
+    bulk_prepare_expression_X(list(list(a = 1), list(b = 2)), TRUE),
+    "Elements of 'X' must have the same names")
+})
+
+test_that("invalid function", {
+  db <- storr::storr_environment()
+  expect_error(
+    bulk_prepare_expression(1:4, NULL, NULL, TRUE, FALSE, .GlobalEnv, db),
+      "Expected 'FUN' to be a symbol, fully qualified name or function")
+})

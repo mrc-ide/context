@@ -100,6 +100,9 @@ test_that("assertions", {
   expect_error(assert_character(pi), "must be character")
 
   expect_error(assert_is(1, "R6"), "must inherit from R6")
+
+  expect_error(match_value("a", c("b", "c")),
+               "\"a\" must be one of {b, c}", fixed = TRUE)
 })
 
 test_that("unlist times", {

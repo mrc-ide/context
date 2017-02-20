@@ -102,6 +102,13 @@ test_that("package_sources", {
   expect_equal(obj$packages, list(attached = "kitten", loaded = character(0)))
 })
 
+test_that("invalid package sources", {
+  expect_error(
+    context_save(tempfile(), storage_type = "environment",
+                 package_sources = "http://url.to/mypackage"),
+    "package_sources must inherit from package_sources")
+})
+
 test_that("source files", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
@@ -370,4 +377,20 @@ test_that("last context", {
   ctx1 <- context_save(path, envir = .GlobalEnv)
   ctx1 <- context_load(ctx1, new.env(parent = .GlobalEnv))
   expect_identical(last_loaded_context(), ctx1)
+})
+
+test_that("reload", {
+  Sys.setenv(R_TESTS = "")
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  ctx1 <- context_save(path, sources = "random.R",
+                       storage_type = "environment")
+  ctx2 <- context_load(ctx1, new.env(parent = .GlobalEnv))
+  expect_is(ctx2$envir$x, "numeric")
+  ctx3 <- context_load(ctx2, new.env(parent = .GlobalEnv))
+  expect_identical(ctx3, ctx2)
+  expect_identical(ctx3$envir$x, ctx2$envir$x)
+  ctx4 <- context_load(ctx2, new.env(parent = .GlobalEnv), refresh = TRUE)
+  expect_false(identical(ctx4, ctx2))
+  expect_false(identical(ctx4$envir$x, ctx2$envir$x))
 })

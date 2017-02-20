@@ -29,15 +29,7 @@ task_run <- function(id, context, filename = NULL) {
   context_log("context", context$id)
   context_log("task", id)
 
-  ## TODO: rework the load_context bit; as much as possible try to
-  ## avoid loading the context here, and do it via passing in the id
-  ## here.  That will be simpler and avoid a lot of uneasiness about
-  ## environments.  At the least, make load_context optional!
   dat <- task_load(id, context)
-  if (dat$context_id != context$id) {
-    stop(sprintf("Context mismatch; expected %s, recieved %s",
-                 dat$context_id, context$id))
-  }
 
   context_log("expr", capture.output(print(dat$expr)))
   context_log("start", Sys_time())
