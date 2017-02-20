@@ -53,8 +53,9 @@ context_db_init <- function(path, type, args) {
   if (file.exists(f_config)) {
     config <- readRDS(f_config)
     if (!is.null(type) && !identical(type, config$type)) {
+      config_type <- if (is.function(config$type)) "user" else config$type
       stop(sprintf("Incompatible storage types: requested %s, stored: %s",
-                   type, config$type))
+                   type, config_type))
     }
     if (!is.null(args)) {
       v <- union(names(config$args), names(args))
@@ -79,6 +80,8 @@ context_db_init <- function(path, type, args) {
     }
     db <- context_db_open(path, config, FALSE)
   } else {
+    ## TODO: do some sanity checking here; 'type' must be a function or string
+    ##
     ## This odd construction means that if connecting to the database
     ## fails we're not left in an inconsistent state with a corrupt
     ## context configuration that can't be used.
@@ -100,7 +103,12 @@ context_db_open <- function(path, config, create) {
     create <- FALSE
     config <- readRDS(path_config(path))
   }
-  if (config$type == "environment") {
+  if (is.function(config$type)) {
+    ## TODO: the config script here needs to be able to indicate what
+    ## packages are required so that the bootstrap can happen
+    ## automatically.  Not really sure what that looks like.
+    ret <- do.call(config$type, config$args, quote = TRUE)
+  } else if (config$type == "environment") {
     if (!create) {
       stop("Cannot reconnect to environment storage")
     }
