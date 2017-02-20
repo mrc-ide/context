@@ -142,33 +142,60 @@ main_task_run <- function(args = commandArgs(TRUE)) {
   context_log("hostname", hostname())
   context_log("process", process_id())
   context_log("version", packageVersion("context"))
-  args <- parse_command_args(args, "task_run", c(1L, 1L))
 
+  ## There is no way of doing any error handling if we have not yet
+  ## got the database loaded because we don't even know where things
+  ## are being stored.  So the first step is to get the database
+  ## loaded.
+  ##
+  ## Of course, this means that just parsing arguments (which can
+  ## throw errors) can leave jobs stranded in PENDING.
+  args <- parse_command_args(args, "task_run", c(1L, 1L))
   root <- context_root_get(args$root)
+  db <- root$db
   task_id <- args$args[[1L]]
 
-  context_id <- task_context(task_id, root)
-  if (is.na(context_id)) {
-    stop("No context found for task ", context_id)
+  ## This section here runs the load so that if things go pear shaped
+  ## then we'll at least capture the error and set the task status
+  ## appropriately to ERROR.  Unlikel running the task itself, this
+  ## *always* propagates the error (so Rscript exits with status != 0)
+  ## because this can never be considered an uncontrolled error.
+  warnings <- collector()
+  handler <- function(e) {
+    db$set(task_id, TASK_ERROR, "task_status")
+    trace <- call_trace(0, 3)
+    e$warnings <- warnings$get()
+    e$trace <- trace
+    class(e) <- c("context_task_error", class(e))
+    db$set(task_id, e, "task_results")
   }
-  ctx <- context_load(context_read(context_id, root, root$db),
-                      .GlobalEnv)
+  withCallingHandlers(
+    error = handler,
+    warning = function(e) warnings$add(e),
+    {
+      context_id <- task_context(task_id, root)
+      if (is.na(context_id)) {
+        stop("No context found for task ", context_id)
+      }
+      ctx <- context_load(context_read(context_id, root, root$db),
+                          .GlobalEnv)
 
-  cores <- Sys.getenv("CONTEXT_CORES")
-  if (nzchar(cores) && is.null(context_cache$cl)) {
-    cores <- as.integer(cores)
-    context_log("parallel",
-                sprintf("running as parallel job [%d cores]", cores))
-    parallel_cluster_start(cores, context_read(context_id, root))
-    on.exit(parallel_cluster_stop())
-  } else {
-    context_log("parallel", "running as single core job")
-  }
+      cores <- Sys.getenv("CONTEXT_CORES")
+      if (nzchar(cores) && is.null(context_cache$cl)) {
+        cores <- as.integer(cores)
+        context_log("parallel",
+                    sprintf("running as parallel job [%d cores]", cores))
+        parallel_cluster_start(cores, context_read(context_id, root))
+        on.exit(parallel_cluster_stop())
+      } else {
+        context_log("parallel", "running as single core job")
+      }
+    })
 
+  ## Below here, error handling is done within task_run
   res <- task_run(task_id, ctx)
 
   propagate_error <- toupper(Sys.getenv("CONTEXT_PROPAGATE_ERROR")) == "TRUE"
-
   if (propagate_error && inherits(res, "context_task_error")) {
     stop("Error while running task:\n", attr(res, "condition")$message)
   }

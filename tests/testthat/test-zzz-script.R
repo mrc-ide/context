@@ -198,3 +198,32 @@ test_that("re-provision drat", {
   expect_null(src$local_drat)
   expect_true(src$needs_build())
 })
+
+test_that("failure on startup", {
+  Sys.setenv(R_TESTS = "")
+  path <- tempfile()
+  tmp <- basename(tempfile("myfuns_", fileext = ".R"))
+  file.copy("myfuns.R", tmp)
+  ctx <- context::context_save(path, sources = tmp,
+                               unique_value = ids::random_id())
+
+  ctx <- context::context_load(ctx, new.env(parent = .GlobalEnv))
+  file.remove(tmp)
+
+  ## Now we're ready to see how the scripts do
+  expr <- quote(sin(1))
+  t <- task_save(expr, ctx)
+
+  full <- file.path(path_bin(path), "task_run")
+  res <- suppressWarnings(
+    Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE))
+  expect_gt(attr(res, "status", exact = TRUE), 0)
+
+  expect_equal(task_status(t, ctx), TASK_ERROR)
+  e <- task_result(t, ctx)
+  expect_is(e, "context_task_error")
+  expect_is(e$trace, "character")
+  expect_equal(e$trace[[1]], "context:::main_task_run()")
+  expect_is(e$warnings, "list")
+  expect_true(length(e$warnings) >= 1)
+})
