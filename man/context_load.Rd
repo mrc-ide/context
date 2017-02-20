@@ -10,6 +10,12 @@ context_load(ctx, envir = .GlobalEnv, refresh = FALSE)
 \item{ctx}{A context object, as read by \code{\link{context_read}}}
 
 \item{envir}{The environment to source files into}
+
+\item{refresh}{Refresh the context, even when it has been loaded
+already?  Note that this may not always behave as expected
+because items not created by sourcing an R file will still be
+there from previous runs, and packages loaded will not be
+reloaded in a new order.}
 }
 \description{
 Load a context

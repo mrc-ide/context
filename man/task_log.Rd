@@ -12,6 +12,11 @@ task_log(id, root, parse = TRUE)
 \item{root}{A context root (not just the db as in
 \code{\link{task_result}} as we need to know the actual path to
 the root).  A \code{context} object is also OK.}
+
+\item{parse}{Parse the log output into a \code{context_log}
+object, which will pretty print and can be more easily
+inspected.  If \code{FALSE} then the raw log will be returned as
+a character vector, one element per line of text}
 }
 \description{
 Return the log of a task, if enabled.

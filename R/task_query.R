@@ -105,6 +105,11 @@ task_function_name <- function(ids, db) {
 ##'   \code{\link{task_result}} as we need to know the actual path to
 ##'   the root).  A \code{context} object is also OK.
 ##'
+##' @param parse Parse the log output into a \code{context_log}
+##'   object, which will pretty print and can be more easily
+##'   inspected.  If \code{FALSE} then the raw log will be returned as
+##'   a character vector, one element per line of text
+##'
 ##' @export
 task_log <- function(id, root, parse = TRUE) {
   root <- context_root_get(root)

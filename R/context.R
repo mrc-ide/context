@@ -180,7 +180,14 @@ context_read <- function(identifier, root, db = NULL) {
 ##' Load a context
 ##' @title Load a context
 ##' @param ctx A context object, as read by \code{\link{context_read}}
+##'
 ##' @param envir The environment to source files into
+##'
+##' @param refresh Refresh the context, even when it has been loaded
+##'   already?  Note that this may not always behave as expected
+##'   because items not created by sourcing an R file will still be
+##'   there from previous runs, and packages loaded will not be
+##'   reloaded in a new order.
 ##' @export
 context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
   assert_is(ctx, "context")
