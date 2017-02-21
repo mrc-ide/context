@@ -2,7 +2,7 @@ storage_driver_psql_create <- function(path, id, args) {
   host <- Sys.getenv("CONTEXT_PGHOST", "localhost")
   tbl_data <- sprintf("context_%s_data", id)
   tbl_keys <- sprintf("context_%s_keys", id)
-  con <- DBI::dbConnect(RPostgres::Postgres(), host = host)
+  con <- DBI::dbConnect(RPostgres::Postgres(), host = host, user = "postgres")
   storr::storr_dbi(con = con, tbl_data = tbl_data, tbl_keys = tbl_keys,
                    binary = FALSE, hash_algorithm = "sha1")
 }

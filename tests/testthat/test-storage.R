@@ -13,6 +13,7 @@ test_that("sql", {
 
   expect_equal(ctx$db$driver$type(), "DBI/PqConnection")
   expect_equal(context_root_get(path)$db$driver$type(), "DBI/PqConnection")
+  expect_equal(ctx$packages$loaded, "RPostgres")
 
   expect_error(context_save(path, storage_type = "rds"),
                "Incompatible storage types: requested rds, stored: postgres")

@@ -59,6 +59,12 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
   }
   ret <- context_build(packages, sources, auto, package_sources,
                        unique_value, envir)
+  driver_packages <- db$get("driver_packages", "context_root")
+  if (!is.null(driver_packages) > 0L) {
+    if (!driver_packages %in% unlist(ret$packages)) {
+      ret$packages$loaded <- c(ret$packages$loaded, driver_packages)
+    }
+  }
   id <- db$set_by_value(ret, namespace = "contexts", use_cache = FALSE)
 
   ## Then we'll create a pair of 1:1 mappings for the context

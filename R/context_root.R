@@ -94,6 +94,12 @@ context_db_init <- function(path, type, args) {
                               error = function(e) file.remove(f_id))
     saveRDS(config, f_config)
     context_log("init:path", path)
+    if (is.recursive(config$type)) {
+      driver_packages <- config$type$packages
+    } else {
+      driver_packages <- NULL
+    }
+    db$set("driver_packages", driver_packages, "context_root")
   }
   db
 }
