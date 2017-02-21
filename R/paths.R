@@ -6,10 +6,13 @@ path_db <- function(path_root) {
   file.path(path_root, "db")
 }
 path_config <- function(path_root) {
-  file.path(path_root, "config")
+  file.path(path_root, "context_config")
 }
 path_bin <- function(path_root) {
   file.path(path_root, "bin")
+}
+path_id <- function(path_root) {
+  file.path(path_root, "id")
 }
 
 ## TODO: together with r_platform_name, this needs to deal with the

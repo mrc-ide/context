@@ -49,8 +49,9 @@ context_db_get <- function(root) {
 }
 
 context_db_init <- function(path, type, args) {
+  f_id <- path_id(path)
   f_config <- path_config(path)
-  if (file.exists(f_config)) {
+  if (file.exists(f_id)) {
     config <- readRDS(f_config)
     if (!is.null(type) && !identical(type, config$type)) {
       config_type <- if (is.function(config$type)) "user" else config$type
@@ -80,20 +81,19 @@ context_db_init <- function(path, type, args) {
     }
     db <- context_db_open(path, config, FALSE)
   } else {
+    id <- ids::random_id()
+    context_log("init:id", id)
+    writeLines(id, f_id)
     ## TODO: do some sanity checking here; 'type' must be a function or string
     ##
     ## This odd construction means that if connecting to the database
     ## fails we're not left in an inconsistent state with a corrupt
     ## context configuration that can't be used.
     config <- list(type = type %||% "rds", args = args)
-    saveRDS(config, f_config)
     db <- withCallingHandlers(context_db_open(path, config, TRUE),
-                              error = function(e) file.remove(f_config))
-    ## Need a better name for this; context/environment makes a better
-    ## naming system but that's disruptive now.
-    id <- ids::random_id()
-    db$set("id", id, "_context")
-    context_log("init", sprintf("%s at %s", id, path))
+                              error = function(e) file.remove(f_id))
+    saveRDS(config, f_config)
+    context_log("init:path", path)
   }
   db
 }
@@ -103,45 +103,36 @@ context_db_open <- function(path, config, create) {
     create <- FALSE
     config <- readRDS(path_config(path))
   }
-  if (is.function(config$type)) {
-    ## TODO: the config script here needs to be able to indicate what
-    ## packages are required so that the bootstrap can happen
-    ## automatically.  Not really sure what that looks like.
-    ret <- do.call(config$type, config$args, quote = TRUE)
-  } else if (config$type == "environment") {
-    if (!create) {
-      stop("Cannot reconnect to environment storage")
+  if (is.character(config$type)) {
+    if (config$type == "rds") {
+      driver <- storage_driver_rds()
+    } else if (config$type == "environment") {
+      driver <- storage_driver_environment()
+    } else {
+      stop(sprintf("Unsupported storage type '%s'", config$type))
     }
-    ret <- storr::storr_environment()
-  } else if (config$type == "rds") {
-    defaults <- list(compress = FALSE, mangle_key = TRUE)
-    v <- intersect(names(defaults), names(config$args))
-    args <- c(list(path_db(path)),
-              modifyList(defaults, as.list(config$args[v])))
-    ret <- do.call(storr::storr_rds, args, quote = TRUE)
   } else {
-    ## This is actually a little more difficult than this because
-    ## we need to add any required packages (e.g., redux) to the
-    ## bootstrap script.  That's also going to generate some
-    ## issues with blowing out 'Suggests:' in the package
-    ## perhaps.  For now leave this be.
-    ## redis = storr::storr_redis_api(redux::redis(config = config$args)),
-    ##
-    ## TODO: on any non-RDS storage we'll want to add information
-    ## about additional dependencies needed
-    stop("Unsupported storage type ", config$type)
+    assert_is(config$type, "context_storage_driver", "storage_type")
+    driver <- config$type
   }
-  ret
+  id <- readLines(path_id(path))
+  context_log(sprintf("%s:db", if (create) "init" else "open"), driver$name)
+  db <- driver$create(path, id, config$args)
+  ## This will allow checking when things were created and last used
+  k <- c("opened", if (create) "created")
+  db$mset(k, rep(list(Sys.time()), length(k)), "context_root")
+  db
 }
 
 context_root <- function(path, db = NULL) {
   if (!file.exists(path)) {
     stop("Context root not set up at ", path)
   }
+  id <- readLines(path_id(path))
   if (is.null(db)) {
     db <- context_db_open(path, NULL, NULL)
   }
-  ret <- list(path = path, db = db)
+  ret <- list(id = id, path = path, db = db)
   class(ret) <- "context_root"
   ret
 }
