@@ -199,6 +199,21 @@ test_that("re-provision drat", {
   expect_true(src$needs_build())
 })
 
+test_that("provision with additional library", {
+  skip_if_not_installed("provisionr")
+  path <- tempfile()
+  altlib <- tempfile()
+  on.exit(unlink(c(path, altlib), recursive = TRUE))
+  provisionr::provision_library("ids", altlib, "windows")
+
+  ctx <- context_save(path)
+  res <- provision_context(ctx, "windows", additional_libraries = altlib)
+
+  expect_true("context" %in% dir(path_library(path, "windows")))
+  expect_false("ids" %in% dir(path_library(path, "windows")))
+  expect_true("ids" %in% dir(altlib))
+})
+
 test_that("failure on startup", {
   Sys.setenv(R_TESTS = "")
   path <- tempfile()

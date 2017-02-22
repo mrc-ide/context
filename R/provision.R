@@ -18,7 +18,8 @@
 ##' @export
 provision_context <- function(ctx, platform = NULL, version = NULL,
                               quiet = FALSE, allow_missing = FALSE,
-                              installed_action = "skip") {
+                              installed_action = "skip",
+                              additional_libraries = NULL) {
   loadNamespace("provisionr")
   path_root <- ctx$root$path
   ## TODO: this needs to be fixed to get things from the appropriate
@@ -42,10 +43,13 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
   ## updating.
   packages <- c("context", ctx$packages$attached, ctx$packages$loaded)
 
-  path_lib <- path_library(path_root, platform, version)
+  path_lib <- c(path_library(path_root, platform, version), additional_libraries)
   installed_action <- "skip"
 
-  context_log("provision", sprintf("library at %s", path_lib))
+  context_log("provision", sprintf("library at %s", path_lib[[1L]]))
+  for (p in path_lib[-1]) {
+    context_log("provision", sprintf("additional library at %s", p))
+  }
   res <- provisionr::provision_library(
     packages, path_lib, platform = platform, version = version, src = src,
     check_dependencies = TRUE, installed_action = installed_action,

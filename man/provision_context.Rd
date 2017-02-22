@@ -5,7 +5,8 @@
 \title{Provision a context}
 \usage{
 provision_context(ctx, platform = NULL, version = NULL, quiet = FALSE,
-  allow_missing = FALSE, installed_action = "skip")
+  allow_missing = FALSE, installed_action = "skip",
+  additional_libraries = NULL)
 }
 \arguments{
 \item{ctx}{A context object.  We'll look in here for packages to install.}
