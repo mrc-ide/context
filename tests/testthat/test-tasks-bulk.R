@@ -9,7 +9,7 @@ test_that("prepare; single arg", {
 
 test_that("prepare; named single arg", {
   x <- setNames(1:4, letters[1:4])
-  cmp <- lapply(unname(x), function(el) list(expr = bquote(foo(.(el)))))
+  cmp <- lapply(x, function(el) list(expr = bquote(foo(.(el)))))
   expect_equal(bulk_prepare_expression(x, quote(foo), NULL, TRUE, FALSE), cmp)
   expect_equal(bulk_prepare_expression(x, quote(foo), NULL, FALSE, FALSE), cmp)
 })
@@ -118,6 +118,21 @@ test_that("named", {
   ids <- bulk_task_save(x, quote(sin), ctx)
   expect_is(ids, "character")
   expect_equal(names(ids), names(x))
+})
+
+test_that("data.frame", {
+  df <- data.frame(a = 1:5, b = runif(5))
+  ctx <- context_save(tempfile(), storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+
+  ids <- bulk_task_save(df, quote(foo), ctx)
+  expect_is(ids, "character")
+  expect_null(names(ids))
+
+  rownames(df) <- letters[seq_len(nrow(df))]
+  ids <- bulk_task_save(df, quote(foo), ctx)
+  expect_is(ids, "character")
+  expect_equal(names(ids), rownames(df))
 })
 
 test_that("bulk, multiple arguments", {

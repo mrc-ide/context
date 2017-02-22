@@ -55,7 +55,7 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
             rep(list(context$id), n),
             rep(list(Sys.time()), n))
   db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
-  setNames(ids, names(X))
+  setNames(ids, names(dat))
 }
 
 bulk_prepare_expression_X <- function(X, do_call, use_names) {
@@ -68,7 +68,7 @@ bulk_prepare_expression_X <- function(X, do_call, use_names) {
     }
     X <- df_to_list(X, use_names || !do_call)
   } else if (is.atomic(X) && !is.null(X)) {
-    X <- as.list(unname(X))
+    X <- setNames(as.list(unname(X)), names(X))
   } else if (is.list(X)) {
     if (do_call) {
       lens <- lengths(X)
@@ -139,7 +139,7 @@ do_bulk_prepare_expression <- function(X, FUN, DOTS, do_call, envir, db) {
     template
   }
 
-  lapply(X, rewrite_expr)
+  setNames(lapply(X, rewrite_expr), names(X))
 }
 
 bulk_callable <- function(FUN) {
