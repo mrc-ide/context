@@ -1,12 +1,3 @@
-env_chain <- function(e, stop_at=list(.GlobalEnv, emptyenv())) {
-  ret <- list()
-  while (!any(vlapply(stop_at, identical, e))) {
-    ret <- c(ret, e)
-    e <- parent.env(e)
-  }
-  c(ret, e)
-}
-
 cleanup <- function(root) {
   if (file.exists(path_config(root))) {
     db <- tryCatch(context_db_get(root), error = function(e) NULL)
@@ -22,20 +13,6 @@ cleanup <- function(root) {
   context_cache$last_loaded_context <- NULL
 }
 
-skip_if_no_fork <- function() {
-  if (exists("mcfork", getNamespace("parallel"))) {
-    return()
-  }
-  stop("Fork is not available")
-}
-
 missing_time <- function(n = 1) {
   Sys.time()[rep(NA, n)]
-}
-
-## Don't download when we're running locally, please.
-if (Sys.info()[["user"]] == "rich") {
-  if (file.exists("../../DESCRIPTION")) {
-    Sys.setenv("CONTEXT_SOURCE_PATH" = normalizePath("../../"))
-  }
 }

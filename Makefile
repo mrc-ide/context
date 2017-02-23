@@ -1,11 +1,10 @@
 PACKAGE := $(shell grep '^Package:' DESCRIPTION | sed -E 's/^Package:[[:space:]]+//')
 RSCRIPT = Rscript --no-init-file
-CONTEXT_SOURCE_PATH=${PWD}
 
 all: install
 
 test:
-	CONTEXT_SOURCE_PATH=${CONTEXT_SOURCE_PATH} ${RSCRIPT} -e 'library(methods); devtools::test()'
+	${RSCRIPT} -e 'library(methods); devtools::test()'
 
 roxygen:
 	@mkdir -p man
@@ -36,7 +35,7 @@ vignettes/src/context.Rmd: vignettes/src/context.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 
 vignettes/context.Rmd: vignettes/src/context.Rmd
-	cd vignettes/src && CONTEXT_SOURCE_PATH=${CONTEXT_SOURCE_PATH} ${RSCRIPT} -e 'knitr::knit("context.Rmd")'
+	cd vignettes/src && ${RSCRIPT} -e 'knitr::knit("context.Rmd")'
 	mv vignettes/src/context.md $@
 	sed -i.bak 's/[[:space:]]*$$//' $@
 	rm -f $@.bak
