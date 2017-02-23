@@ -32,3 +32,21 @@ test_that("function values", {
 
   expect_equal(eval(dat$expr, e2), 3)
 })
+
+test_that("find_symbols", {
+  expect_equal(find_symbols(quote(foo(x, ids::random_id))), "x")
+  expect_equal(find_symbols(quote(foo(x, ids::random_id()))), "x")
+  expect_equal(find_symbols(quote(foo(x, ids::random_id(a, b)))),
+               c("x", "a", "b"))
+})
+
+test_that("namespace qualified functions as arguments", {
+  db <- storr::storr_environment()
+  e <- new.env(parent = environment())
+  e$x <- pi
+  expr <- quote(foo(x, ids::random_id))
+
+  dat <- prepare_expression(expr, e, db)
+  expect_equal(dat$expr, expr)
+  expect_equal(dat$objects, c(x = db$hash_object(e$x)))
+})

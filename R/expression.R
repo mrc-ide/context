@@ -125,7 +125,7 @@ find_symbols <- function(expr, hide_errors = TRUE) {
         return()
       }
       symbols <<- c(symbols, deparse(e))
-    } else {
+    } else if (!identical(e[[1]], quote(`::`))) {
       for (a in as.list(e[-1])) {
         if (!missing(a)) {
           f(a)
