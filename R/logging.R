@@ -22,7 +22,7 @@ context_log_start <- function() {
 ##' @export
 ##' @rdname context_log
 context_log_stop <- function() {
-  options(context.log = NULL)
+  invisible(isTRUE(options(context.log = NULL)$context.log))
 }
 
 ##' Send an entry to the context log.  This is designed primarily for

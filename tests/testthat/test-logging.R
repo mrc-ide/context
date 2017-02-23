@@ -44,3 +44,12 @@ test_that("parse failed log", {
   expect_equal(dat$str, "<top level error>", fixed = TRUE)
   expect_output(print(dat), "Error in bootstrap_context")
 })
+
+test_that("start and stop", {
+  on.exit(context_log_stop())
+  options(context.log = NULL)
+  expect_false(context_log_start())
+  expect_true(context_log_start())
+  expect_true(context_log_stop())
+  expect_false(context_log_stop())
+})
