@@ -6,7 +6,7 @@ context("tasks")
 test_that("tasks in empty context", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
-  ctx <- context_save(path, auto = TRUE)
+  ctx <- context_save(path)
 
   expect_equal(task_list(ctx), character(0))
   expect_equal(task_list(path), character(0))
@@ -56,7 +56,7 @@ test_that("tasks in empty context", {
 test_that("single task", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
-  ctx <- context_save(path, auto = TRUE)
+  ctx <- context_save(path)
 
   expr <- quote(sin(1))
   t <- task_save(expr, ctx)
@@ -117,7 +117,7 @@ test_that("task_delete (single)", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
 
-  ctx <- context_save(path, auto = TRUE)
+  ctx <- context_save(path, storage_type = "environment")
 
   expr <- quote(sin(1))
   t <- task_save(expr, ctx)
@@ -135,7 +135,7 @@ test_that("task_delete (multiple)", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
 
-  ctx <- context_save(path, auto = TRUE)
+  ctx <- context_save(path, storage_type = "environment")
 
   expr <- quote(sin(1))
   t1 <- task_save(expr, ctx)

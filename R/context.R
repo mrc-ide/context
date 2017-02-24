@@ -12,15 +12,11 @@
 ##'   should define functions and (perhaps) other "global" objects,
 ##'   but should not do any serious computation.
 ##'
-##' @param auto Attempt to create the context automatically.  In this
-##'   case, do not specify either \code{packages} or \code{sources}.
-##'
 ##' @param package_sources Optional information about where to find
 ##'   non-CRAN packages.
 ##'
 ##' @param envir The current environment.  This is used to copy
-##'   \emph{local} enviroments around, as these are needed even in the
-##'   case of non-automatic contexts.  For \code{context_load} this is
+##'   \emph{local} variables around.  For \code{context_load} this is
 ##'   the environment into which the global environment is copied.
 ##'   Specify a non-global environment here to avoid clobbering the
 ##'   workspace, but at the risk that some environments may not
@@ -48,7 +44,7 @@
 ##'   choice.
 ##'
 ##' @export
-context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
+context_save <- function(path, packages = NULL, sources = NULL,
                          package_sources = NULL, envir = NULL,
                          storage_type = NULL, storage_args = NULL,
                          name = NULL, unique_value = NULL) {
@@ -57,7 +53,7 @@ context_save <- function(path, packages = NULL, sources = NULL, auto = FALSE,
   if (!is.null(package_sources)) {
     assert_is(package_sources, "package_sources")
   }
-  ret <- context_build(packages, sources, auto, package_sources,
+  ret <- context_build(packages, sources, package_sources,
                        unique_value, envir)
   driver_packages <- db$get("driver_packages", "context_root")
   if (!is.null(driver_packages) > 0L) {
@@ -231,11 +227,6 @@ context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
     source(s, envir)
   }
 
-  if (!is.null(ctx$global)) {
-    context_log("global", "")
-    deserialise_image(ctx$global, envir = envir)
-  }
-
   ## I am really not sure tht this is a sensible thing to be doing.
   ## The context should probably not capture the local environment on
   ## save?
@@ -266,50 +257,38 @@ last_loaded_context <- function(error = TRUE) {
 ################################################################################
 ## internals
 
-context_build <- function(packages, sources, auto, package_sources,
+context_build <- function(packages, sources, package_sources,
                           unique_value, envir) {
-  if (auto) {
-    if (!is.null(packages) || !is.null(sources)) {
-      stop("Do not specify 'packages' or 'sources' if using auto")
+  if (is.null(packages)) {
+    packages <- character(0)
+  }
+  if (is.character(packages)) {
+    packages <- list(attached = packages, loaded = character(0))
+  } else if (is.list(packages)) {
+    unk <- setdiff(names(packages), c("loaded", "attached"))
+    if (length(unk) > 0L) {
+      stop("Unknown names for 'packages': ", paste(unk, collapse = ", "))
     }
-    if (!is.null(envir)) {
-      stop("FIXME")
+    if (!all(vlapply(packages, is.character))) {
+      stop("All elements of 'packages' must be a character vector")
     }
-    ret <- list(
-      packages = detect_loaded_packages(),
-      global = serialise_image())
+    packages <- modifyList(list(attached = character(0),
+                                loaded = character(0)),
+                           packages)
   } else {
-    if (is.null(packages)) {
-      packages <- character(0)
-    }
-    if (is.character(packages)) {
-      packages <- list(attached = packages, loaded = character(0))
-    } else if (is.list(packages)) {
-      unk <- setdiff(names(packages), c("loaded", "attached"))
-      if (length(unk) > 0L) {
-        stop("Unknown names for 'packages': ", paste(unk, collapse = ", "))
-      }
-      if (!all(vlapply(packages, is.character))) {
-        stop("All elements of 'packages' must be a character vector")
-      }
-      packages <- modifyList(list(attached = character(0),
-                                  loaded = character(0)),
-                             packages)
-    } else {
-      stop("Incorrect type for 'packages'")
-    }
-    ret <- list(packages = packages)
-    if (!is.null(sources)) {
-      ## Here, we _do_ need to check that all source files are
-      ## *relative* paths, and we'll need to arrange to copy things
-      ## around as approriate.  I'll punt on that for now as it's going
-      ## to take a little work to get that all happy, and requires some
-      ## of the things in pathr that aren't done yet.
-      ##
-      ## Files must be relative to R's working directory for this to
-      ## have any chance of working.
-      ret$sources <- relative_paths(sources)
-    }
+    stop("Incorrect type for 'packages'")
+  }
+  ret <- list(packages = packages)
+  if (!is.null(sources)) {
+    ## Here, we _do_ need to check that all source files are
+    ## *relative* paths, and we'll need to arrange to copy things
+    ## around as approriate.  I'll punt on that for now as it's going
+    ## to take a little work to get that all happy, and requires some
+    ## of the things in pathr that aren't done yet.
+    ##
+    ## Files must be relative to R's working directory for this to
+    ## have any chance of working.
+    ret$sources <- relative_paths(sources)
   }
 
   if (!is.null(package_sources)) {
@@ -319,13 +298,13 @@ context_build <- function(packages, sources, auto, package_sources,
   ret$unique_value <- unique_value
 
   if (!is.null(envir) && !is.GlobalEnv(envir)) {
+    ## TODO: this section needs careful testing!
     assert_is(envir, "environment")
     ## TODO: I don't think that this is a good idea, and does not
     ## match how this is being used.  OTOH, some sort of ability to
     ## *properly* export environments will be useful for Jeff's case.
     ret$local <- envir
   }
-  ret$auto <- auto
   class(ret) <- "context"
   ret
 }
@@ -340,24 +319,6 @@ context_name <- function(name) {
     }
   }
   name
-}
-
-## This is going to be horrid to test because it really requires
-## tweaking the search path and dealing with that terrible way that
-## the R CMD check tests work.  Better would be to mock sessionInfo
-## data so that we can create a few sensible mock ups and send that
-## through.
-detect_loaded_packages <- function(info = sessionInfo()) {
-  loaded_only <- info[["loadedOnly"]]
-
-  loaded <- names(loaded_only)[!vlapply(loaded_only, function(x)
-    identical(x$Priority, "base"))]
-  attached <- names(info[["otherPkgs"]])
-  ## This is defensive: ?sessionInfo does not make any guarantees
-  ## about package loading.
-  ord <- sub("^package:", "", search())
-  attached <- attached[rank(match(attached, ord))]
-  list(loaded = loaded, attached = attached)
 }
 
 ## Shortest hashes in storr are 32 characters

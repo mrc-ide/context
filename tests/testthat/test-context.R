@@ -53,30 +53,18 @@ test_that("load contexts", {
 
   dat <- context_read(ctx$id, path)
   expect_is(dat, "context")
-  v <- c("name", "id", "packages", "auto")
+  v <- c("name", "id", "packages")
   expect_equal(dat[v], ctx[v])
 
   dat <- context_read(ctx$name, path)
   expect_is(dat, "context")
-  v <- c("name", "id", "packages", "auto")
+  v <- c("name", "id", "packages")
   expect_equal(dat[v], ctx[v])
 
   obj <- context_load(ctx, envir = new.env())
   expect_is(obj, "context")
   expect_is(obj$envir, "environment")
   expect_equal(ls(obj$envir), character(0))
-})
-
-test_that("auto", {
-  ## TODO: consider dropping auto entirely?
-  path <- tempfile("cluster_")
-  on.exit(cleanup(path))
-
-  ctx <- context_save(path, auto = TRUE)
-  expect_true(ctx$db$exists(ctx$id, "contexts"))
-  expect_true(ctx$db$driver$exists_object(ctx$id))
-  expect_null(ctx$local)# should be environment if done correctly
-  expect_is(ctx$global, "raw")
 })
 
 test_that("package_sources", {
@@ -126,32 +114,6 @@ test_that("source files", {
 
   ctx <- context_save(path, sources = src)
   expect_equal(ctx$sources, src)
-})
-
-## Issues saving global environments: This does not tickle the problem
-## unfortunately.
-test_that("globals", {
-  path <- tempfile()
-  on.exit(cleanup(path))
-  vars <- setdiff(names(.GlobalEnv), ".Random.seed")
-
-  .GlobalEnv$t <- 1
-  on.exit(rm(list = "t", envir = .GlobalEnv), add = TRUE)
-  dat <- serialise_image()
-
-  e <- new.env()
-  v <- deserialise_image(dat, envir = e)
-  expect_equal(sort(v), sort(c("t", vars)))
-  expect_equal(e$t, 1)
-
-  ## But this *should* do badly in the buggy version I'm looking at
-  ## but does not seem to right now:
-  f <- function() {
-    serialise_image()
-  }
-  environment(f) <- environment(serialise_image)
-  dat2 <- f()
-  expect_equal(dat2, dat)
 })
 
 test_that("storage type", {
@@ -280,17 +242,6 @@ test_that("name can't be id", {
 
   expect_error(context_save(path, name = ids::random_id(), envir = .GlobalEnv),
                "name cannot be an id")
-})
-
-test_that("auto does not allow package listing", {
-  path <- tempfile("cluster_")
-  on.exit(cleanup(path))
-  expect_error(context_save(path, auto = TRUE, packages = "testthat",
-                            envir = .GlobalEnv),
-               "Do not specify 'packages' or 'sources' if using auto")
-  expect_error(context_save(path, auto = TRUE, sources = "myfuns.R",
-                            envir = .GlobalEnv),
-               "Do not specify 'packages' or 'sources' if using auto")
 })
 
 test_that("non-attached packages", {

@@ -4,7 +4,7 @@
 \alias{context_save}
 \title{Save a context}
 \usage{
-context_save(path, packages = NULL, sources = NULL, auto = FALSE,
+context_save(path, packages = NULL, sources = NULL,
   package_sources = NULL, envir = NULL, storage_type = NULL,
   storage_args = NULL, name = NULL, unique_value = NULL)
 }
@@ -20,15 +20,11 @@ packages are loaded but not attached.}
 should define functions and (perhaps) other "global" objects,
 but should not do any serious computation.}
 
-\item{auto}{Attempt to create the context automatically.  In this
-case, do not specify either \code{packages} or \code{sources}.}
-
 \item{package_sources}{Optional information about where to find
 non-CRAN packages.}
 
 \item{envir}{The current environment.  This is used to copy
-\emph{local} enviroments around, as these are needed even in the
-case of non-automatic contexts.  For \code{context_load} this is
+\emph{local} variables around.  For \code{context_load} this is
 the environment into which the global environment is copied.
 Specify a non-global environment here to avoid clobbering the
 workspace, but at the risk that some environments may not

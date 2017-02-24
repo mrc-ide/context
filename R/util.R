@@ -20,15 +20,6 @@ is.GlobalEnv <- function(x) {
   identical(x, .GlobalEnv)
 }
 
-file_remove <- function(...) {
-  files <- c(...)
-  ok <- file.exists(files)
-  if (any(ok)) {
-    file.remove(files[ok])
-  }
-  ok
-}
-
 print_ad_hoc <- function(x) {
   cl <- class(x)[[1]]
   xp <- unclass(x)
@@ -87,33 +78,6 @@ r_version <- function(n) {
     stop("Invalid n")
   }
   getRversion()[1, seq_len(n)]
-}
-
-## Like save.image but:
-##
-##   - save into a raw vector
-##   - exclude .Random.seed
-##
-## It does involve a potentially unnecessary disk round trip, but
-## based on wch's benchmarks that's probably the fastest thing anyway.
-serialise_image <- function() {
-  exclude <- ".Random.seed"
-  tmp <- tempfile()
-  on.exit(file_remove(tmp))
-  save(list = setdiff(names(.GlobalEnv), exclude), envir = .GlobalEnv,
-       file = tmp)
-  read_binary(tmp)
-}
-
-deserialise_image <- function(bin, ...) {
-  tmp <- tempfile()
-  on.exit(file_remove(tmp))
-  writeBin(bin, tmp)
-  load(tmp, ...)
-}
-
-read_binary <- function(filename) {
-  readBin(filename, raw(), file.size(filename))
 }
 
 capture_log <- function(expr, filename) {

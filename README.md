@@ -34,12 +34,6 @@ A context includes:
 
 In addition, the expression may have local variables.
 
-### Environments
-
-Local and global environments may be saved by the contexts when using `auto=TRUE`.  These will be saved into `<path>/environments/<md5>` where `<md5>` is the md5 sum of the saved file (content addressable).  Note that the global environment is saved as an *image* while the local environment is serialised as a single object.
-
-This may do slightly weird things with complicated interactions between local and global objects and their environments, in which cases users should not use the automatic context generation.  Things like C/C++ pointers, Rcpp/RcppR6 reference objects will also be badly affected.
-
 # Packages
 
 Coordinating package installation on remote machines turns out to be a bit horrible, especially when you only want packages installed if they are not already there (hence all the constructs like `if (!require(pkg)) install.packages(pkg)...` that tend to litter scripts.  This situation is compounded if some packages are to come from non-CRAN repositories (e.g., unstable versions, research code, etc).
