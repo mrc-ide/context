@@ -115,31 +115,33 @@ test_that("bootstrap", {
   ctx <- context_save(path)
   provision_context(ctx, quiet = TRUE)
 
-  t <- task_save(quote(sin(1)), ctx)
+  t1 <- task_save(quote(sin(1)), ctx)
+  t2 <- task_save(quote(sin(2)), ctx)
+  t3 <- task_save(quote(sin(3)), ctx)
 
   ## Need to provision this context.
   full <- file.path(path_bin(path), "task_run")
-  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  res <- Rscript(c(full, path, t1), stdout = TRUE, stderr = TRUE)
   log <- parse_context_log(res)
 
   expect_false(any(log$title == "bootstrap"))
   expect_false(any(log$title == "lib"))
-  expect_equal(task_result(t, ctx), sin(1))
+  expect_equal(task_result(t1, ctx), sin(1))
 
   Sys.setenv(CONTEXT_BOOTSTRAP = "TRUE")
   on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
 
-  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  res <- Rscript(c(full, path, t2), stdout = TRUE, stderr = TRUE)
   log <- parse_context_log(res)
 
   expect_true(any(log$title == "bootstrap"))
   expect_true(any(log$title == "lib"))
   expect_equal(trimws(log$value[which(log$title == "lib")]),
                path_library(path))
-  expect_equal(task_result(t, ctx), sin(1))
+  expect_equal(task_result(t2, ctx), sin(2))
 
   unlink(path_library(path), recursive = TRUE)
-  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  res <- Rscript(c(full, path, t3), stdout = TRUE, stderr = TRUE)
   log <- parse_context_log(res)
 
   i <- which(log$title == "lib")
