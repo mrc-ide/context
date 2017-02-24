@@ -28,7 +28,9 @@ non-CRAN packages.}
 the environment into which the global environment is copied.
 Specify a non-global environment here to avoid clobbering the
 workspace, but at the risk that some environments may not
-restore exactly as desired.}
+restore exactly as desired.  If this is used, then every new R
+session, running \code{context_save} will create a new context
+id.}
 
 \item{storage_type}{Character vector indicating the storage type
 to use.  Options are \code{"rds"} (the default) and

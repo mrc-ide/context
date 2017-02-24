@@ -14,6 +14,8 @@ test_that("simplest case", {
   ctx <- context_save(path, envir = .GlobalEnv)
   expect_is(ctx, "context")
 
+  expect_null(ctx$local)
+
   expect_true(is_id(ctx$id), "character")
   expect_is(ctx$db, "storr")
   expect_identical(ctx$root$path, path)
@@ -344,4 +346,22 @@ test_that("reload", {
   ctx4 <- context_load(ctx2, new.env(parent = .GlobalEnv), refresh = TRUE)
   expect_false(identical(ctx4, ctx2))
   expect_false(identical(ctx4$envir$x, ctx2$envir$x))
+})
+
+test_that("local", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  e1 <- new.env(parent = environment())
+  e1$x <- 1
+
+  ctx <- context_save(path, envir = e1, sources = "myfuns.R")
+  expect_is(ctx, "context")
+  expect_is(ctx$local, "environment")
+
+  e2 <- new.env(parent = environment())
+  res <- context_load(ctx, envir = e2)
+
+  expect_equal(ls(res$envir), "x")
+  expect_true("loop" %in% ls(parent.env(res$envir)))
+  expect_identical(e2, parent.env(res$envir))
 })

@@ -20,7 +20,9 @@
 ##'   the environment into which the global environment is copied.
 ##'   Specify a non-global environment here to avoid clobbering the
 ##'   workspace, but at the risk that some environments may not
-##'   restore exactly as desired.
+##'   restore exactly as desired.  If this is used, then every new R
+##'   session, running \code{context_save} will create a new context
+##'   id.
 ##'
 ##' @param storage_type Character vector indicating the storage type
 ##'   to use.  Options are \code{"rds"} (the default) and
@@ -53,6 +55,10 @@ context_save <- function(path, packages = NULL, sources = NULL,
   if (!is.null(package_sources)) {
     assert_is(package_sources, "package_sources")
   }
+  if (!is.null(envir)) {
+    assert_is(envir, "environment")
+  }
+
   ret <- context_build(packages, sources, package_sources,
                        unique_value, envir)
   driver_packages <- db$get("driver_packages", "context_root")
@@ -203,16 +209,6 @@ context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
   }
   context_log("context", ctx$id)
 
-  ## TODO: here, install *missing* packages for the current
-  ## environment.  This was originally intended for the case where
-  ## we'd spin things up remotely, so this is not very high
-  ## priority, really.
-  ##
-  ## We'll let '...' be used here I think.
-  ##
-  ## In this case we'd be looking to do a installation into the
-  ## default library and do missing packages only by default.
-
   context_log("library", paste0(ctx$packages$attached, collapse = ", "))
   for (p in rev(setdiff(ctx$packages$attached, .packages()))) {
     library(p, character.only = TRUE)
@@ -227,15 +223,14 @@ context_load <- function(ctx, envir = .GlobalEnv, refresh = FALSE) {
     source(s, envir)
   }
 
-  ## I am really not sure tht this is a sensible thing to be doing.
-  ## The context should probably not capture the local environment on
-  ## save?
   if (!is.null(ctx$local)) {
     context_log("local", "")
-    ctx$envir <- ctx$local
-  } else {
-    ctx$envir <- envir
+    envir <- new.env(parent = envir)
+    for (i in names(ctx$local)) {
+      envir[[i]] <- ctx$local[[i]]
+    }
   }
+  ctx$envir <- envir
 
   context_cache$last_loaded_context <- ctx
 
@@ -278,7 +273,9 @@ context_build <- function(packages, sources, package_sources,
   } else {
     stop("Incorrect type for 'packages'")
   }
-  ret <- list(packages = packages)
+  ret <- list(packages = packages,
+              package_sources = package_sources,
+              unique_value = unique_value)
   if (!is.null(sources)) {
     ## Here, we _do_ need to check that all source files are
     ## *relative* paths, and we'll need to arrange to copy things
@@ -291,20 +288,10 @@ context_build <- function(packages, sources, package_sources,
     ret$sources <- relative_paths(sources)
   }
 
-  if (!is.null(package_sources)) {
-    assert_is(package_sources, "package_sources")
-  }
-  ret$package_sources <- package_sources
-  ret$unique_value <- unique_value
-
   if (!is.null(envir) && !is.GlobalEnv(envir)) {
-    ## TODO: this section needs careful testing!
-    assert_is(envir, "environment")
-    ## TODO: I don't think that this is a good idea, and does not
-    ## match how this is being used.  OTOH, some sort of ability to
-    ## *properly* export environments will be useful for Jeff's case.
     ret$local <- envir
   }
+
   class(ret) <- "context"
   ret
 }
