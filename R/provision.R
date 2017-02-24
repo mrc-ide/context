@@ -27,10 +27,9 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
                               additional_libraries = NULL) {
   loadNamespace("provisionr")
   path_root <- ctx$root$path
-  ## TODO: this needs to be fixed to get things from the appropriate
-  ## place; the dide-tools drat will be a decent spot I think.
-  url_context <-
-    paste0("file://", normalizePath("~/Documents/Projects/epi/cluster/drat"))
+  ## This can be used to put onto the shared drive (in didehpc/drat)
+  ## so that installation can be further sped up.
+  url_context <- getOption("context.drat", "drat://dide-tools")
   if (is.null(ctx$package_sources)) {
     src <- provisionr::package_sources(repos = url_context)
   } else {
