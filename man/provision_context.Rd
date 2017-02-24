@@ -22,6 +22,11 @@ skipped over?  If \code{TRUE} you'll need to sort these out
 yourself.}
 
 \item{installed_action}{Action if packages are installed}
+
+\item{additional_libraries}{Character vector of additiona
+libraries to pass through to \code{provisionr}.  Packages here
+will be counted when determining what to install and upgrade
+(based on \code{installed_action}).}
 }
 \description{
 Provision a context

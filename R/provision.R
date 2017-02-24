@@ -15,6 +15,11 @@
 ##'
 ##' @param installed_action Action if packages are installed
 ##'
+##' @param additional_libraries Character vector of additiona
+##'   libraries to pass through to \code{provisionr}.  Packages here
+##'   will be counted when determining what to install and upgrade
+##'   (based on \code{installed_action}).
+##'
 ##' @export
 provision_context <- function(ctx, platform = NULL, version = NULL,
                               quiet = FALSE, allow_missing = FALSE,
