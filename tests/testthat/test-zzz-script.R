@@ -242,3 +242,50 @@ test_that("failure on startup", {
   expect_is(e$warnings, "list")
   expect_true(length(e$warnings) >= 1)
 })
+
+test_that("load packages", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  packages <- c("knitr", "rmarkdown")
+  ctx <- context_save(path, packages = packages)
+  expr <- quote(sessionInfo())
+  t <- task_save(expr, ctx)
+  full <- file.path(path_bin(path), "task_run")
+  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+
+  ans <- parse_context_log(res)
+  i <- which(ans$title == "library")
+  expect_equal(length(i), 1)
+  expect_equal(trimws(ans$value[[i]]), paste(packages, collapse = ", "))
+
+  i <- which(ans$title == "namespace")
+  expect_equal(length(i), 1)
+  expect_equal(trimws(ans$value[[i]]), "")
+
+  info <- task_result(t, path)
+  expect_true(all(packages %in% names(info$otherPkgs)))
+})
+
+test_that("load namespaces", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  packages <- c("knitr", "rmarkdown")
+  ctx <- context_save(path, packages = list(loaded = packages))
+  expr <- quote(sessionInfo())
+  t <- task_save(expr, ctx)
+  full <- file.path(path_bin(path), "task_run")
+  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+
+  ans <- parse_context_log(res)
+
+  i <- which(ans$title == "library")
+  expect_equal(length(i), 1)
+  expect_equal(trimws(ans$value[[i]]), "")
+
+  i <- which(ans$title == "namespace")
+  expect_equal(length(i), 1)
+  expect_equal(trimws(ans$value[[i]]), paste(packages, collapse = ", "))
+
+  info <- task_result(t, path)
+  expect_true(all(packages %in% names(info$loadedOnly)))
+})
