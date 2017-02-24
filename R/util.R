@@ -2,6 +2,7 @@
 ##' @importFrom stats na.omit setNames
 ##'
 ##' @importFrom utils capture.output modifyList packageVersion sessionInfo
+##'   limitedLabels
 NULL
 
 ## Typed sapply
