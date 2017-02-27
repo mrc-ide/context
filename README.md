@@ -1,6 +1,9 @@
 # context
 
-[![Build Status](https://travis-ci.org/dide-tools/context.png?branch=master)](https://travis-ci.org/dide-tools/context)
+[![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
+[![Travis-CI Build Status](https://travis-ci.org/dide-tools/context.svg?branch=master)](https://travis-ci.org/dide-tools/context)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/dide-tools/context?branch=master&svg=true)](https://ci.appveyor.com/project/dide-tools/context)
+[![codecov.io](https://codecov.io/github/dide-tools/context/coverage.svg?branch=master)](https://codecov.io/github/dide-tools/context?branch=master)
 
 > Contexts for evaluating R expressions
 

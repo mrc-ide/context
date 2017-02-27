@@ -12,3 +12,4 @@ docker
 ^inst/web$
 ^inst/staticdocs$
 ^\.lintr$
+^appveyor\.yml$
