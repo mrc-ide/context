@@ -29,7 +29,7 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
   path_root <- ctx$root$path
   ## This can be used to put onto the shared drive (in didehpc/drat)
   ## so that installation can be further sped up.
-  url_context <- getOption("context.drat", "drat://dide-tools")
+  url_context <- getOption("context.drat", "https://dide-tools.github.io/drat/")
   if (is.null(ctx$package_sources)) {
     src <- provisionr::package_sources(repos = url_context)
   } else {
