@@ -76,3 +76,39 @@ test_that("library path", {
   expect_equal(path_library(path, version = "1.2.3"),
                file.path(path, "lib", r_platform_name(), "1.2"))
 })
+
+test_that("driver packages", {
+  storage_driver_rds2_create <- function(path, id, args) {
+    .GlobalEnv$.test <- c(.GlobalEnv$.test, ids::random_id())
+    storr::storr_rds(path_db(path), compress = FALSE, mangle_key = FALSE)
+  }
+  environment(storage_driver_rds2_create) <- .GlobalEnv
+  storage_driver_rds2 <- storage_driver("rds2", storage_driver_rds2_create,
+                                        "ids")
+  .GlobalEnv$.test <- NULL
+
+  context_log_start()
+  path <- tempfile("cluster_")
+  on.exit({
+    unlink(path, recursive = TRUE)
+    rm(".test", .GlobalEnv)
+  })
+
+  on.exit(cleanup(path))
+  ctx <- context_save(path,
+                      packages = list(attached = "ape", loaded = "storr"),
+                      storage_type = storage_driver_rds2)
+
+  expect_equal(ctx$db$get("driver_packages", "context_root"), "ids")
+  expect_equal(ctx$packages$attached, "ape")
+  expect_equal(ctx$packages$loaded, c("storr", "ids"))
+
+  id <- .GlobalEnv$.test
+  expect_equal(length(id), 1)
+  expect_true(is_id(id))
+
+  tmp <- context_root_get(path)
+  id2 <- .GlobalEnv$.test
+  expect_equal(length(id2), 2)
+  expect_true(is_id(id2[[2]]))
+})

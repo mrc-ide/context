@@ -2,6 +2,7 @@ storage_driver <- function(name, create, packages = NULL) {
   if (!is.null(packages)) {
     assert_character(packages)
   }
+  assert_function(create)
   ret <- list(name = name,
               create = create,
               packages = packages)

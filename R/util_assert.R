@@ -29,6 +29,12 @@ assert_is <- function(x, type, name = deparse(substitute(x))) {
   }
 }
 
+assert_function <- function(x, name = deparse(substitute(x))) {
+  if (!is.function(x)) {
+    stop(sprintf("%s must be a function", name), call. = FALSE)
+  }
+}
+
 match_value <- function(x, choices, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)
   i <- match(x, choices)

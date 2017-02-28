@@ -103,6 +103,9 @@ test_that("assertions", {
 
   expect_error(match_value("a", c("b", "c")),
                "\"a\" must be one of {b, c}", fixed = TRUE)
+
+  expect_error(assert_function(NULL, "foo"),
+               "foo must be a function")
 })
 
 test_that("unlist times", {
