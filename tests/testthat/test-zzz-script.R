@@ -149,6 +149,21 @@ test_that("bootstrap", {
   expect_match(log$body[[i]], "library not found at", all = FALSE)
 })
 
+test_that("package sources serialise properly", {
+  skip_if_not_installed("provisionr")
+  path <- tempfile()
+  src <- provisionr::package_sources(local = "hello")
+
+  ctx <- context_save(path, packages = "hello", package_sources = src)
+
+  expect_is(ctx$package_sources, "package_sources")
+  expect_is(ctx$db$get(ctx$id, "contexts")$package_sources,
+            "package_sources_list")
+
+  ctx2 <- context_read(ctx$id, path)
+  expect_is(ctx2$package_sources, "package_sources")
+})
+
 test_that("provision - source github", {
   skip_if_not_installed("provisionr")
   path <- tempfile()

@@ -88,6 +88,9 @@ context_save <- function(path, packages = NULL, sources = NULL,
     context_log("save:name", name)
   }
 
+  ## Restore the package_sources if it was provided:
+  ret$package_sources <- package_sources
+
   ret$id <- id
   ret$name <- name
   ret$root <- root
@@ -182,6 +185,11 @@ context_read <- function(identifier, root, db = NULL) {
   dat$root <- root
   dat$db <- root$db
 
+  src <- dat$package_sources
+  if (!is.null(src) && requireNamespace("provisionr", quietly = TRUE)) {
+    dat$package_sources <- provisionr::package_sources(data = src)
+  }
+
   dat
 }
 
@@ -274,7 +282,6 @@ context_build <- function(packages, sources, package_sources,
     stop("Incorrect type for 'packages'")
   }
   ret <- list(packages = packages,
-              package_sources = package_sources,
               unique_value = unique_value)
   if (!is.null(sources)) {
     ## Here, we _do_ need to check that all source files are
@@ -290,6 +297,10 @@ context_build <- function(packages, sources, package_sources,
 
   if (!is.null(envir) && !is.GlobalEnv(envir)) {
     ret$local <- envir
+  }
+
+  if (!is.null(package_sources)) {
+    ret$package_sources <- package_sources$as_list()
   }
 
   class(ret) <- "context"
