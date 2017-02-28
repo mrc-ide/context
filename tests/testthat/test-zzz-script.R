@@ -110,6 +110,7 @@ test_that("manual parallel cluster", {
 
 test_that("bootstrap", {
   skip_if_not_installed("provisionr")
+  skip_if_no_internet()
   path <- tempfile()
 
   ctx <- context_save(path)
@@ -165,6 +166,7 @@ test_that("package sources serialise properly", {
 })
 
 test_that("provision - source github", {
+  skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/kitten")
@@ -177,6 +179,7 @@ test_that("provision - source github", {
 })
 
 test_that("provision - binary github", {
+  skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/seagull")
@@ -197,6 +200,7 @@ test_that("provision - binary github", {
 })
 
 test_that("re-provision drat", {
+  skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
   src <- provisionr::package_sources(github = "richfitz/kitten")
@@ -217,6 +221,7 @@ test_that("re-provision drat", {
 })
 
 test_that("provision with additional library", {
+  skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
   altlib <- tempfile()
