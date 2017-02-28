@@ -32,3 +32,29 @@ test_that("parse_context_args, one args", {
   expect_equal(res$root, "aaa")
   expect_equal(res$args, c("bbb", "ccc"))
 })
+
+test_that("write_context_script", {
+  path <- tempfile()
+  name <- "foo"
+  target <- "package:::entrypoint"
+  nargs <- 1:2
+  full <- write_context_script(path, name, target, nargs)
+  full <- file.path(path, "bin", name)
+  expect_true(file.exists(file.path(path, "bin", name)))
+  expect_equal(tail(readLines(full), 1), paste0(target, "()"))
+
+  md5 <- tools::md5sum(full)
+  write_context_script(path, name, "junk", nargs)
+  ## Unchanged:
+  expect_equal(md5, tools::md5sum(full))
+  expect_equal(tail(readLines(full), 1), paste0(target, "()"))
+})
+
+test_that("write_context_script, nargs", {
+  path <- tempfile()
+  name <- "foo"
+  target <- "package:::entrypoint"
+  nargs <- 1:2
+  expect_error(write_context_script(path, name, target, 1:3),
+               "Invalid input for 'nargs'")
+})

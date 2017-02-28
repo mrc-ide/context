@@ -14,8 +14,9 @@
 ##'   where minimum and maximum numbers of arguments are supported.
 ##' @export
 write_context_script <- function(path, name, target, nargs) {
-  if (file.exists(file.path(path_bin(path), name))) {
-    return()
+  full <- file.path(path_bin(path), name)
+  if (file.exists(full)) {
+    return(full)
   }
   if (length(nargs) == 1L) {
     s_nargs <- sprintf("%dL", nargs)
@@ -101,6 +102,7 @@ write_script <- function(path, name, text) {
   dest <- file.path(path_bin(path), name)
   writeLines(text, dest)
   Sys.chmod(dest, "0755")
+  dest
 }
 
 write_script_task_run <- function(path) {
@@ -195,7 +197,10 @@ main_task_run <- function(args = commandArgs(TRUE)) {
     {
       context_id <- task_context(task_id, root)
       if (is.na(context_id)) {
-        stop("No context found for task ", context_id)
+        ## I don't think that this can be triggered, but it seems like
+        ## if a bug in the package *makes* it triggerable, this will
+        ## be a decent message
+        stop("[context bug] No context found for task ", task_id) # nocov
       }
       ctx <- context_load(context_read(context_id, root, root$db),
                           .GlobalEnv)
