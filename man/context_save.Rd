@@ -6,7 +6,7 @@
 \usage{
 context_save(path, packages = NULL, sources = NULL,
   package_sources = NULL, envir = NULL, storage_type = NULL,
-  storage_args = NULL, name = NULL, unique_value = NULL)
+  storage_args = NULL, name = NULL)
 }
 \arguments{
 \item{path}{Path to save the context in}
@@ -41,17 +41,6 @@ to use.  Options are \code{"rds"} (the default) and
 \item{name}{An optional name for the context.  This will be
 printed with the context in some situations (such as
 \code{\link{context_info}})}
-
-\item{unique_value}{A unique value to add to your context to
-distinguish it from other contexts with otherwise identical
-contents.  This is mostly useful in conjunction with \code{rrq}
-where in a multiuser setting you might end up with two people
-creating identical contexts and therefore sharing a queue!  By
-adding a unique value (your name, a number, whatever) the
-generated context ID will be arbitrarily different and you'll
-avoid collisions.  Any R object can be used here (string,
-number, vector, whatever).  Your username would be a good
-choice.}
 }
 \description{
 Save a context

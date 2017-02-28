@@ -241,8 +241,7 @@ test_that("failure on startup", {
   path <- tempfile()
   tmp <- basename(tempfile("myfuns_", fileext = ".R"))
   file.copy("myfuns.R", tmp)
-  ctx <- context::context_save(path, sources = tmp,
-                               unique_value = ids::random_id())
+  ctx <- context::context_save(path, sources = tmp)
 
   ctx <- context::context_load(ctx, new.env(parent = .GlobalEnv))
   file.remove(tmp)

@@ -34,22 +34,11 @@
 ##'   printed with the context in some situations (such as
 ##'   \code{\link{context_info}})
 ##'
-##' @param unique_value A unique value to add to your context to
-##'   distinguish it from other contexts with otherwise identical
-##'   contents.  This is mostly useful in conjunction with \code{rrq}
-##'   where in a multiuser setting you might end up with two people
-##'   creating identical contexts and therefore sharing a queue!  By
-##'   adding a unique value (your name, a number, whatever) the
-##'   generated context ID will be arbitrarily different and you'll
-##'   avoid collisions.  Any R object can be used here (string,
-##'   number, vector, whatever).  Your username would be a good
-##'   choice.
-##'
 ##' @export
 context_save <- function(path, packages = NULL, sources = NULL,
                          package_sources = NULL, envir = NULL,
                          storage_type = NULL, storage_args = NULL,
-                         name = NULL, unique_value = NULL) {
+                         name = NULL) {
   root <- context_root_init(path, storage_type, storage_args)
   db <- root$db
   if (!is.null(package_sources)) {
@@ -59,8 +48,7 @@ context_save <- function(path, packages = NULL, sources = NULL,
     assert_is(envir, "environment")
   }
 
-  ret <- context_build(packages, sources, package_sources,
-                       unique_value, envir)
+  ret <- context_build(packages, sources, package_sources, root$id, envir)
   driver_packages <- db$get("driver_packages", "context_root")
   if (!is.null(driver_packages) > 0L) {
     if (!driver_packages %in% unlist(ret$packages)) {
@@ -260,8 +248,7 @@ last_loaded_context <- function(error = TRUE) {
 ################################################################################
 ## internals
 
-context_build <- function(packages, sources, package_sources,
-                          unique_value, envir) {
+context_build <- function(packages, sources, package_sources, root_id, envir) {
   if (is.null(packages)) {
     packages <- character(0)
   }
@@ -282,7 +269,7 @@ context_build <- function(packages, sources, package_sources,
     stop("Incorrect type for 'packages'")
   }
   ret <- list(packages = packages,
-              unique_value = unique_value)
+              root_id = root_id)
   if (!is.null(sources)) {
     ## Here, we _do_ need to check that all source files are
     ## *relative* paths, and we'll need to arrange to copy things

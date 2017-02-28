@@ -21,7 +21,7 @@ test_that("simplest case", {
   expect_identical(ctx$root$path, path)
   expect_identical(context_root_get(ctx)$path, path)
 
-  expect_null(ctx$unique_value)
+  expect_equal(ctx$root_id, ctx$root$id)
 
   expect_true(ctx$db$exists(ctx$id, "contexts"))
   expect_true(ctx$db$exists_object(ctx$id))
@@ -295,28 +295,6 @@ test_that("name logic", {
   expect_equal(context_read(ctx1$name, path)[v], ctx1[v])
   ## Load by id, gets new name
   expect_equal(context_read(ctx3$id, path)[v], ctx3[v])
-})
-
-test_that("set unique value", {
-  Sys.setenv(R_TESTS = "")
-  path <- tempfile("cluster_")
-  on.exit(cleanup(path))
-  ctx1 <- context_save(path, sources = "myfuns.R")
-  ctx2 <- context_save(path, sources = "myfuns.R")
-  expect_equal(ctx1$id, ctx2$id)
-  expect_null(ctx1$unique_value)
-  expect_null(ctx2$unique_value)
-
-  uva <- "a"
-  uvb <- "b"
-  ctx3 <- context_save(path, sources = "myfuns.R", unique_value = uva)
-  ctx4 <- context_save(path, sources = "myfuns.R", unique_value = uvb)
-  ctx5 <- context_save(path, sources = "myfuns.R", unique_value = uvb)
-  expect_true(ctx3$id != ctx4$id)
-  expect_equal(ctx4$id, ctx5$id)
-  expect_equal(ctx3$unique_value, uva)
-  expect_equal(ctx4$unique_value, uvb)
-  expect_equal(ctx5$unique_value, uvb)
 })
 
 test_that("last context", {
