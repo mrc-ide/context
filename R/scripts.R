@@ -131,7 +131,7 @@ bootstrap_context <- function(args = commandArgs(TRUE),
   context_log("wd", getwd())
   if (nzchar(Sys.getenv("CONTEXT_BOOTSTRAP"))) {
     context_log("bootstrap", "")
-    use_local_library(path_library(args$root), FALSE)
+    use_local_library(path_library(args$root))
   }
 
   if (!requireNamespace("context", quietly = TRUE)) {
@@ -140,10 +140,7 @@ bootstrap_context <- function(args = commandArgs(TRUE),
   invisible(args$args)
 }
 
-use_local_library <- function(lib, create = FALSE) {
-  if (create && !file.exists(lib)) {
-    dir.create(lib, FALSE, TRUE)
-  }
+use_local_library <- function(lib) {
   if (file.exists(lib)) {
     ## TODO: if we're dealing with adding existing lib paths here then
     ## they need to be joined with ':' on unix and ';' on Windows -

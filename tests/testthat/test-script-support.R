@@ -58,3 +58,29 @@ test_that("write_context_script, nargs", {
   expect_error(write_context_script(path, name, target, 1:3),
                "Invalid input for 'nargs'")
 })
+
+test_that("use_local_library", {
+  lp <- .libPaths()
+  lu <- Sys.getenv("R_LIBS_USER")
+  on.exit({
+    .libPaths(lp)
+    if (nzchar(lu)) {
+      Sys.setenv(R_LIBS_USER = lu)
+    } else {
+      Sys.unsetenv("R_LIBS_USER")
+    }
+  })
+
+  path <- tempfile()
+  expect_warning(use_local_library(path),
+                 "library not found at")
+  expect_false(file.exists(path))
+  expect_identical(.libPaths(), lp)
+  expect_identical(Sys.getenv("R_LIBS_USER"), lu)
+
+  dir.create(path)
+  use_local_library(path)
+  expect_true(file.exists(path))
+  expect_identical(.libPaths(), c(normalizePath(path), lp))
+  expect_identical(Sys.getenv("R_LIBS_USER"), path)
+})
