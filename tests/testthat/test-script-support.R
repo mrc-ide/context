@@ -84,3 +84,61 @@ test_that("use_local_library", {
   expect_identical(.libPaths(), c(normalizePath(path), lp))
   expect_identical(Sys.getenv("R_LIBS_USER"), path)
 })
+
+test_that("bootstrap_context", {
+  context_log_stop()
+
+  require_namespace_no <- function(package, ...) {
+    FALSE
+  }
+  require_namespace_yes <- function(package, ...) {
+    TRUE
+  }
+  ull_path <- NULL
+  ull <- function(path) {
+    ull_path <<- path
+  }
+
+  path <- tempfile()
+
+  with_mock(
+    `context:::use_local_library` = ull,
+    `base:::requireNamespace` = require_namespace_no,
+    expect_error(bootstrap_context(path),
+                 "Could not find context package"),
+    expect_null(ull_path),
+    expect_true(getOption("context.log")))
+
+  Sys.setenv("CONTEXT_QUIET" = "TRUE")
+  on.exit(Sys.unsetenv("CONTEXT_QUIET"), add = TRUE)
+  context_log_stop()
+  with_mock(
+    `context:::use_local_library` = ull,
+    `base:::requireNamespace` = require_namespace_no,
+    expect_error(bootstrap_context(path),
+                 "Could not find context package"),
+    ## expect_equal(ull_path, path_library(path)),
+    expect_null(getOption("context.log")))
+
+  Sys.setenv("CONTEXT_BOOTSTRAP" = "TRUE")
+  on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
+  context_log_stop()
+  with_mock(
+    `context:::use_local_library` = ull,
+    `base:::requireNamespace` = require_namespace_no,
+    expect_error(bootstrap_context(path),
+                 "Could not find context package"),
+    expect_equal(ull_path, path_library(path)),
+    expect_null(getOption("context.log")))
+
+  Sys.setenv("CONTEXT_BOOTSTRAP" = "TRUE")
+  on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
+  context_log_stop()
+  ull_path <- NULL
+  with_mock(
+    `context:::use_local_library` = ull,
+    `base:::requireNamespace` = require_namespace_yes,
+    expect_error(bootstrap_context(path), NA),
+    expect_equal(ull_path, path_library(path)),
+    expect_null(getOption("context.log")))
+})
