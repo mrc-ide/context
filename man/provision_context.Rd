@@ -23,7 +23,7 @@ yourself.}
 
 \item{installed_action}{Action if packages are installed}
 
-\item{additional_libraries}{Character vector of additiona
+\item{additional_libraries}{Character vector of additional
 libraries to pass through to \code{provisionr}.  Packages here
 will be counted when determining what to install and upgrade
 (based on \code{installed_action}).}

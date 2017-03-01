@@ -15,7 +15,7 @@
 ##'
 ##' @param installed_action Action if packages are installed
 ##'
-##' @param additional_libraries Character vector of additiona
+##' @param additional_libraries Character vector of additional
 ##'   libraries to pass through to \code{provisionr}.  Packages here
 ##'   will be counted when determining what to install and upgrade
 ##'   (based on \code{installed_action}).
@@ -43,12 +43,10 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
     src$local_drat <- path_drat(path_root)
   }
 
-  ## TODO: when using non-disk storage, queuers, etc, this will need
-  ## updating.
   packages <- c("context", ctx$packages$attached, ctx$packages$loaded)
 
-  path_lib <- c(path_library(path_root, platform, version), additional_libraries)
-  installed_action <- "skip"
+  path_lib <- c(path_library(path_root, platform, version),
+                additional_libraries)
 
   context_log("provision", sprintf("library at %s", path_lib[[1L]]))
   for (p in path_lib[-1]) {
