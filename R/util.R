@@ -176,7 +176,14 @@ df_to_list <- function(x, use_names) {
   keep <- c("names", "class", "row.names")
   at <- attributes(x)
   attributes(x) <- at[intersect(names(at), keep)]
-  ret <- unname(lapply(split(x, seq_len(nrow(x))), as.list))
+
+  i <- vapply(x, is.list, logical(1))
+  prepare <- function(el) {
+    el <- as.list(el)
+    el[i] <- lapply(el[i], unlist, FALSE)
+    el
+  }
+  ret <- unname(lapply(split(x, seq_len(nrow(x))), prepare))
   if (!use_names) {
     ret <- lapply(ret, unname)
   }

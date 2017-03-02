@@ -127,3 +127,12 @@ test_that("df_to_list", {
   expect_equal(df_to_list(df, FALSE),
                setNames(lapply(cmp, unname), LETTERS[1:5]))
 })
+
+test_that("df_to_list; list column", {
+  b <- list(1:3, 2:4)
+  test <- data.frame(a = 1:2, b = I(b), d = c('Yes','No'),
+                     stringsAsFactors = FALSE)
+  cmp <- list(list(a = 1, b = 1:3, d = 'Yes'),
+              list(a = 2, b = 2:4, d = 'No'))
+  expect_equal(df_to_list(test, TRUE), cmp)
+})
