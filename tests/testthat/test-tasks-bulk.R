@@ -216,3 +216,24 @@ test_that("invalid function", {
     bulk_prepare_expression(1:4, NULL, NULL, TRUE, FALSE, .GlobalEnv, db),
       "Expected 'FUN' to be a symbol, fully qualified name or function")
 })
+
+test_that("factors", {
+  ## We can't easily deal with factors yet; most of the time they
+  ## should just be character anyway, but I want to be explicit here.
+  ##
+  ## There are doubtless other types of constructs that don't survive
+  ## being inserted into the expressions in the way that I'm doing
+  ## here.  I don't really know what a better way of doing that is
+  ## though; we don't want to end up with a big pile of dput()
+  ## statements.  At the same time, most data-frame-to-matrix
+  ## approaches will strip off additional class attributes, etc, so
+  ## it's not likely to be that bad in practice.
+  dat <- data.frame(a = 1:2, b = c('a', 'b'),
+                    stringsAsFactors = TRUE)
+  expect_error(bulk_prepare_expression_X(dat, FALSE, TRUE),
+               "Factors cannot be used in bulk expressions")
+  expect_error(bulk_prepare_expression_X(df_to_list(dat, TRUE), FALSE, TRUE),
+               "Factors cannot be used in bulk expressions")
+  expect_error(bulk_prepare_expression_X(factor("a"), FALSE, TRUE),
+               "Factors cannot be used in bulk expressions")
+})

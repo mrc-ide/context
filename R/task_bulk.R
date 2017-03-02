@@ -66,10 +66,19 @@ bulk_prepare_expression_X <- function(X, do_call, use_names) {
     if (nrow(X) == 0L) {
       stop("'X' must have at least one row")
     }
+    if (any(vlapply(X, is.factor))) {
+      stop("Factors cannot be used in bulk expressions")
+    }
     X <- df_to_list(X, use_names || !do_call)
   } else if (is.atomic(X) && !is.null(X)) {
+    if (is.factor(X)) {
+      stop("Factors cannot be used in bulk expressions")
+    }
     X <- setNames(as.list(unname(X)), names(X))
   } else if (is.list(X)) {
+    if (any(vlapply(X, function(x) any(vlapply(x, is.factor))))) {
+      stop("Factors cannot be used in bulk expressions")
+    }
     if (do_call) {
       lens <- lengths(X)
       if (length(unique(lens)) != 1L) {
