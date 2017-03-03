@@ -80,7 +80,8 @@ test_that("library path", {
 test_that("driver packages", {
   storage_driver_rds2_create <- function(path, id, args) {
     .GlobalEnv$.test <- c(.GlobalEnv$.test, ids::random_id())
-    storr::storr_rds(path_db(path), compress = FALSE, mangle_key = FALSE)
+    path_db <- file.path(path, "db")
+    storr::storr_rds(path_db, compress = FALSE, mangle_key = FALSE)
   }
   environment(storage_driver_rds2_create) <- .GlobalEnv
   storage_driver_rds2 <- storage_driver("rds2", storage_driver_rds2_create,
