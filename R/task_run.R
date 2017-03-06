@@ -36,33 +36,23 @@ task_run <- function(id, context, filename = NULL) {
   db$set(id, TASK_RUNNING, "task_status")
   db$set(id, Sys.time(), "task_time_beg")
 
-  warnings <- collector()
-  error <- NULL
-  handler <- function(e) {
-    trace <- call_trace(0, 3)
-    e$warnings <- warnings$get()
-    e$trace <- trace
-    class(e) <- c("context_task_error", class(e))
-    error <<- e
-    NULL
-  }
+  res <- eval_safely(dat$expr, dat$envir, "context_task_error", 3L)
+  value <- res$value
 
-  value <- tryCatch(withCallingHandlers(eval(dat$expr, dat$envir),
-                                        error = handler,
-                                        warning = function(e) warnings$add(e)),
-                    error = function(e) error)
-  err <- !is.null(error)
-  context_log(if (err) "error" else "ok", "")
-
-  if (err) {
-    message(sub("\n$", "", paste(as.character(error), collapse = "\n")))
+  if (res$success) {
+    context_log("ok", "")
+    status <- TASK_COMPLETE
+  } else {
+    context_log("error", "")
+    message(sub("\n$", "", paste(as.character(value), collapse = "\n")))
+    status <- TASK_ERROR
   }
 
   db$set(id, value, "task_results")
   db$set(id, Sys.time(), "task_time_end")
   ## NOTE: Set this one *last* so that we can listen on the status and
   ## always be sure to get the results.
-  db$set(id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
+  db$set(id, status, "task_status")
 
   context_log("end", Sys_time())
   invisible(value)

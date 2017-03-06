@@ -136,3 +136,12 @@ test_that("df_to_list; list column", {
               list(a = 2, b = 2:4, d = 'No'))
   expect_equal(df_to_list(test, TRUE), cmp)
 })
+
+test_that("eval safely", {
+  expect_warning(
+    res <- eval_safely(readLines("Asdfa.txt"), .GlobalEnv, "foo", 3)$value,
+    "No such file")
+  expect_is(res, "simpleError")
+  expect_is(res, "foo")
+  expect_is(res$warnings, "list")
+})

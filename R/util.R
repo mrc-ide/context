@@ -196,3 +196,29 @@ df_to_list <- function(x, use_names) {
 is_call <- function(expr, what) {
   is.call(expr) && any(vlapply(what, identical, expr[[1L]]))
 }
+
+eval_safely <- function(expr, envir, class, depth = 0L) {
+  warnings <- collector()
+  error <- NULL
+
+  handler <- function(e) {
+    w <- warnings$get()
+    if (length(w) > 0L) {
+      e$warnings <- warnings$get()
+    }
+    e$trace <- call_trace(0, depth + 1L)
+    class(e) <- c(class, class(e))
+    error <<- e
+    NULL
+  }
+
+  value <- tryCatch(
+    withCallingHandlers(
+      eval(expr, envir),
+      warning = function(e) warnings$add(e),
+      error = function(e) handler(e)),
+    error = function(e) error)
+
+  list(value = value,
+       success = is.null(error))
+}

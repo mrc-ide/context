@@ -265,6 +265,8 @@ test_that("stack trace, no warning", {
   on.exit(context_log_stop())
   expect_message(res <- task_run(t, ctx_run),
                  "Need positive x")
+  expect_null(res$warnings)
+  expect_match(tail(res$trace, 1), "stop")
 })
 
 test_that("long expr", {
