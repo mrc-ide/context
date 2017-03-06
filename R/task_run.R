@@ -58,9 +58,11 @@ task_run <- function(id, context, filename = NULL) {
     message(sub("\n$", "", paste(as.character(error), collapse = "\n")))
   }
 
-  db$set(id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
   db$set(id, value, "task_results")
   db$set(id, Sys.time(), "task_time_end")
+  ## NOTE: Set this one *last* so that we can listen on the status and
+  ## always be sure to get the results.
+  db$set(id, if (err) TASK_ERROR else TASK_COMPLETE, "task_status")
 
   context_log("end", Sys_time())
   invisible(value)
