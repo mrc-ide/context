@@ -6,7 +6,7 @@
 \usage{
 provision_context(ctx, platform = NULL, version = NULL, quiet = FALSE,
   allow_missing = FALSE, installed_action = "skip",
-  additional_libraries = NULL)
+  additional_libraries = NULL, refresh_drat = FALSE)
 }
 \arguments{
 \item{ctx}{A context object.  We'll look in here for packages to install.}
@@ -27,6 +27,10 @@ yourself.}
 libraries to pass through to \code{provisionr}.  Packages here
 will be counted when determining what to install and upgrade
 (based on \code{installed_action}).}
+
+\item{refresh_drat}{Force-refresh any local packages that are
+listed in the \code{package_sources} argument to
+\code{context_save}}
 }
 \description{
 Provision a context

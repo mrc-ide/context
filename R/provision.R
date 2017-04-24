@@ -20,11 +20,16 @@
 ##'   will be counted when determining what to install and upgrade
 ##'   (based on \code{installed_action}).
 ##'
+##' @param refresh_drat Force-refresh any local packages that are
+##'   listed in the \code{package_sources} argument to
+##'   \code{context_save}
+##'
 ##' @export
 provision_context <- function(ctx, platform = NULL, version = NULL,
                               quiet = FALSE, allow_missing = FALSE,
                               installed_action = "skip",
-                              additional_libraries = NULL) {
+                              additional_libraries = NULL,
+                              refresh_drat = FALSE) {
   loadNamespace("provisionr")
   path_root <- ctx$root$path
   ## This can be used to put onto the shared drive (in didehpc/drat)
@@ -55,7 +60,7 @@ provision_context <- function(ctx, platform = NULL, version = NULL,
   res <- provisionr::provision_library(
     packages, path_lib, platform = platform, version = version, src = src,
     check_dependencies = TRUE, installed_action = installed_action,
-    allow_missing = allow_missing, quiet = quiet)
+    allow_missing = allow_missing, quiet = quiet, refresh_drat = refresh_drat)
 
   invisible(res)
 }
