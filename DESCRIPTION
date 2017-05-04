@@ -1,6 +1,6 @@
 Package: context
 Title: Contexts for evaluating R expressions
-Version: 0.1.0
+Version: 0.1.1
 Author: Rich FitzJohn
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
 Description: Contexts for evaluating R expressions.
@@ -15,10 +15,9 @@ Imports:
     ids,
     storr (>= 1.0.3)
 Suggests:
-    codetools,
     knitr,
     parallel,
-    provisionr,
+    provisionr (>= 0.1.1),
     rmarkdown,
     testthat
 Remotes:
