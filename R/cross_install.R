@@ -243,14 +243,7 @@ cross_install_package <- function(package, dat, lib, binary, platform) {
 }
 
 base_packages <- function() {
-  ## For now, disabling selection of recommended packages because we
-  ## need a very recent version of survival to work with Hmisc (which
-  ## would imply R version 3.3.2 but that's not actually required).
-  ##
-  ## A complete solution here should check to see whether or not
-  ## version requirements would be met without doing this I think
-  ##  rownames(installed.packages(priority = c("base", "recommended")))
-  rownames(installed.packages(priority = "base"))
+  rownames(installed.packages(priority=c("base", "recommended")))
 }
 
 parse_deps <- function(x) {
