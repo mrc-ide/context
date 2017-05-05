@@ -24,4 +24,3 @@ Remotes:
     richfitz/provisionr,
     richfitz/storr@develop
 RoxygenNote: 5.0.1
-VignetteBuilder: knitr

@@ -13,3 +13,4 @@ docker
 ^inst/staticdocs$
 ^\.lintr$
 ^appveyor\.yml$
+^vignettes$
