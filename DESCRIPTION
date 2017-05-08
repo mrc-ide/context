@@ -13,7 +13,7 @@ Depends:
 Imports:
     crayon,
     ids,
-    storr (>= 1.0.3)
+    storr (>= 1.1.0)
 Suggests:
     knitr,
     parallel,
@@ -21,6 +21,5 @@ Suggests:
     rmarkdown,
     testthat
 Remotes:
-    richfitz/provisionr,
-    richfitz/storr@develop
+    richfitz/provisionr
 RoxygenNote: 5.0.1
