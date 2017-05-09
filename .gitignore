@@ -11,3 +11,4 @@ inst/web
 vignettes/src/file.R
 vignettes/src/context.Rmd
 vignettes/context.Rmd
+tests/testthat/compat_*
