@@ -37,17 +37,7 @@
 ##'
 ##' @export
 prepare_expression <- function(expr, envir, db, function_value = NULL) {
-  args <- expr[-1L]
-
-  is_call <- vlapply(args, is.call)
-  is_symbol <- vlapply(args, is.symbol)
-
-  symbols <- vcapply(unname(as.list(args))[is_symbol], as.character)
-  if (any(is_call)) {
-    symbols <- union(symbols,
-                     unname(unlist(lapply(args[is_call], find_symbols))))
-  }
-
+  symbols <- find_symbols(expr)
   ret <- list(expr = expr)
 
   if (!is.null(function_value)) {
@@ -115,25 +105,35 @@ restore_locals <- function(dat, parent, db) {
   e
 }
 
-find_symbols <- function(expr, hide_errors = TRUE) {
+## This recurses through the expressions and finds all globals but
+## skips over the slightly odd interpretation of `::`, `:::` and `$`
+## where a naive parse would treat as symbols
+find_symbols <- function(expr) {
   symbols <- character(0)
+  namespace <- quote(`::`)
+  hidden <- quote(`::`)
+  dollar <- quote(`$`)
+  stop_at <- c(namespace, hidden, dollar)
 
-  f <- function(e) {
+  descend <- function(e) {
     if (!is.recursive(e)) {
       if (!is.symbol(e)) {
         ## A literal of some type
         return()
       }
       symbols <<- c(symbols, deparse(e))
-    } else if (!identical(e[[1]], quote(`::`))) {
-      for (a in as.list(e[-1])) {
+    } else if (!is_call(e, stop_at)) {
+      for (a in as.list(e)) {
         if (!missing(a)) {
-          f(a)
+          descend(a)
         }
       }
     }
   }
 
-  f(expr)
+  if (!is.call(expr) || identical(expr[[1]], quote(`::`))) {
+    stop("Expected a call")
+  }
+  descend(expr[-1])
   unique(symbols)
 }

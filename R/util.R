@@ -192,3 +192,7 @@ df_to_list <- function(x, use_names) {
   }
   ret
 }
+
+is_call <- function(expr, what) {
+  is.call(expr) && any(vlapply(what, identical, expr[[1L]]))
+}

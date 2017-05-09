@@ -50,3 +50,23 @@ test_that("namespace qualified functions as arguments", {
   expect_equal(dat$expr, expr)
   expect_equal(dat$objects, c(x = db$hash_object(e$x)))
 })
+
+test_that("chained operations", {
+  skip("in progress")
+  e <- new.env(parent = emptyenv())
+  e$host <- "localhost"
+  db <- storr::storr_environment()
+
+  res <- prepare_expression(quote(redux::hiredis(host = host)$PING()), e, db)
+  expect_equal(names(res$objects), "host")
+  expect_equal(db$get(res$objects[["host"]]), e$host)
+})
+
+test_that("complex calls", {
+  expect_error(find_symbols(quote(a::b)), "Expected a call")
+  expect_equal(find_symbols(quote(a::b())), character(0))
+  expect_equal(find_symbols(quote(a::b(c))), "c")
+  expect_equal(find_symbols(quote(foo(x, pkg::thing$other))), "x")
+  expect_equal(find_symbols(quote(foo(x, pkg::thing$other(y)))),
+               c("x", "y"))
+})
