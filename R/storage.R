@@ -14,7 +14,8 @@ storage_driver_rds <- function() {
   storage_driver("rds", function(path, id, args) {
     storr::storr_rds(path_db(path),
                      compress = args$compress %||% FALSE,
-                     mangle_key = args$mangle_key %||% TRUE)
+                     mangle_key = args$mangle_key %||% TRUE,
+                     mangle_key_pad = args$mangle_key_pad %||% TRUE)
   })
 }
 
