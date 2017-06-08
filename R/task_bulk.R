@@ -81,10 +81,17 @@ bulk_prepare_expression_X <- function(X, do_call, use_names) {
     }
     if (do_call) {
       lens <- lengths(X)
-      if (length(unique(lens)) != 1L) {
+      ## Here, support recycling out scalars
+      ul <- unique(lens)
+      if (ul == 2L && min(ul) == 1L) {
+        n <- max(lens)
+        X[lens == 1L] <- lapply(X[lens == 1L], rep_len, n)
+        ul <- lens <- n
+      }
+      if (length(ul) != 1L) {
         stop("Every element of 'X' must have the same length")
       }
-      if (lens[[1L]] == 0L) {
+      if (ul == 0L) {
         stop("Elements of 'X' must have at least one element")
       }
       nms <- names(X[[1L]])

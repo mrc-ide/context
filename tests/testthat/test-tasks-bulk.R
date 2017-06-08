@@ -237,3 +237,8 @@ test_that("factors", {
   expect_error(bulk_prepare_expression_X(factor("a"), FALSE, TRUE),
                "Factors cannot be used in bulk expressions")
 })
+
+test_that("recycle", {
+  expect_equal(bulk_prepare_expression_X(list(a = 1:2, b = "a"), TRUE, TRUE),
+               list(a = 1:2, b = c("a", "a")))
+})
