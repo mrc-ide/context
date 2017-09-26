@@ -17,6 +17,10 @@ missing_time <- function(n = 1) {
   Sys.time()[rep(NA, n)]
 }
 
+is_windows <- function() {
+  Sys.info()[["sysname"]] == "Windows"
+}
+
 has_internet <- function() {
   if (is_windows()) {
     !inherits(try(suppressWarnings(
