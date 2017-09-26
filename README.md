@@ -1,9 +1,9 @@
 # context
 
 [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
-[![Travis-CI Build Status](https://travis-ci.org/dide-tools/context.svg?branch=master)](https://travis-ci.org/dide-tools/context)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/dide-tools/context?branch=master&svg=true)](https://ci.appveyor.com/project/dide-tools/context)
-[![codecov.io](https://codecov.io/github/dide-tools/context/coverage.svg?branch=master)](https://codecov.io/github/dide-tools/context?branch=master)
+[![Travis-CI Build Status](https://travis-ci.org/mrc-ide/context.svg?branch=master)](https://travis-ci.org/mrc-ide/context)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/mrc-ide/context?branch=master&svg=true)](https://ci.appveyor.com/project/mrc-ide/context)
+[![codecov.io](https://codecov.io/github/mrc-ide/context/coverage.svg?branch=master)](https://codecov.io/github/mrc-ide/context?branch=master)
 
 > Contexts for evaluating R expressions
 
@@ -59,5 +59,7 @@ Come up with a general way of specifying all the required bits so that we can re
 ## Installation
 
 ```r
-devtools::install_github("dide-tools/context")
+# install.packages("drat")
+drat:::add("mrc-ide")
+install.packages("context")
 ```
