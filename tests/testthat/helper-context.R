@@ -18,7 +18,12 @@ missing_time <- function(n = 1) {
 }
 
 has_internet <- function() {
-  !is.null(suppressWarnings(utils::nsl("www.google.com")))
+  if (is_windows()) {
+    !inherits(try(suppressWarnings(
+       readLines("http://google.com")), silent = TRUE), "try-error")
+  } else {
+    !is.null(suppressWarnings(utils::nsl("www.google.com")))
+  }
 }
 
 skip_if_no_internet <- function() {
