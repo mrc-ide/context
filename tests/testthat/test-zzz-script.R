@@ -99,8 +99,8 @@ test_that("manual parallel cluster", {
   ## are consistent with the library path having been set when we
   ## really should test for the first one.
   path_norm <- normalizePath(path)
-  expect_false(any(string_starts_with(paths1[[1]], path_norm)))
-  expect_true(any(string_starts_with(paths2[[1]], path_norm)))
+  expect_false(any(string_starts_with(normalizePath(paths1[[1]]), path_norm)))
+  expect_true(any(string_starts_with(normalizePath(paths2[[1]]), path_norm)))
 
   if (!nzchar(Sys.getenv("R_LIBS"))) {
     expect_false(string_starts_with(paths1[[1]][[1]], path_norm))
