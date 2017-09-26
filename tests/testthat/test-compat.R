@@ -1,3 +1,5 @@
+context("compatibility")
+
 ## To generate the archive, let's do:
 
 ## v <- "0.x.x"
