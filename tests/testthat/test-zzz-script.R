@@ -166,6 +166,7 @@ test_that("package sources serialise properly", {
 })
 
 test_that("provision - source github", {
+  skip_on_appveyor()
   skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
@@ -179,6 +180,7 @@ test_that("provision - source github", {
 })
 
 test_that("provision - binary github", {
+  skip_on_appveyor()
   skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
@@ -200,6 +202,7 @@ test_that("provision - binary github", {
 })
 
 test_that("re-provision drat", {
+  skip_on_appveyor()
   skip_if_no_internet()
   skip_if_not_installed("provisionr")
   path <- tempfile()
