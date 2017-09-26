@@ -81,7 +81,9 @@ test_that("use_local_library", {
   dir.create(path)
   use_local_library(path)
   expect_true(file.exists(path))
-  expect_identical(.libPaths(), c(normalizePath(path), lp))
+
+  expect_identical(normalizePath(.libPaths()),
+                   normalizePath(c(path, lp)))
   expect_identical(Sys.getenv("R_LIBS_USER"), path)
 })
 
