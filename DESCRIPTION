@@ -20,7 +20,5 @@ Suggests:
     provisionr (>= 0.1.4),
     rmarkdown,
     testthat
-Remotes:
-    richfitz/provisionr
 RoxygenNote: 5.0.1
 Encoding: UTF-8
