@@ -17,7 +17,7 @@ Imports:
 Suggests:
     knitr,
     parallel,
-    provisionr (>= 0.1.4),
+    provisionr (>= 0.1.8),
     rmarkdown,
     testthat
 RoxygenNote: 5.0.1
