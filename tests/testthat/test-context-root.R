@@ -113,3 +113,24 @@ test_that("driver packages", {
   expect_equal(length(id2), 2)
   expect_true(is_id(id2[[2]]))
 })
+
+test_that("create context root with fixed id", {
+  id <- ids::random_id()
+  path <- tempfile()
+
+  res <- context_root_init(path, NULL, NULL, id)
+  expect_equal(res$id, id)
+  expect_equal(res$path, path)
+
+  res <- context_root_init(path, NULL, NULL, id)
+  expect_equal(res$id, id)
+  expect_equal(res$path, path)
+})
+
+test_that("verify id when creating context root with fixed id", {
+  path <- tempfile()
+  res <- context_root_init(path, NULL, NULL)
+  expect_error(
+    context_root_init(path, NULL, NULL, ids::random_id()),
+    "Given id '[[:xdigit:]]+' and stored id '[[:xdigit:]]+' differ")
+})
