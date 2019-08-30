@@ -6,7 +6,7 @@ r_packages:
 after_success:
   - Rscript -e 'covr::codecov()'
 r_github_packages:
-  mrc-ide/provisionr
+  - mrc-ide/provisionr
 
 addons:
   postgresql: "9.5"
