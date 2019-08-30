@@ -9,15 +9,18 @@ LazyData: true
 URL: https://github.com/mrc-ide/context
 BugReports: https://github.com/mrc-ide/context/issues
 Depends:
-    R (>= 3.2.2)
+    R (>= 3.2.0)
 Imports:
     crayon,
     ids,
     storr (>= 1.1.1)
 Suggests:
+    DBI,
+    RPostgres,
     knitr,
     parallel,
     provisionr (>= 0.1.8),
+    redux,
     rmarkdown,
     testthat
 RoxygenNote: 5.0.1
