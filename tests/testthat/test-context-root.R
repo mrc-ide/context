@@ -134,3 +134,9 @@ test_that("verify id when creating context root with fixed id", {
     context_root_init(path, NULL, NULL, ids::random_id()),
     "Given id '[[:xdigit:]]+' and stored id '[[:xdigit:]]+' differ")
 })
+
+test_that("verify id format", {
+  expect_error(
+    context_root_init(tempfile(), NULL, NULL, ids::random_id(bytes = 4)),
+    "id, if given, must be a 32 character hex string")
+})

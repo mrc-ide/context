@@ -56,6 +56,9 @@ context_db_get <- function(root) {
 context_db_init <- function(path, type, args, id = NULL) {
   if (!is.null(id)) {
     assert_scalar_character(id)
+    if (!grepl("^[[:xdigit:]]{32}$", id)) {
+      stop("id, if given, must be a 32 character hex string", call. = FALSE)
+    }
   }
   f_id <- path_id(path)
   f_config <- path_config(path)
