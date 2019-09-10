@@ -6,7 +6,7 @@
 \usage{
 context_save(path, packages = NULL, sources = NULL,
   package_sources = NULL, envir = NULL, storage_type = NULL,
-  storage_args = NULL, name = NULL)
+  storage_args = NULL, name = NULL, root_id = NULL)
 }
 \arguments{
 \item{path}{Path to save the context in}
@@ -41,8 +41,17 @@ to use.  Options are \code{"rds"} (the default) and
 \item{name}{An optional name for the context.  This will be
 printed with the context in some situations (such as
 \code{\link{context_info}})}
+
+\item{root_id}{Force a context root id.  This is intended for
+advanced use only.  By settting the root id, two contexts
+created with storage in different file locations (\code{path})
+will get the same id.  This is required for using a
+server-hosted database to share a context between different
+physical machines (or different docker containers).  The id, if
+provided, must be compatible with \code{ids::random_id()} -
+i.e., a 32 character hex string.  This option can be left alone
+in most situations.}
 }
 \description{
 Save a context
 }
-

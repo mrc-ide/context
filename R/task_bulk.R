@@ -83,7 +83,7 @@ bulk_prepare_expression_X <- function(X, do_call, use_names) {
       lens <- lengths(X)
       ## Here, support recycling out scalars
       ul <- unique(lens)
-      if (ul == 2L && min(ul) == 1L) {
+      if (length(ul) == 2L && min(ul) == 1L) {
         n <- max(lens)
         X[lens == 1L] <- lapply(X[lens == 1L], rep_len, n)
         ul <- lens <- n

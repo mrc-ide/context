@@ -343,3 +343,15 @@ test_that("local", {
   expect_true("loop" %in% ls(parent.env(res$envir)))
   expect_identical(e2, parent.env(res$envir))
 })
+
+test_that("force root id", {
+  id <- ids::random_id()
+
+  ctx1 <- context_save(tempfile(), root_id = id)
+  ctx2 <- context_save(tempfile(), root_id = id)
+  expect_equal(ctx1$root$id, id)
+  expect_equal(ctx2$root$id, id)
+
+  expect_equal(ctx1$id, ctx2$id)
+  expect_false(ctx1$name == ctx2$name)
+})

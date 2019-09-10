@@ -58,7 +58,7 @@ test_that("prepare; uneven length lists", {
 
   ## Error case
   expect_error(
-    bulk_prepare_expression(list(1, 1:2), quote(foo), NULL, TRUE, TRUE),
+    bulk_prepare_expression(list(1, 1:2, 1:3), quote(foo), NULL, TRUE, TRUE),
     "Every element of 'X' must have the same length")
 })
 
@@ -202,9 +202,6 @@ test_that("function-by-value", {
 })
 
 test_that("heterogenous list do_call fails", {
-  expect_error(
-    bulk_prepare_expression_X(list(list(a = 1), list(a = 1, b = 2)), TRUE),
-    "Every element of 'X' must have the same length")
   expect_error(
     bulk_prepare_expression_X(list(list(a = 1), list(b = 2)), TRUE),
     "Elements of 'X' must have the same names")

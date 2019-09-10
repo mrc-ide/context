@@ -21,7 +21,8 @@ context_root_get <- function(root, db = NULL) {
   root
 }
 
-context_root_init <- function(path, storage_type = NULL, storage_args = NULL) {
+context_root_init <- function(path, storage_type = NULL, storage_args = NULL,
+                              id = NULL) {
   fv <- path_version(path)
   written <- package_version(if (file.exists(fv)) readLines(fv) else "0.0")
   installed <- packageVersion("context")
@@ -34,7 +35,7 @@ context_root_init <- function(path, storage_type = NULL, storage_args = NULL) {
   } else if (written > installed) {
     stop("context version conflict; local is outdated")
   }
-  db <- context_db_init(path, storage_type, storage_args)
+  db <- context_db_init(path, storage_type, storage_args, id)
   root <- context_root(path, db)
   if (written > numeric_version("0.0") && written < numeric_version("0.1.0")) {
     context_upgrade_0_1_0(root)
@@ -52,10 +53,23 @@ context_db_get <- function(root) {
   }
 }
 
-context_db_init <- function(path, type, args) {
+context_db_init <- function(path, type, args, id = NULL) {
+  if (!is.null(id)) {
+    assert_scalar_character(id)
+    if (!grepl("^[[:xdigit:]]{32}$", id)) {
+      stop("id, if given, must be a 32 character hex string", call. = FALSE)
+    }
+  }
   f_id <- path_id(path)
   f_config <- path_config(path)
   if (file.exists(f_id)) {
+    if (!is.null(id)) {
+      prev <- readLines(f_id)
+      if (!identical(id, prev)) {
+        stop(sprintf("Given id '%s' and stored id '%s' differ", id, prev),
+             call. = FALSE)
+      }
+    }
     config <- readRDS(f_config)
     if (!is.null(type) && !identical(type, config$type)) {
       config_type <- if (is.function(config$type)) "user" else config$type
@@ -85,7 +99,7 @@ context_db_init <- function(path, type, args) {
     }
     db <- context_db_open(path, config, FALSE)
   } else {
-    id <- ids::random_id()
+    id <- id %||% ids::random_id()
     context_log("init:id", id)
     writeLines(id, f_id)
     ## TODO: do some sanity checking here; 'type' must be a function or string

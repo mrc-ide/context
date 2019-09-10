@@ -34,12 +34,22 @@
 ##'   printed with the context in some situations (such as
 ##'   \code{\link{context_info}})
 ##'
+##' @param root_id Force a context root id.  This is intended for
+##'   advanced use only.  By settting the root id, two contexts
+##'   created with storage in different file locations (\code{path})
+##'   will get the same id.  This is required for using a
+##'   server-hosted database to share a context between different
+##'   physical machines (or different docker containers).  The id, if
+##'   provided, must be compatible with \code{ids::random_id()} -
+##'   i.e., a 32 character hex string.  This option can be left alone
+##'   in most situations.
+##'
 ##' @export
 context_save <- function(path, packages = NULL, sources = NULL,
                          package_sources = NULL, envir = NULL,
                          storage_type = NULL, storage_args = NULL,
-                         name = NULL) {
-  root <- context_root_init(path, storage_type, storage_args)
+                         name = NULL, root_id = NULL) {
+  root <- context_root_init(path, storage_type, storage_args, root_id)
   db <- root$db
   if (!is.null(package_sources)) {
     assert_is(package_sources, "package_sources")
