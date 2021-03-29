@@ -1,16 +1,1 @@
-^.*\.Rproj$
-^\.Rproj\.user$
-^Makefile$
-^README.Rmd$
-^.travis.yml$
-^appveyor.yml$
-^context_.*\.tar\.gz$
-^TODO\.md$
-docker
-^notes\.md$
-^update_web\.sh$
-^inst/web$
-^inst/staticdocs$
-^\.lintr$
-^appveyor\.yml$
-^vignettes$
+^\.github$
