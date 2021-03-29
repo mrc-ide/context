@@ -18,7 +18,6 @@ Imports:
     storr (>= 1.1.1)
 Suggests:
     DBI,
-    RPostgres,
     knitr,
     parallel,
     conan,

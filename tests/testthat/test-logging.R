@@ -11,6 +11,7 @@ test_that("logging", {
 })
 
 test_that("parse_context_log", {
+  skip("rewrite with callr, or dont use process")
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
   ctx <- context_save(path, sources = "myfuns.R")

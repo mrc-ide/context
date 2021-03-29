@@ -73,7 +73,7 @@ test_that("invalid package sources", {
   expect_error(
     context_save(tempfile(), storage_type = "environment",
                  package_sources = "http://url.to/mypackage"),
-    "package_sources must inherit from package_sources")
+    "package_sources must inherit from conan_sources")
 })
 
 test_that("source files", {
