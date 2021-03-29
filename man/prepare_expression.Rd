@@ -41,4 +41,3 @@ itself, but something like \code{NULL} will work just fine:
   # NULL(a)
 }
 }
-

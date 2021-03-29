@@ -19,4 +19,3 @@ the correct database in hand.}
 \description{
 Find the context root.  Designed for internal use
 }
-

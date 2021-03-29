@@ -4,8 +4,15 @@
 \alias{bulk_task_save}
 \title{Save bulk tasks}
 \usage{
-bulk_task_save(X, FUN, context, DOTS = NULL, do_call = FALSE,
-  use_names = TRUE, envir = parent.frame())
+bulk_task_save(
+  X,
+  FUN,
+  context,
+  DOTS = NULL,
+  do_call = FALSE,
+  use_names = TRUE,
+  envir = parent.frame()
+)
 }
 \arguments{
 \item{X}{Something to iterate over; a vector, list or data.frame
@@ -30,4 +37,3 @@ then positional matching will be used.}
 \description{
 Save bulk tasks
 }
-

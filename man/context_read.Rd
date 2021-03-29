@@ -17,4 +17,3 @@ context_read(identifier, root, db = NULL)
 \description{
 Read a context
 }
-

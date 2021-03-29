@@ -12,4 +12,3 @@ last_loaded_context(error = TRUE)
 \description{
 Return the last loaded context
 }
-

@@ -18,4 +18,3 @@ restore_locals(dat, parent, db)
 \description{
 Restore locals created by \code{\link{prepare_expression}}.
 }
-

@@ -18,4 +18,3 @@ attribute "locals")}
 \description{
 Fetch expression for a task
 }
-

@@ -17,4 +17,3 @@ task_status(ids, db, named = FALSE)
 \description{
 Task status
 }
-

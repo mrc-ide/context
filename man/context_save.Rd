@@ -4,9 +4,17 @@
 \alias{context_save}
 \title{Save a context}
 \usage{
-context_save(path, packages = NULL, sources = NULL,
-  package_sources = NULL, envir = NULL, storage_type = NULL,
-  storage_args = NULL, name = NULL, root_id = NULL)
+context_save(
+  path,
+  packages = NULL,
+  sources = NULL,
+  package_sources = NULL,
+  envir = NULL,
+  storage_type = NULL,
+  storage_args = NULL,
+  name = NULL,
+  root_id = NULL
+)
 }
 \arguments{
 \item{path}{Path to save the context in}
@@ -21,7 +29,7 @@ should define functions and (perhaps) other "global" objects,
 but should not do any serious computation.}
 
 \item{package_sources}{Optional information about where to find
-non-CRAN packages.}
+non-CRAN packages, created by \code{\link{conan_sources}}}
 
 \item{envir}{The current environment.  This is used to copy
 \emph{local} variables around.  For \code{context_load} this is
