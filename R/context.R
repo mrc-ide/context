@@ -13,7 +13,7 @@
 ##'   but should not do any serious computation.
 ##'
 ##' @param package_sources Optional information about where to find
-##'   non-CRAN packages.
+##'   non-CRAN packages, created by \code{\link{conan_sources}}
 ##'
 ##' @param envir The current environment.  This is used to copy
 ##'   \emph{local} variables around.  For \code{context_load} this is
@@ -52,7 +52,7 @@ context_save <- function(path, packages = NULL, sources = NULL,
   root <- context_root_init(path, storage_type, storage_args, root_id)
   db <- root$db
   if (!is.null(package_sources)) {
-    assert_is(package_sources, "package_sources")
+    assert_is(package_sources, "conan_sources")
   }
   if (!is.null(envir)) {
     assert_is(envir, "environment")
@@ -183,11 +183,6 @@ context_read <- function(identifier, root, db = NULL) {
   dat$root <- root
   dat$db <- root$db
 
-  src <- dat$package_sources
-  if (!is.null(src) && requireNamespace("provisionr", quietly = TRUE)) {
-    dat$package_sources <- provisionr::package_sources(data = src)
-  }
-
   dat
 }
 
@@ -279,6 +274,7 @@ context_build <- function(packages, sources, package_sources, root_id, envir) {
     stop("Incorrect type for 'packages'")
   }
   ret <- list(packages = packages,
+              package_sources = package_sources,
               root_id = root_id)
   if (!is.null(sources)) {
     ## Here, we _do_ need to check that all source files are
@@ -294,10 +290,6 @@ context_build <- function(packages, sources, package_sources, root_id, envir) {
 
   if (!is.null(envir) && !is.GlobalEnv(envir)) {
     ret$local <- envir
-  }
-
-  if (!is.null(package_sources)) {
-    ret$package_sources <- package_sources$as_list()
   }
 
   class(ret) <- "context"

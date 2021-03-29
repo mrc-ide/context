@@ -7,15 +7,7 @@
 
 > Contexts for evaluating R expressions
 
----
-
-Breaking changes between verisons:
-
-* `package_sources` moves to `provisionr` and changes interface; most of the changes follow from this, so I think we can do a redirect here pretty safely
-
----
-
-This package organises collecting (and recreating) the context of an R expression to replay later.  At this point, the package is hard-coded to use only filesystem storage, but soon I'll generalise that to allow interfacing with things like `rrqueue` which follow similar ideas.
+This package organises collecting (and recreating) the context of an R expression to replay later.
 
 ## Concepts
 
@@ -54,7 +46,7 @@ There is some overlap here between `context` and tools like [`packrat`](https://
 
 # Generalising
 
-Come up with a general way of specifying all the required bits so that we can reuse this in different contexts; `callr`, `rrqueue`, `experimentr`, `remake` all do variants of this but all store things in different ways.  Something that generalised all of them would be great.  This probably just requires store/retrieve methods for the classed objects that are returned.
+Come up with a general way of specifying all the required bits so that we can reuse this in different contexts; `callr`, `rrq`, `experimentr`, `remake` all do variants of this but all store things in different ways.  Something that generalised all of them would be great.  This probably just requires store/retrieve methods for the classed objects that are returned.
 
 ## Installation
 

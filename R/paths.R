@@ -26,6 +26,7 @@ path_library <- function(path_root, platform = NULL, version = NULL) {
     }
     version_str <- as.character(version[1, 1:2])
   }
+  ## TODO: consider this - is it still what we want?
   platform_str <- r_platform_name(platform)
   file.path(path_root, "lib", platform_str, version_str)
 }

@@ -69,29 +69,6 @@ test_that("load contexts", {
   expect_equal(ls(obj$envir), character(0))
 })
 
-test_that("package_sources", {
-  ## TODO: move into one of the zzz cases?
-  skip_if_not_installed("provisionr")
-  Sys.setenv(R_TESTS = "")
-  path <- tempfile("cluster_")
-  on.exit(cleanup(path))
-
-  drat <- tempfile()
-  src <- provisionr::package_sources(github = "richfitz/kitten")
-  handle <- context_save(path, packages = "kitten",
-                         package_sources = src)
-  expect_is(handle$package_sources, "package_sources")
-  expect_true(handle$package_sources$needs_build())
-  ## src is unchanged:
-  expect_null(src$local_drat)
-  expect_true(src$needs_build())
-
-  ## Then check that this is all OK
-  obj <- context_read(handle$id, path)
-  expect_null(obj$package_sources$local_drat)
-  expect_equal(obj$packages, list(attached = "kitten", loaded = character(0)))
-})
-
 test_that("invalid package sources", {
   expect_error(
     context_save(tempfile(), storage_type = "environment",

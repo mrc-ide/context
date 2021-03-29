@@ -166,7 +166,6 @@ empty_time <- function() {
   Sys.time()[-1]
 }
 
-## See provisionr
 valid_platforms <- function() {
   c("windows", "macosx", "macosx/mavericks", "linux")
 }
