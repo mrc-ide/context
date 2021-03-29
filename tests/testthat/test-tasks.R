@@ -322,6 +322,9 @@ test_that("capture output", {
   ctx$db$set(t, logfile, "log_path")
   expect_equal(task_log(t, ctx), dat)
 
+  txt <- task_log(t, ctx, FALSE)
+  expect_equal(parse_context_log(txt), task_log(t, ctx))
+
   logpath <- file.path(ctx$root$path, "logs")
   dir.create(logpath, FALSE, TRUE)
   file.copy(logfile, file.path(logpath, t))

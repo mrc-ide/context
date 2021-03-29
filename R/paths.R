@@ -30,11 +30,7 @@ path_library <- function(path_root, platform = NULL, version = NULL) {
   platform_str <- r_platform_name(platform)
   file.path(path_root, "lib", platform_str, version_str)
 }
-path_drat <- function(path_root) {
-  file.path(normalizePath(path_root, mustWork = TRUE), "drat")
-}
 
-## TODO: belongs in pathr, also used in remotefile / filestorr
 is_absolute_path <- function(path) {
   grepl("^(/|[A-Za-z]:[/\\]|//|\\\\\\\\)", path)
 }
