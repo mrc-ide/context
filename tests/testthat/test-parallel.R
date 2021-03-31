@@ -5,7 +5,6 @@ test_that("parallel cluster", {
   on.exit(cleanup(path))
   ctx <- context_save(path, sources = "myfuns-parallel.R")
 
-  context_log_start()
   cl <- parallel_cluster_start(2L, ctx)
 
   source("myfuns-parallel.R", local = TRUE)

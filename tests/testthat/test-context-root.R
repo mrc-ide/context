@@ -1,7 +1,6 @@
 context("context_root")
 
 test_that("basic", {
-  context_log_start()
   path <- tempfile()
   ans <- context_root_init(path, NULL, NULL)
   expect_is(ans, "context_root")
@@ -88,7 +87,6 @@ test_that("driver packages", {
                                         "ids")
   .GlobalEnv$.test <- NULL
 
-  context_log_start()
   path <- tempfile("cluster_")
   on.exit({
     unlink(path, recursive = TRUE)

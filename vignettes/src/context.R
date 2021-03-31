@@ -57,7 +57,6 @@ writeLines(character(0), "file.R")
 ## ## Contexts
 
 library(context)
-context_log_start()
 
 ## A simple context might look like this:
 ctx <- context_save(packages=c("pkg1", "pkg2"), sources="file.R",

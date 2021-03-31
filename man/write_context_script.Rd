@@ -5,25 +5,25 @@
 \alias{parse_context_args}
 \title{Write context-using script}
 \usage{
-write_context_script(path, name, target, nargs)
+write_context_script(path, versioned = TRUE)
 
 parse_context_args(args, name, nargs)
 }
 \arguments{
 \item{path}{Path to the root of the context}
 
-\item{name}{Name of the script; this will be the filename}
+\item{args}{Arguments passed to the script, as returned by
+\code{commandArgs(TRUE)}.  Will be a character vector}
 
-\item{target}{The name function to call.  This must be at least
-namespace qualified ("::") but probably will be a hidden
-function (":::")}
+\item{name}{Name of the script; this will be the filename}
 
 \item{nargs}{The number of arguments, in addition to the context
 root, that the script takes.  This can be a vector of length two
 where minimum and maximum numbers of arguments are supported.}
 
-\item{args}{Arguments passed to the script, as returned by
-\code{commandArgs(TRUE)}.  Will be a character vector}
+\item{target}{The name function to call.  This must be at least
+namespace qualified ("::") but probably will be a hidden
+function (":::")}
 }
 \description{
 Write a very simple context script.  This can be used for

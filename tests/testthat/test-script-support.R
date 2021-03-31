@@ -89,7 +89,7 @@ test_that("use_local_library", {
 
 test_that("bootstrap_context", {
   skip("Can't mock base any more")
-  context_log_stop()
+  skip("Also mostly obsolete")
 
   require_namespace_no <- function(package, ...) {
     FALSE
@@ -114,7 +114,6 @@ test_that("bootstrap_context", {
 
   Sys.setenv("CONTEXT_QUIET" = "TRUE")
   on.exit(Sys.unsetenv("CONTEXT_QUIET"), add = TRUE)
-  context_log_stop()
   with_mock(
     `context:::use_local_library` = ull,
     `base:::requireNamespace` = require_namespace_no,
@@ -125,7 +124,6 @@ test_that("bootstrap_context", {
 
   Sys.setenv("CONTEXT_BOOTSTRAP" = "TRUE")
   on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
-  context_log_stop()
   with_mock(
     `context:::use_local_library` = ull,
     `base:::requireNamespace` = require_namespace_no,
@@ -136,7 +134,6 @@ test_that("bootstrap_context", {
 
   Sys.setenv("CONTEXT_BOOTSTRAP" = "TRUE")
   on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
-  context_log_stop()
   ull_path <- NULL
   with_mock(
     `context:::use_local_library` = ull,

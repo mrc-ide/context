@@ -1,30 +1,3 @@
-##' Start and stop the context log.  Soon this might swap out for
-##' \code{loggr}, but for now this should do.  When active, some
-##' actions will print diagnostic information to the message stream.
-##'
-##' The interface here will change by adding arguments.  Future versions
-##' may support logging to a file.
-##' @title Start and stop log
-##' @export
-##' @rdname context_log
-##'
-##' @return \code{context_log_start} invisibly returns a logical
-##'   indicating if logging was previously enabled.  This allows
-##'   patterns like:
-##' \preformatted{if (!context::context_log_start()) {
-##'   context::context_log_stop()
-##' }
-##' }
-##' to have a scoped log (i.e., log for the duration of a function).
-context_log_start <- function() {
-  invisible(isTRUE(options(context.log = TRUE)$context.log))
-}
-##' @export
-##' @rdname context_log
-context_log_stop <- function() {
-  invisible(isTRUE(options(context.log = NULL)$context.log))
-}
-
 ##' Send an entry to the context log.  This is designed primarily for
 ##' use with pacakges that build off of context, so that they can log
 ##' in a consistent way.
@@ -33,27 +6,25 @@ context_log_stop <- function() {
 ##' @param value Character string with the log entry
 ##' @export
 context_log <- function(topic, value) {
-  if (isTRUE(getOption("context.log"))) {
-    n <- length(value) - 1L
-    if (n > 0L) {
-      topic <- c(topic, rep_len("...", n))
-    }
-    str <- trimws(sprintf("[ %-9s ]  %s", topic, value))
-    if (n > 0L) {
-      str <- paste(str, collapse = "\n")
-    }
-    message(str)
-    if (!is.null(context_cache$cl)) {
-      ## Logging is rare enough that we should communicate with
-      ## workers; the cost is relatively low.  It might be worth
-      ## making this an option though.
-      ##
-      ## NOTE: if one of the nodes here is busy (though not sure how
-      ## that can happen) then this will hang or cause things to error
-      ## out.  OTOH, given that the underlying computations will use a
-      ## cluster, we would simply hang there instead...
-      parallel::clusterCall(context_cache$cl, "message", str)
-    }
+  n <- length(value) - 1L
+  if (n > 0L) {
+    topic <- c(topic, rep_len("...", n))
+  }
+  str <- trimws(sprintf("[ %-9s ]  %s", topic, value))
+  if (n > 0L) {
+    str <- paste(str, collapse = "\n")
+  }
+  message(str)
+  if (!is.null(context_cache$cl)) {
+    ## Logging is rare enough that we should communicate with
+    ## workers; the cost is relatively low.  It might be worth
+    ## making this an option though.
+    ##
+    ## NOTE: if one of the nodes here is busy (though not sure how
+    ## that can happen) then this will hang or cause things to error
+    ## out.  OTOH, given that the underlying computations will use a
+    ## cluster, we would simply hang there instead...
+    parallel::clusterCall(context_cache$cl, "message", str)
   }
 }
 

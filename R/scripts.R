@@ -130,9 +130,6 @@ write_script_bootstrap <- function(path) {
 
 bootstrap_context <- function(args = commandArgs(TRUE),
                               name = "context", n = 0L) {
-  if (!nzchar(Sys.getenv("CONTEXT_QUIET"))) {
-    options(context.log = TRUE)
-  }
   args <- parse_context_args(args, name, n)
   context_log("hello", Sys_time())
   context_log("wd", getwd())
@@ -147,23 +144,8 @@ bootstrap_context <- function(args = commandArgs(TRUE),
   invisible(args$args)
 }
 
-use_local_library <- function(lib) {
-  if (file.exists(lib)) {
-    ## TODO: if we're dealing with adding existing lib paths here then
-    ## they need to be joined with ':' on unix and ';' on Windows -
-    ## see .Platform$path.sep
-    .libPaths(union(lib, .libPaths()))
-    Sys.setenv("R_LIBS_USER" = lib)
-    context_log("lib", lib)
-  } else {
-    warning(sprintf("library not found at %s", lib,
-                    call. = FALSE, immediate. = TRUE))
-    context_log("lib", sprintf("warning: library not found at %s", lib))
-  }
-}
 
 main_task_run <- function(args = commandArgs(TRUE)) {
-  context_log_start()
   context_log("init", Sys_time())
   context_log("hostname", hostname())
   context_log("process", process_id())
