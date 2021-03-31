@@ -1,2 +1,3 @@
-linters: with_defaults(commented_code_linter = NULL)
-exclusions: list("inst/doc/ring.R", "inst/doc/ring_applications.R")
+linters: with_defaults(
+    object_usage_linter = NULL,
+    cyclocomp_linter = NULL)
