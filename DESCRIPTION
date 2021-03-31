@@ -30,3 +30,4 @@ Remotes:
     mrc-ide/conan@prototype
 RoxygenNote: 7.1.1
 Encoding: UTF-8
+VignetteBuilder: knitr

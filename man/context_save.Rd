@@ -29,7 +29,7 @@ should define functions and (perhaps) other "global" objects,
 but should not do any serious computation.}
 
 \item{package_sources}{Optional information about where to find
-non-CRAN packages, created by \code{\link{conan_sources}}}
+non-CRAN packages, created by \code{conan::conan_sources}}
 
 \item{envir}{The current environment.  This is used to copy
 \emph{local} variables around.  For \code{context_load} this is

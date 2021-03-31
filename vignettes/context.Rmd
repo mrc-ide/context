@@ -1,0 +1,115 @@
+---
+title: "context"
+author: "Rich FitzJohn"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{context}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  error = FALSE,
+  collapse = TRUE,
+  comment = "#>")
+```
+
+The idea here is that we want to describe how to build a "context" and then evalute one or more expressions in it.  This is a little related to approaches like `docker` and `packrat` in that we want contexts to be isolated from one another, but different in that _portability_ is more important than isolation.
+
+Imagine that you have an analysis to run on another computer with:
+
+* packages to install from CRAN or any one of several other R package repositories (e.g., a `drat`, bioconductor, etc).
+* packages to install from github
+* packages to install from local sources (e.g., private github repos, unrelesed code)
+* A number of source files to read in
+* A local environment to recreate (e.g., if calling a function from another function).
+
+The other computer may already have some packages installed, so you don't want to waste time and bandwidth re-installing them.  So things end up littered with constructs like
+
+```r
+if (!require("mypkg")) {
+  install.packages("mypkg")
+  library(mypkg)
+}
+```
+
+If these packages are coming from github (or worse also have dependencies on github) the bootstrap code gets out of hand very quickly and tends to be non-portable.
+
+Creating separate libraries (rather than sharing one from your personal computer) will be important if the architecture differs (e.g., you run Windows but you want to run code on a Linux cluster).
+
+The idea here is that `context` helps describe a context made from the above ingredients and then attempts to recreate it on a different computer (or in a different directory on your computer).
+
+## Contexts
+
+A minimal context looks like this:
+
+```{r}
+path <- tempfile()
+ctx <- context::context_save(path = path)
+ctx
+```
+
+Typically one would use the arguments `packages` and `sources` to describe the requirements of any tasks that you'll be running.
+
+## Tasks
+
+Once a context is defined, *tasks* can be defined in the context. These are simply R expressions associated with the identifier of a context.
+
+```{r }
+t <- context::task_save(quote(sin(1)), context = ctx)
+t
+```
+
+The task `t` above is just a key that can be used to retrieve information about the task later.
+
+```{r}
+context::task_expr(t, ctx)
+```
+
+Several such tasks may exist, though here only one does
+
+```{r}
+context::task_list(ctx)
+```
+
+To run a task we first need to "load" the context (this will actuall load any required packages and source any scripts) then pass this through to `task_run`
+
+```{r}
+res <- context::task_run(t, context::context_load(ctx))
+```
+
+This prints the result of restoring the context and running the task:
+
+* `context`: the context id
+* `library`: calls to `library()` to load packages and attach namespaces
+* `namespace`: calls to `loadNamespace()`; these packages were present
+   but not attached in the context.
+* `root`: the directory within which all our context/task files will be
+   located
+* `source`: There was nothing to `source()` here so this is blank,
+   otherwise it would be a list of filenames.
+* `task`: the task id
+* `expr`: the expression to evaluate
+* `start`: start time
+* `ok`: indication of success
+* `end`: end time
+
+After all that, here is the result:
+```{r}
+res
+```
+
+The result can also be retrieved using `task_result()`:
+
+```{r}
+context::task_result(t, ctx)
+```
+
+This is not immensely useful as it is; it's just evaluation with more steps. Typically we'd do this in another process. You can do this with `callr` here:
+
+```{r}
+res <- callr::rscript(file.path(path, "bin", "task_run"), c(path, t),
+                      echo = TRUE, show = TRUE)
+```
