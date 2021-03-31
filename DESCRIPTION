@@ -18,7 +18,6 @@ Imports:
     storr (>= 1.1.1)
 Suggests:
     callr,
-    conan,
     knitr,
     mockery,
     parallel,
@@ -26,8 +25,6 @@ Suggests:
     rmarkdown,
     testthat,
     withr
-Remotes:
-    mrc-ide/conan@prototype
 RoxygenNote: 7.1.1
 Encoding: UTF-8
 VignetteBuilder: knitr
