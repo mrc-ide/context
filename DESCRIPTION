@@ -1,6 +1,6 @@
 Package: context
 Title: Contexts for evaluating R expressions
-Version: 0.2.4
+Version: 0.3.0
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
                     email = "rich.fitzjohn@gmail.com"),
              person("Imperial College of Science, Technology and Medicine",
@@ -17,13 +17,15 @@ Imports:
     ids,
     storr (>= 1.1.1)
 Suggests:
-    DBI,
-    knitr,
-    parallel,
+    callr,
     conan,
+    knitr,
+    mockery,
+    parallel,
     redux,
     rmarkdown,
-    testthat
+    testthat,
+    withr
 Remotes:
     mrc-ide/conan@prototype
 RoxygenNote: 7.1.1

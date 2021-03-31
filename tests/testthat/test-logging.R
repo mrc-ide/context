@@ -7,31 +7,36 @@ test_that("logging", {
                  "[ topic     ]  a\n[ ...       ]  b", fixed = TRUE)
 })
 
-test_that("parse_context_log", {
-  skip("rewrite with callr, or dont use process")
-  path <- tempfile("cluster_")
-  on.exit(cleanup(path))
-  ctx <- context_save(path, sources = "myfuns.R")
-  expr <- quote(loop(1, 10))
-  t <- task_save(expr, ctx)
 
-  logfile <- tempfile()
-  ctx$db$set(t, logfile, "log_path")
+test_that("parse and print context log", {
+  msg <- capture_messages({
+    context_log("topic1", "value1")
+    message("Some message")
+    context_log("topic2", "value2")
+  })
+  obj <- parse_context_log(trimws(msg))
+  expect_s3_class(obj, "context_log")
 
-  full <- file.path(path_bin(path), "task_run")
-  res <- Rscript(c(full, path, t), stdout = logfile, stderr = logfile)
-  expect_equal(res, 0)
+  str_pretty <- withr::with_options(
+    list(crayon.enabled = TRUE),
+    pretty_context_log(obj))
+  expect_true(all(crayon::has_style(str_pretty$str)))
+  str_plain <- withr::with_options(
+    list(crayon.enabled = FALSE),
+    pretty_context_log(obj))
+  expect_false(any(crayon::has_style(str_plain$str)))
 
-  expect_equal(task_status(t, ctx), TASK_COMPLETE)
-  expect_equal(task_result(t, ctx), 1024)
-
-  log <- task_log(t, ctx)
-  expect_is(log, "context_log")
-  oo <- options(crayon.enabled = TRUE)
-  on.exit(options(oo), add = TRUE)
-  res <- capture.output(print(log, TRUE))
-  expect_true(!identical(crayon::strip_style(res), res))
+  withr::with_options(
+    list(crayon.enabled = TRUE),
+    expect_true(any(crayon::has_style(capture.output(print(obj))))))
+  withr::with_options(
+    list(crayon.enabled = FALSE),
+    expect_false(any(crayon::has_style(capture.output(print(obj))))))
+  withr::with_options(
+    list(crayon.enabled = TRUE),
+    expect_false(any(crayon::has_style(capture.output(print(obj, FALSE))))))
 })
+
 
 test_that("parse failed log", {
   c('Error in bootstrap_context(name = "task_run", n = 1L) : ',

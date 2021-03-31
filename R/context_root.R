@@ -12,6 +12,7 @@ context_root_get <- function(root, db = NULL) {
   if (is.character(root)) {
     root <- context_root(root, db)
   } else if (inherits(root, "context_root")) {
+    ## pass
   } else if (is.recursive(root) && inherits(root$root, "context_root")) {
     ## who uses this branch now?
     root <- root$root
@@ -31,7 +32,7 @@ context_root_init <- function(path, storage_type = NULL, storage_args = NULL,
       dir.create(path, FALSE, TRUE)
       writeLines(as.character(packageVersion("context")), fv)
     }
-    write_scripts(path)
+    write_context_script(path_bin(path))
   } else if (written > installed) {
     stop("context version conflict; local is outdated")
   }

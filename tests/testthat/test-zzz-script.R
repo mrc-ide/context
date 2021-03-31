@@ -1,46 +1,39 @@
 context("script")
 
 test_that("basic", {
-  path <- tempfile("cluster_")
+  skip_if_not_installed("callr")
+
+  path <- tempfile("context_")
   on.exit(cleanup(path))
-  ctx <- context_save(path)
-  expr <- quote(sin(1))
-  t <- task_save(expr, ctx)
+  ctx <- context_save(path, envir = .GlobalEnv)
 
-  full <- file.path(path_bin(path), "task_run")
-  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
-  expect_null(attr(res, "status", exact = TRUE))
+  t <- task_save(quote(sin(1)), ctx)
 
+  ans <- task_run_callr(path, t)
+  expect_equal(ans$status, 0)
+
+  expect_equal(task_result(t, ctx), sin(1))
   expect_equal(task_status(t, ctx), TASK_COMPLETE)
-  expect_equal(task_result(t, ctx), eval(expr))
 })
+
 
 test_that("error", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
   ctx <- context_save(path, sources = "myfuns.R")
-  t1 <- task_save(quote(g(-1)), ctx)
-  t2 <- task_save(quote(g(-1)), ctx)
+  t <- task_save(quote(g(-1)), ctx)
 
   full <- file.path(path_bin(path), "task_run")
 
-  res <- Rscript(c(full, path, t1), stdout = TRUE, stderr = TRUE)
-  expect_null(attr(res, "status", exact = TRUE))
-  expect_equal(task_status(t1, ctx), TASK_ERROR)
+  res <- task_run_callr(path, t, fail_on_status = FALSE)
+  expect_equal(res$status, 1)
+  expect_equal(task_status(t, ctx), TASK_ERROR)
 
-  Sys.setenv("CONTEXT_PROPAGATE_ERROR" = "TRUE")
-  on.exit(Sys.unsetenv("CONTEXT_PROPAGATE_ERROR"), add = TRUE)
-  res <- suppressWarnings(
-    Rscript(c(full, path, t2), stdout = TRUE, stderr = TRUE))
-  expect_gt(attr(res, "status", exact = TRUE), 0)
-  expect_equal(task_status(t2, ctx), TASK_ERROR)
-
-  r1 <- task_result(t1, ctx)
-  r2 <- task_result(t2, ctx)
-  expect_equal(r1, r2)
-  expect_is(r1, "context_task_error")
-  expect_equal(r1$trace[[1]], "context:::main_task_run()")
+  r <- task_result(t, ctx)
+  expect_is(r, "context_task_error")
+  expect_equal(r$trace[[1]], "context:::main_task_run()")
 })
+
 
 test_that("parallel", {
   path <- tempfile("cluster_")
@@ -48,9 +41,8 @@ test_that("parallel", {
   ctx <- context_save(path, sources = "myfuns-parallel.R")
   t <- task_save(quote(get_cluster_pids()), ctx)
 
-  full <- file.path(path_bin(path), "task_run")
-  log1 <- suppressWarnings(
-    Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE))
+  ans1 <- task_run_callr(path, t, fail_on_status = FALSE)
+  expect_equal(ans1$status, 1)
   expect_equal(task_status(t, ctx), TASK_ERROR)
 
   res1 <- task_result(t, ctx)
@@ -58,55 +50,16 @@ test_that("parallel", {
   expect_match(res1$message, "registered")
   expect_true(any(grepl("defaultCluster", res1$trace)))
 
-  Sys.setenv("CONTEXT_CORES" = 2L)
-  on.exit(Sys.unsetenv("CONTEXT_CORES"), add = TRUE)
-  log2 <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
+  ans2 <- withr::with_envvar(
+    c(CONTEXT_CORES = 2L),
+    task_run_callr(path, t, fail_on_status = FALSE))
+  expect_equal(ans2$status, 0)
 
   expect_equal(task_status(t, ctx), TASK_COMPLETE)
   res2 <- task_result(t, ctx)
   expect_true(process_id() != res2$host)
   expect_equal(length(res2$workers), 2)
   expect_false(res2$host %in% res2$workers)
-})
-
-## This tests the issue that Ilaria found; when a package uses
-## startCluster(), it should find the set of packages that we want it
-## to find (so that if this is running on a provisioned context, then
-## the cross installed packages are all found)
-test_that("manual parallel cluster", {
-  skip("Broken in R >= 3.4.x")
-  path <- tempfile("cluster_")
-  on.exit(cleanup(path))
-
-  Sys.setenv(CONTEXT_BOOTSTRAP = "TRUE")
-  on.exit(Sys.unsetenv("CONTEXT_BOOTSTRAP"), add = TRUE)
-
-  ctx <- context_save(path, sources = "myfuns-parallel.R")
-  t <- task_save(quote(manual_parallel_test()), ctx)
-
-  full <- file.path(path_bin(path), "task_run")
-  res1 <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
-  paths1 <- task_result(t, ctx)
-
-  ## Then, we create the directory that would the the library path:
-  dir.create(path_library(path), recursive = TRUE)
-
-  res2 <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
-  paths2 <- task_result(t, ctx)
-
-  ## This is not ideal, but under devtools::test() (but not under
-  ## running tests interactively) R_LIBS is set and changes the order
-  ## of the paths here.  So we test that _any_ of the library paths
-  ## are consistent with the library path having been set when we
-  ## really should test for the first one.
-  path_norm <- normalizePath(path)
-  expect_false(any(string_starts_with(normalizePath(paths1[[1]]), path_norm)))
-  expect_true(any(string_starts_with(normalizePath(paths2[[1]]), path_norm)))
-
-  if (!nzchar(Sys.getenv("R_LIBS"))) {
-    expect_false(string_starts_with(paths1[[1]][[1]], path_norm))
-    expect_true(string_starts_with(paths2[[1]][[1]], path_norm))
-  }
 })
 
 
@@ -124,10 +77,8 @@ test_that("failure on startup", {
   expr <- quote(sin(1))
   t <- task_save(expr, ctx)
 
-  full <- file.path(path_bin(path), "task_run")
-  res <- suppressWarnings(
-    Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE))
-  expect_gt(attr(res, "status", exact = TRUE), 0)
+  ans <- task_run_callr(path, t, fail_on_status = FALSE)
+  expect_equal(ans$status, 1)
 
   expect_equal(task_status(t, ctx), TASK_ERROR)
   e <- task_result(t, ctx)
@@ -138,6 +89,7 @@ test_that("failure on startup", {
   expect_true(length(e$warnings) >= 1)
 })
 
+
 test_that("load packages", {
   ## this is failing due to (I think) crayon issues
   skip_on_os("windows")
@@ -147,10 +99,10 @@ test_that("load packages", {
   ctx <- context_save(path, packages = packages)
   expr <- quote(sessionInfo())
   t <- task_save(expr, ctx)
-  full <- file.path(path_bin(path), "task_run")
-  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
 
-  ans <- parse_context_log(res)
+  res <- task_run_callr(path, t)
+
+  ans <- parse_context_log(strsplit(res$stderr, "\\n")[[1]])
   i <- which(ans$title == "library")
   expect_equal(length(i), 1)
   expect_equal(trimws(ans$value[[i]]), paste(packages, collapse = ", "))
@@ -163,6 +115,7 @@ test_that("load packages", {
   expect_true(all(packages %in% names(info$otherPkgs)))
 })
 
+
 test_that("load namespaces", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
@@ -170,10 +123,10 @@ test_that("load namespaces", {
   ctx <- context_save(path, packages = list(loaded = packages))
   expr <- quote(sessionInfo())
   t <- task_save(expr, ctx)
-  full <- file.path(path_bin(path), "task_run")
-  res <- Rscript(c(full, path, t), stdout = TRUE, stderr = TRUE)
 
-  ans <- parse_context_log(res)
+  res <- task_run_callr(path, t)
+
+  ans <- parse_context_log(strsplit(res$stderr, "\\n")[[1]])
 
   i <- which(ans$title == "library")
   expect_equal(length(i), 1)

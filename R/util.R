@@ -127,29 +127,6 @@ collector <- function(init = list()) {
        get = function() res)
 }
 
-find_functions <- function(fun, env) {
-  ours <- names(env)
-  ours <- ours[vlapply(ours, function(x) is.function(env[[x]]))]
-  seen <- character(0)
-  test <- list(fun)
-  while (length(test) > 0L) {
-    new <- setdiff(intersect(all.vars(body(test[[1L]]), TRUE), ours), seen)
-    seen <- c(seen, new)
-    test <- c(test[-1L], lapply(new, get, env, inherits = FALSE))
-  }
-  sort(seen)
-}
-
-fun_to_str <- function(x, env) {
-  paste0(x, " <- ",
-         paste(deparse(get(x, env, inherits = FALSE)), collapse = "\n"))
-}
-
-Rscript <- function(...) {
-  Sys.setenv("R_TESTS" = "")
-  system2(file.path(R.home(), "bin", "Rscript"), ...)
-}
-
 ## The R time objects really want me poke my eyes out.  Perhaps there
 ## is a better way of doing this?  Who knows?
 unlist_times <- function(x) {
@@ -220,4 +197,17 @@ eval_safely <- function(expr, envir, class, depth = 0L) {
 
   list(value = value,
        success = is.null(error))
+}
+
+
+deparse_fn <- function(nm, ...) {
+  value <- trimws(deparse(get(nm, ...)), "right")
+  value[[1]] <- sprintf("%s <- %s", nm, value[[1]])
+  value
+}
+
+
+write_script_exec <- function(code, path) {
+  writeLines(code, path)
+  Sys.chmod(path, "755")
 }
