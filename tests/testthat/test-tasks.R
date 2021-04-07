@@ -398,3 +398,18 @@ test_that("invalid task", {
   expect_error(task_save(quote(sin), ctx),
                "expr must inherit from call")
 })
+
+
+
+test_that("task run in external process", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  expr <- quote(list(x, y))
+  ctx <- context_save(path)
+  t <- task_save(quote(sin(1)), ctx)
+  logfile <- tempfile()
+  expect_null(task_run_external(path, ctx$id, t, logfile))
+  expect_true(file.exists(logfile))
+  expect_match(readLines(logfile), "[ start", fixed = TRUE, all = FALSE)
+  expect_equal(task_result(t, ctx), sin(1))
+})

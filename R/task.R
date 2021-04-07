@@ -82,3 +82,29 @@ task_read <- function(id, db) {
   ret$db <- db
   ret
 }
+
+
+##' Run a task in a separate process, using [callr::r]. Unlike
+##' [context::task_run] this does not return the value, and is called
+##' for the side effect of writing to the context.
+##'
+##' @title Run a task in separate process
+##'
+##' @inheritParams context_read
+##'
+##' @param task_id A task identifier
+##'
+##' @param path_log Path to log file
+##'
+##' @export
+##'
+##' @author Richard Fitzjohn
+task_run_external <- function(root, identifier, task_id, path_log) {
+  dir.create(dirname(path_log), FALSE, TRUE)
+  args <- list(root, identifier, task_id)
+  callr::r(function(root, identifier, task_id) {
+    ctx <- context::context_load(context::context_read(identifier, root))
+    context::task_run(task_id, ctx)
+    invisible()
+  }, args, stderr = path_log, stdout = path_log)
+}
