@@ -16,13 +16,13 @@ knitr::opts_chunk$set(
   comment = "#>")
 ```
 
-The idea here is that we want to describe how to build a "context" and then evalute one or more expressions in it.  This is a little related to approaches like `docker` and `packrat` in that we want contexts to be isolated from one another, but different in that _portability_ is more important than isolation.
+The idea here is that we want to describe how to build a "context" and then evaluate one or more expressions in it.  This is a little related to approaches like `docker` and `packrat` in that we want contexts to be isolated from one another, but different in that _portability_ is more important than isolation.
 
 Imagine that you have an analysis to run on another computer with:
 
 * packages to install from CRAN or any one of several other R package repositories (e.g., a `drat`, bioconductor, etc).
-* packages to install from github
-* packages to install from local sources (e.g., private github repos, unrelesed code)
+* packages to install from GitHub
+* packages to install from local sources (e.g., private GitHub repos, unreleased code)
 * A number of source files to read in
 * A local environment to recreate (e.g., if calling a function from another function).
 
@@ -35,7 +35,7 @@ if (!require("mypkg")) {
 }
 ```
 
-If these packages are coming from github (or worse also have dependencies on github) the bootstrap code gets out of hand very quickly and tends to be non-portable.
+If these packages are coming from GitHub (or worse also have dependencies on GitHub) the bootstrap code gets out of hand very quickly and tends to be non-portable.
 
 Creating separate libraries (rather than sharing one from your personal computer) will be important if the architecture differs (e.g., you run Windows but you want to run code on a Linux cluster).
 
@@ -74,7 +74,7 @@ Several such tasks may exist, though here only one does
 context::task_list(ctx)
 ```
 
-To run a task we first need to "load" the context (this will actuall load any required packages and source any scripts) then pass this through to `task_run`
+To run a task we first need to "load" the context (this will actual load any required packages and source any scripts) then pass this through to `task_run`
 
 ```{r}
 res <- context::task_run(t, context::context_load(ctx))

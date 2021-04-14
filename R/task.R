@@ -97,8 +97,6 @@ task_read <- function(id, db) {
 ##' @param path_log Path to log file
 ##'
 ##' @export
-##'
-##' @author Richard Fitzjohn
 task_run_external <- function(root, identifier, task_id, path_log) {
   dir.create(dirname(path_log), FALSE, TRUE)
   args <- list(root, identifier, task_id)

@@ -10,7 +10,7 @@ context_read(identifier, root, db = NULL)
 \item{identifier}{Either the id or name of a context (see
 \code{\link{context_list}})}
 
-\item{root}{Something interpetable as the context root; either}
+\item{root}{Something interpretable as the context root; either}
 
 \item{db}{Optionally, a database (if known already)}
 }

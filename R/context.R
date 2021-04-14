@@ -35,7 +35,7 @@
 ##'   \code{\link{context_info}})
 ##'
 ##' @param root_id Force a context root id.  This is intended for
-##'   advanced use only.  By settting the root id, two contexts
+##'   advanced use only.  By setting the root id, two contexts
 ##'   created with storage in different file locations (\code{path})
 ##'   will get the same id.  This is required for using a
 ##'   server-hosted database to share a context between different
@@ -161,7 +161,7 @@ print.context <- function(x, ...) {
 ##' @title Read a context
 ##' @param identifier Either the id or name of a context (see
 ##'   \code{\link{context_list}})
-##' @param root Something interpetable as the context root; either
+##' @param root Something interpretable as the context root; either
 ##' @param db Optionally, a database (if known already)
 ##' @export
 context_read <- function(identifier, root, db = NULL) {

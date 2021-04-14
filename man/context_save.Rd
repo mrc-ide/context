@@ -51,7 +51,7 @@ printed with the context in some situations (such as
 \code{\link{context_info}})}
 
 \item{root_id}{Force a context root id.  This is intended for
-advanced use only.  By settting the root id, two contexts
+advanced use only.  By setting the root id, two contexts
 created with storage in different file locations (\code{path})
 will get the same id.  This is required for using a
 server-hosted database to share a context between different

@@ -7,7 +7,7 @@
 task_run_external(root, identifier, task_id, path_log)
 }
 \arguments{
-\item{root}{Something interpetable as the context root; either}
+\item{root}{Something interpretable as the context root; either}
 
 \item{identifier}{Either the id or name of a context (see
 \code{\link{context_list}})}
@@ -20,7 +20,4 @@ task_run_external(root, identifier, task_id, path_log)
 Run a task in a separate process, using [callr::r]. Unlike
 [context::task_run] this does not return the value, and is called
 for the side effect of writing to the context.
-}
-\author{
-Richard Fitzjohn
 }
