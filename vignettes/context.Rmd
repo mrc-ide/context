@@ -86,10 +86,11 @@ This prints the result of restoring the context and running the task:
 * `library`: calls to `library()` to load packages and attach namespaces
 * `namespace`: calls to `loadNamespace()`; these packages were present
    but not attached in the context.
-* `root`: the directory within which all our context/task files will be
-   located
 * `source`: There was nothing to `source()` here so this is blank,
    otherwise it would be a list of filenames.
+* `root`: the directory within which all our context/task files will be
+   located
+* `context`: this is repeated here because we've finished the load part of the aove statement
 * `task`: the task id
 * `expr`: the expression to evaluate
 * `start`: start time
