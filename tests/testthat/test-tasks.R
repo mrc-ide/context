@@ -244,7 +244,6 @@ test_that("complex expressions", {
 })
 
 test_that("stack trace", {
-  ## context_log_start()
   ctx <- context_save(tempfile(), storage_type = "environment")
   ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
   t <- task_save(quote(readLines("asdfa.txt")), ctx)
@@ -261,8 +260,6 @@ test_that("stack trace, no warning", {
   t <- task_save(quote(f(-10)), ctx)
 
   ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
-  context_log_start()
-  on.exit(context_log_stop())
   expect_message(res <- task_run(t, ctx_run),
                  "Need positive x")
   expect_null(res$warnings)
@@ -278,8 +275,6 @@ test_that("long expr", {
                     ctx)
 
   ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
-  context_log_start()
-  on.exit(context_log_stop())
   msg <- capture_messages(res <- task_run(task, ctx_run))
   msg <- strsplit(paste(msg, collapse = ""), "\n")[[1]]
   dat <- parse_context_log(sub("\n$", "", msg))
@@ -295,8 +290,6 @@ test_that("print", {
 })
 
 test_that("capture output", {
-  context_log_start()
-  on.exit(context_log_stop())
   ctx <- context_save(tempfile(),
                       storage_type = "environment")
   ctx_run <- context_load(ctx, new.env(parent = .GlobalEnv))
@@ -321,6 +314,9 @@ test_that("capture output", {
 
   ctx$db$set(t, logfile, "log_path")
   expect_equal(task_log(t, ctx), dat)
+
+  txt <- task_log(t, ctx, FALSE)
+  expect_equal(parse_context_log(txt), task_log(t, ctx))
 
   logpath <- file.path(ctx$root$path, "logs")
   dir.create(logpath, FALSE, TRUE)
@@ -401,4 +397,19 @@ test_that("invalid task", {
                "expr must inherit from call")
   expect_error(task_save(quote(sin), ctx),
                "expr must inherit from call")
+})
+
+
+
+test_that("task run in external process", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  expr <- quote(list(x, y))
+  ctx <- context_save(path)
+  t <- task_save(quote(sin(1)), ctx)
+  logfile <- tempfile()
+  expect_null(task_run_external(path, ctx$id, t, logfile))
+  expect_true(file.exists(logfile))
+  expect_match(readLines(logfile), "[ start", fixed = TRUE, all = FALSE)
+  expect_equal(task_result(t, ctx), sin(1))
 })

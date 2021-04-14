@@ -26,7 +26,6 @@ parallel_cluster_start <- function(n, ctx) {
     ## at the current R installation so that everything works well?
     ## Ideally these will load the context so that they're good to go.
     context_start <- function(root, id) {
-      context_log_start()
       context_load(context_read(id, root))
       invisible()
     }

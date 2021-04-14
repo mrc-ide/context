@@ -15,4 +15,3 @@ task_function_name(ids, db)
 \description{
 Fetch function name for a task
 }
-

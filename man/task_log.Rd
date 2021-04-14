@@ -25,4 +25,3 @@ Return the log of a task, if enabled.
 The returned object is of class \code{task_log}, which has a print
 method that will nicely display.  Output is grouped into phases.
 }
-

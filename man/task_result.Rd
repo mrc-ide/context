@@ -18,4 +18,3 @@ completed?  Used internally, and not generally needed.}
 \description{
 Fetch result from completed task.
 }
-

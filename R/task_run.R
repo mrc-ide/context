@@ -14,6 +14,7 @@
 ##'
 ##' @export
 task_run <- function(id, context, filename = NULL) {
+  ## TODO: can remove filename and capture_log
   if (!is.null(filename)) {
     return(capture_log(task_run(id, context), filename))
   }

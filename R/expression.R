@@ -11,7 +11,7 @@
 ##' deserialisation.
 ##'
 ##' This includes the remote possibility of a collision, but with the
-##' size of the keyspace used for hashes hopefully it's negligable.
+##' size of the keyspace used for hashes hopefully it's negligible.
 ##'
 ##' Because of the approach used here, \code{expr} can contain
 ##' anything; I'd suggest not saving the contents of the function

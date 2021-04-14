@@ -25,4 +25,3 @@ Fetch times taken to queue, run, and since running a task.
 \author{
 Rich FitzJohn
 }
-

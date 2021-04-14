@@ -12,6 +12,7 @@ context_root_get <- function(root, db = NULL) {
   if (is.character(root)) {
     root <- context_root(root, db)
   } else if (inherits(root, "context_root")) {
+    ## pass
   } else if (is.recursive(root) && inherits(root$root, "context_root")) {
     ## who uses this branch now?
     root <- root$root
@@ -31,16 +32,12 @@ context_root_init <- function(path, storage_type = NULL, storage_args = NULL,
       dir.create(path, FALSE, TRUE)
       writeLines(as.character(packageVersion("context")), fv)
     }
-    write_scripts(path)
+    write_context_script(path_bin(path))
   } else if (written > installed) {
     stop("context version conflict; local is outdated")
   }
   db <- context_db_init(path, storage_type, storage_args, id)
-  root <- context_root(path, db)
-  if (written > numeric_version("0.0") && written < numeric_version("0.1.0")) {
-    context_upgrade_0_1_0(root)
-  }
-  root
+  context_root(path, db)
 }
 
 context_db_get <- function(root) {
@@ -164,41 +161,4 @@ context_root <- function(path, db = NULL) {
 ##' @export
 print.context_root <- function(x, ...) {
   print_ad_hoc(x)
-}
-
-context_upgrade_0_1_0 <- function(root) {
-  message("HEY THERE! Your context DB is old!")
-  message("I *strongly* recommend stopping now and using a new root path")
-
-  if (length(root$db$list("name_by_context")) == 0L) {
-    message("Attempting to upgrade your context directory")
-    db <- root$db
-    ids <- db$list("contexts")
-    if (length(ids > 0L)) {
-      nms <- vcapply(seq_along(ids), function(.) context_name(NULL))
-      db$mset(ids, nms, "name_by_context")
-      db$mset(nms, ids, "context_by_name")
-
-      db$mset(ids, db$mget(ids, "context_date"), "context_date_created")
-
-      tasks <- db$list("tasks")
-      if (length(tasks) > 0L) {
-        if (length(ids) != 1L) {
-          task_context <- vcapply(db$mget(tasks, "tasks"), "[[", "context_id")
-        } else {
-          task_context <- rep(task_context, length(tasks))
-        }
-        db$mset(tasks, task_context, "task_context")
-      }
-
-      bundles <- db$list("task_bundles")
-      if (length(bundles) > 0L) {
-        bundles_id <- db$mget(bundles, "task_bundles")
-        bundles_homogeneous <- vnapply(bundles_id, function(x)
-          length(unique(task_function_name(x, db)))) == 1
-        db$mset(bundles, bundles_homogeneous, "bundles_homogeneous")
-      }
-    }
-    message("Things should work now, but treat this as read only please!")
-  }
 }

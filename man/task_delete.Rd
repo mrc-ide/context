@@ -19,4 +19,3 @@ the root).  A \code{context} object is also OK.}
 \description{
 Delete a task, including its results.
 }
-

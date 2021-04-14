@@ -22,4 +22,3 @@ An identifier that can be used to retrieve or run the task
 Save and reload tasks.  Tasks consist of an expression bound to a
 \code{context}.
 }
-

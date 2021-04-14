@@ -70,3 +70,9 @@ alter_version <- function(v, increase) {
 read_package_version <- function(path) {
   numeric_version(read.dcf(file.path(path, "DESCRIPTION"), "Version")[[1]])
 }
+
+
+task_run_callr <- function(root, id, echo = FALSE, show = FALSE, ...) {
+  bin <- file.path(path_bin(root), "task_run")
+  callr::rscript(bin, c(root, id), echo = echo, show = show, ...)
+}
