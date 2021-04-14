@@ -100,9 +100,13 @@ task_read <- function(id, db) {
 task_run_external <- function(root, identifier, task_id, path_log) {
   dir.create(dirname(path_log), FALSE, TRUE)
   args <- list(root, identifier, task_id)
-  callr::r(function(root, identifier, task_id) {
-    ctx <- context::context_load(context::context_read(identifier, root))
-    context::task_run(task_id, ctx)
-    invisible()
-  }, args, stderr = path_log, stdout = path_log)
+  callr::r(task_run_external_helper, args, package = "context",
+           stderr = path_log, stdout = path_log)
+}
+
+
+task_run_external_helper <- function(root, identifier, task_id) {
+  ctx <- context::context_load(context::context_read(identifier, root))
+  context::task_run(task_id, ctx)
+  invisible()
 }
