@@ -127,8 +127,8 @@ collector <- function(init = list()) {
        get = function() res)
 }
 
-## The R time objects really want me poke my eyes out.  Perhaps there
-## is a better way of doing this?  Who knows?
+## R time objects really want me poke my eyes out.  Perhaps there is a
+## better way of doing this?  Who knows?
 unlist_times <- function(x) {
   if (length(x) == 0L) {
     empty_time()
