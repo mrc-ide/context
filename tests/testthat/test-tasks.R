@@ -414,7 +414,6 @@ test_that("task run in external process", {
   expect_equal(task_result(t, ctx), sin(1))
 })
 
-
 test_that("task_reset (single)", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
@@ -438,6 +437,8 @@ test_that("task_reset (single)", {
 
   expect_equal(ctx$db$get(t, "task_status"), "PENDING")
   expect_gt(ctx$db$get(t, "task_time_sub"), later)
+  expect_equal(ctx$db$get(t, "task_time_beg"), NA)
+  expect_equal(ctx$db$get(t, "task_time_end"), NA)
 
   expect_equal(ctx$db$get(t2, "task_status"), "COMPLETE")
   expect_lt(ctx$db$get(t2, "task_time_sub"), later)
