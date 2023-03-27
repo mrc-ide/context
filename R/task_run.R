@@ -66,6 +66,13 @@ task_load <- function(id, context) {
   dat
 }
 
+##' Reset tasks
+##' @title Reset status and submission time of tasks
+##' @param id A vector of task identifiers
+##'
+##' @param context A context object
+##'
+##' @export
 task_reset <- function(id, context) {
   assert_is(context, "context")
   db <- context_db_get(context)
