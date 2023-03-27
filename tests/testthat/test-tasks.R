@@ -413,3 +413,62 @@ test_that("task run in external process", {
   expect_match(readLines(logfile), "[ start", fixed = TRUE, all = FALSE)
   expect_equal(task_result(t, ctx), sin(1))
 })
+
+
+test_that("task_reset (single)", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+
+  ctx <- context_save(path, storage_type = "environment")
+
+  now <- Sys.time()
+  expr <- quote(sin(1))
+  t <- task_save(expr, ctx)
+  t2 <- task_save(expr, ctx)
+
+  e <- new.env(parent = environment())
+  ctx_run <- context_load(ctx, e)
+  task_run(t, ctx_run)
+  task_run(t2, ctx_run)
+  expect_equal(ctx$db$get(t, "task_status"), "COMPLETE")
+  expect_gt(ctx$db$get(t, "task_time_sub"), now)
+
+  later <- Sys.time()
+  task_reset(t, ctx)
+
+  expect_equal(ctx$db$get(t, "task_status"), "PENDING")
+  expect_gt(ctx$db$get(t, "task_time_sub"), later)
+
+  expect_equal(ctx$db$get(t2, "task_status"), "COMPLETE")
+  expect_lt(ctx$db$get(t2, "task_time_sub"), later)
+})
+
+test_that("task_reset (multiple)", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+
+  ctx <- context_save(path, storage_type = "environment")
+
+  now <- Sys.time()
+  expr <- quote(sin(1))
+  t1 <- task_save(expr, ctx)
+  t2 <- task_save(expr, ctx)
+
+  e <- new.env(parent = environment())
+  ctx_run <- context_load(ctx, e)
+  task_run(t1, ctx_run)
+  task_run(t2, ctx_run)
+
+  expect_equal(ctx$db$get(t1, "task_status"), "COMPLETE")
+  expect_gt(ctx$db$get(t1, "task_time_sub"), now)
+  expect_equal(ctx$db$get(t2, "task_status"), "COMPLETE")
+  expect_gt(ctx$db$get(t2, "task_time_sub"), now)
+
+  later <- Sys.time()
+  task_reset(c(t1, t2), ctx)
+
+  expect_equal(ctx$db$get(t1, "task_status"), "PENDING")
+  expect_gt(ctx$db$get(t1, "task_time_sub"), later)
+  expect_equal(ctx$db$get(t2, "task_status"), "PENDING")
+  expect_gt(ctx$db$get(t2, "task_time_sub"), later)
+})

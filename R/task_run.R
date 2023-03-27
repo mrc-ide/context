@@ -65,3 +65,11 @@ task_load <- function(id, context) {
   dat$envir <- restore_locals(dat, context$envir, root$db)
   dat
 }
+
+task_reset <- function(id, context) {
+  assert_is(context, "context")
+  db <- context_db_get(context)
+  db$mset(id, rep(list(TASK_PENDING), length(id)), "task_status")
+  db$mset(id, rep(Sys.time(), length(id)), "task_time_sub")
+  id
+}
