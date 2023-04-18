@@ -431,6 +431,7 @@ test_that("task_reset (single)", {
   task_run(t2, ctx_run)
   expect_equal(ctx$db$get(t, "task_status"), "COMPLETE")
   expect_gt(ctx$db$get(t, "task_time_sub"), now)
+  expect_equal(ctx$db$get(t, "task_results"), sin(1))
 
   later <- Sys.time()
   task_reset(t, ctx)
@@ -439,9 +440,11 @@ test_that("task_reset (single)", {
   expect_gt(ctx$db$get(t, "task_time_sub"), later)
   expect_equal(ctx$db$get(t, "task_time_beg"), NA)
   expect_equal(ctx$db$get(t, "task_time_end"), NA)
+  expect_false(ctx$db$exists(t, "task_results"))
 
   expect_equal(ctx$db$get(t2, "task_status"), "COMPLETE")
   expect_lt(ctx$db$get(t2, "task_time_sub"), later)
+  expect_equal(ctx$db$get(t2, "task_results"), sin(1))
 })
 
 test_that("task_reset (multiple)", {
@@ -464,6 +467,8 @@ test_that("task_reset (multiple)", {
   expect_gt(ctx$db$get(t1, "task_time_sub"), now)
   expect_equal(ctx$db$get(t2, "task_status"), "COMPLETE")
   expect_gt(ctx$db$get(t2, "task_time_sub"), now)
+  expect_equal(ctx$db$get(t1, "task_results"), sin(1))
+  expect_equal(ctx$db$get(t2, "task_results"), sin(1))
 
   later <- Sys.time()
   task_reset(c(t1, t2), ctx)
@@ -472,4 +477,6 @@ test_that("task_reset (multiple)", {
   expect_gt(ctx$db$get(t1, "task_time_sub"), later)
   expect_equal(ctx$db$get(t2, "task_status"), "PENDING")
   expect_gt(ctx$db$get(t2, "task_time_sub"), later)
+  expect_false(ctx$db$exists(t1, "task_results"))
+  expect_false(ctx$db$exists(t2, "task_results"))
 })

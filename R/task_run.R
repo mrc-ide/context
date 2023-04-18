@@ -80,5 +80,6 @@ task_reset <- function(id, context) {
   db$mset(id, rep(Sys.time(), length(id)), "task_time_sub")
   db$mset(id, rep(NA, length(id)), "task_time_beg")
   db$mset(id, rep(NA, length(id)), "task_time_end")
+  db$del(id, "task_results")
   id
 }
