@@ -65,3 +65,21 @@ task_load <- function(id, context) {
   dat$envir <- restore_locals(dat, context$envir, root$db)
   dat
 }
+
+##' Reset tasks
+##' @title Reset status and submission time of tasks
+##' @param id A vector of task identifiers
+##'
+##' @param context A context object
+##'
+##' @export
+task_reset <- function(id, context) {
+  assert_is(context, "context")
+  db <- context_db_get(context)
+  db$mset(id, rep(list(TASK_PENDING), length(id)), "task_status")
+  db$mset(id, rep(Sys.time(), length(id)), "task_time_sub")
+  db$mset(id, rep(NA, length(id)), "task_time_beg")
+  db$mset(id, rep(NA, length(id)), "task_time_end")
+  db$del(id, "task_results")
+  id
+}

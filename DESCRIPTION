@@ -1,6 +1,6 @@
 Package: context
 Title: Contexts for evaluating R expressions
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
                     email = "rich.fitzjohn@gmail.com"),
              person("Imperial College of Science, Technology and Medicine",
@@ -25,7 +25,7 @@ Suggests:
     rmarkdown,
     testthat,
     withr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Encoding: UTF-8
 VignetteBuilder: knitr
 Language: en-GB
