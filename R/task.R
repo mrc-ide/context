@@ -35,18 +35,8 @@ task_save <- function(expr, context, envir = parent.frame(), depends_on = NULL) 
   ## n updates or or one massive one.
   assert_is(context, "context")
   assert_is(expr, "call")
+  verify_dependencies_exist(depends_on, context)
 
-  if (!is.null(depends_on)) {
-    dependencies_exist <- task_exists(depends_on, context)
-    if (!all(dependencies_exist)) {
-      missing <- depends_on[!dependencies_exist]
-      error_msg <- ngettext(
-        length(missing),
-        "Failed to save as dependency %s does not exist.",
-        "Failed to save as dependencies %s do not exist.")
-      stop(sprintf(error_msg, paste0(missing, collapse = ", ")))
-    }
-  }
   db <- context_db_get(context)
   dat <- prepare_expression(expr, envir, db)
   dat$id <- ids::random_id()
@@ -59,6 +49,20 @@ task_save <- function(expr, context, envir = parent.frame(), depends_on = NULL) 
     db$set(dat$id, depends_on, "task_deps")
   }
   dat$id
+}
+
+verify_dependencies_exist <- function(depends_on, context) {
+  if (!is.null(depends_on)) {
+    dependencies_exist <- task_exists(depends_on, context)
+    if (!all(dependencies_exist)) {
+      missing <- depends_on[!dependencies_exist]
+      error_msg <- ngettext(
+        length(missing),
+        "Failed to save as dependency %s does not exist.",
+        "Failed to save as dependencies %s do not exist.")
+      stop(sprintf(error_msg, paste0(missing, collapse = ", ")))
+    }
+  }
 }
 
 ##' Delete a task, including its results.
