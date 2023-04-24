@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">context</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../articles/context.html">Get started</a>
 </li>
@@ -52,7 +48,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/mrc-ide/context/">
+  <a href="https://github.com/mrc-ide/context/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -71,11 +67,11 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>context</h1>
-                        <h4 class="author">Rich FitzJohn</h4>
+                        <h4 data-toc-skip class="author">Rich FitzJohn</h4>
             
-            <h4 class="date">2021-04-15</h4>
+            <h4 data-toc-skip class="date">2023-04-24</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/mrc-ide/context/blob/master/vignettes/context.Rmd"><code>vignettes/context.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/mrc-ide/context/blob/HEAD/vignettes/context.Rmd" class="external-link"><code>vignettes/context.Rmd</code></a></small>
       <div class="hidden name"><code>context.Rmd</code></div>
 
     </div>
@@ -93,75 +89,75 @@
 </ul>
 <p>The other computer may already have some packages installed, so you don’t want to waste time and bandwidth re-installing them. So things end up littered with constructs like</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st">"mypkg"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"mypkg"</span><span class="op">)</span>
-  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">mypkg</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st">"mypkg"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"mypkg"</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mypkg</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>If these packages are coming from GitHub (or worse also have dependencies on GitHub) the bootstrap code gets out of hand very quickly and tends to be non-portable.</p>
 <p>Creating separate libraries (rather than sharing one from your personal computer) will be important if the architecture differs (e.g., you run Windows but you want to run code on a Linux cluster).</p>
 <p>The idea here is that <code>context</code> helps describe a context made from the above ingredients and then attempts to recreate it on a different computer (or in a different directory on your computer).</p>
-<div id="contexts" class="section level2">
-<h2 class="hasAnchor">
-<a href="#contexts" class="anchor"></a>Contexts</h2>
+<div class="section level2">
+<h2 id="contexts">Contexts<a class="anchor" aria-label="anchor" href="#contexts"></a>
+</h2>
 <p>A minimal context looks like this:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempfile</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/context_save.html">context_save</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span>
-<span class="co">#&gt; [ init:id   ]  cfeedf28fa18f509047271ea25a2a229</span>
-<span class="co">#&gt; [ init:db   ]  rds</span>
-<span class="co">#&gt; [ init:path ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp6VoywS/fileb791a899aef</span>
-<span class="co">#&gt; [ save:id   ]  60da2f59a32b4b64751bdc1b75becc05</span>
-<span class="co">#&gt; [ save:name ]  frousy_lcont</span>
-<span class="va">ctx</span>
-<span class="co">#&gt; &lt;context&gt;</span>
-<span class="co">#&gt;  - packages: list(attached = character(0), loaded = character(0))</span>
-<span class="co">#&gt;  - root_id: cfeedf28fa18f509047271ea25a2a229</span>
-<span class="co">#&gt;  - id: 60da2f59a32b4b64751bdc1b75becc05</span>
-<span class="co">#&gt;  - name: frousy_lcont</span>
-<span class="co">#&gt;  - root: list(id = "cfeedf28fa18f509047271ea25a2a229", path = "/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp6VoywS/fileb791a899aef", db = &lt;environment&gt;)</span>
-<span class="co">#&gt;  - db: &lt;environment&gt;</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/context_save.html">context_save</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [ init:id   ]  2a78a5c753d56a675571f6f9f75b1fdd</span></span>
+<span><span class="co">#&gt; [ init:db   ]  rds</span></span>
+<span><span class="co">#&gt; [ init:path ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315</span></span>
+<span><span class="co">#&gt; [ save:id   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
+<span><span class="co">#&gt; [ save:name ]  reissuable_barebirdbat</span></span>
+<span><span class="va">ctx</span></span>
+<span><span class="co">#&gt; &lt;context&gt;</span></span>
+<span><span class="co">#&gt;  - packages: list(attached = character(0), loaded = character(0))</span></span>
+<span><span class="co">#&gt;  - root_id: 2a78a5c753d56a675571f6f9f75b1fdd</span></span>
+<span><span class="co">#&gt;  - id: ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
+<span><span class="co">#&gt;  - name: reissuable_barebirdbat</span></span>
+<span><span class="co">#&gt;  - root: list(id = "2a78a5c753d56a675571f6f9f75b1fdd", path = "/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315", db = &lt;environment&gt;)</span></span>
+<span><span class="co">#&gt;  - db: &lt;environment&gt;</span></span></code></pre></div>
 <p>Typically one would use the arguments <code>packages</code> and <code>sources</code> to describe the requirements of any tasks that you’ll be running.</p>
 </div>
-<div id="tasks" class="section level2">
-<h2 class="hasAnchor">
-<a href="#tasks" class="anchor"></a>Tasks</h2>
+<div class="section level2">
+<h2 id="tasks">Tasks<a class="anchor" aria-label="anchor" href="#tasks"></a>
+</h2>
 <p>Once a context is defined, <em>tasks</em> can be defined in the context. These are simply R expressions associated with the identifier of a context.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_save.html">task_save</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html">quote</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, context <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span>
-<span class="va">t</span>
-<span class="co">#&gt; [1] "a0a4ddb5237b8f753e910f0a7460b878"</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task.html">task_save</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">quote</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, context <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span></span>
+<span><span class="va">t</span></span>
+<span><span class="co">#&gt; [1] "c7e5b582cb65d0978cd91b054b4c69e0"</span></span></code></pre></div>
 <p>The task <code>t</code> above is just a key that can be used to retrieve information about the task later.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_expr.html">task_expr</a></span><span class="op">(</span><span class="va">t</span>, <span class="va">ctx</span><span class="op">)</span>
-<span class="co">#&gt; sin(1)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_expr.html">task_expr</a></span><span class="op">(</span><span class="va">t</span>, <span class="va">ctx</span><span class="op">)</span></span>
+<span><span class="co">#&gt; sin(1)</span></span></code></pre></div>
 <p>Several such tasks may exist, though here only one does</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_exists.html">task_list</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span>
-<span class="co">#&gt; [1] "a0a4ddb5237b8f753e910f0a7460b878"</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_exists.html">task_list</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "c7e5b582cb65d0978cd91b054b4c69e0"</span></span></code></pre></div>
 <p>To run a task we first need to “load” the context (this will actual load any required packages and source any scripts) then pass this through to <code>task_run</code></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_run.html">task_run</a></span><span class="op">(</span><span class="va">t</span>, <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/context_load.html">context_load</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; [ context   ]  60da2f59a32b4b64751bdc1b75becc05</span>
-<span class="co">#&gt; [ library   ]</span>
-<span class="co">#&gt; [ namespace ]</span>
-<span class="co">#&gt; [ source    ]</span>
-<span class="co">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp6VoywS/fileb791a899aef</span>
-<span class="co">#&gt; [ context   ]  60da2f59a32b4b64751bdc1b75becc05</span>
-<span class="co">#&gt; [ task      ]  a0a4ddb5237b8f753e910f0a7460b878</span>
-<span class="co">#&gt; [ expr      ]  sin(1)</span>
-<span class="co">#&gt; [ start     ]  2021-04-15 10:44:14.412</span>
-<span class="co">#&gt; [ ok        ]</span>
-<span class="co">#&gt; [ end       ]  2021-04-15 10:44:14.475</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_run.html">task_run</a></span><span class="op">(</span><span class="va">t</span>, <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/context_load.html">context_load</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
+<span><span class="co">#&gt; [ library   ]</span></span>
+<span><span class="co">#&gt; [ namespace ]</span></span>
+<span><span class="co">#&gt; [ source    ]</span></span>
+<span><span class="co">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315</span></span>
+<span><span class="co">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
+<span><span class="co">#&gt; [ task      ]  c7e5b582cb65d0978cd91b054b4c69e0</span></span>
+<span><span class="co">#&gt; [ expr      ]  sin(1)</span></span>
+<span><span class="co">#&gt; [ start     ]  2023-04-24 18:18:05.743893</span></span>
+<span><span class="co">#&gt; [ ok        ]</span></span>
+<span><span class="co">#&gt; [ end       ]  2023-04-24 18:18:05.755109</span></span></code></pre></div>
 <p>This prints the result of restoring the context and running the task:</p>
 <ul>
 <li>
 <code>context</code>: the context id</li>
 <li>
-<code>library</code>: calls to <code><a href="https://rdrr.io/r/base/library.html">library()</a></code> to load packages and attach namespaces</li>
+<code>library</code>: calls to <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code> to load packages and attach namespaces</li>
 <li>
-<code>namespace</code>: calls to <code><a href="https://rdrr.io/r/base/ns-load.html">loadNamespace()</a></code>; these packages were present but not attached in the context.</li>
+<code>namespace</code>: calls to <code><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">loadNamespace()</a></code>; these packages were present but not attached in the context.</li>
 <li>
-<code>source</code>: There was nothing to <code><a href="https://rdrr.io/r/base/source.html">source()</a></code> here so this is blank, otherwise it would be a list of filenames.</li>
+<code>source</code>: There was nothing to <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code> here so this is blank, otherwise it would be a list of filenames.</li>
 <li>
 <code>root</code>: the directory within which all our context/task files will be located</li>
 <li>
@@ -179,39 +175,40 @@
 </ul>
 <p>After all that, here is the result:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span>
-<span class="co">#&gt; [1] 0.841471</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res</span></span>
+<span><span class="co">#&gt; [1] 0.841471</span></span></code></pre></div>
 <p>The result can also be retrieved using <code><a href="../reference/task_result.html">task_result()</a></code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_result.html">task_result</a></span><span class="op">(</span><span class="va">t</span>, <span class="va">ctx</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.841471</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_result.html">task_result</a></span><span class="op">(</span><span class="va">t</span>, <span class="va">ctx</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.841471</span></span></code></pre></div>
 <p>This is not immensely useful as it is; it’s just evaluation with more steps. Typically we’d do this in another process. You can do this with <code>callr</code> here:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">callr</span><span class="fu">::</span><span class="fu"><a href="https://callr.r-lib.org/reference/rscript.html">rscript</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"bin"</span>, <span class="st">"task_run"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">path</span>, <span class="va">t</span><span class="op">)</span>,
-                      echo <span class="op">=</span> <span class="cn">TRUE</span>, show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="co">#&gt; Running /Library/Frameworks/R.framework/Resources/bin/Rscript \</span>
-<span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp6VoywS/fileb791a899aef/bin/task_run \</span>
-<span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp6VoywS/fileb791a899aef \</span>
-<span class="co">#&gt;   a0a4ddb5237b8f753e910f0a7460b878</span>
-<span class="co">#&gt; [ hello     ]  2021-04-15 10:44:15</span>
-<span class="co">#&gt; [ wd        ]  /Users/runner/work/context/context/vignettes</span>
-<span class="co">#&gt; [ init      ]  2021-04-15 10:44:15.121</span>
-<span class="co">#&gt; [ hostname  ]  Mac-1618483098060.local</span>
-<span class="co">#&gt; [ process   ]  2956</span>
-<span class="co">#&gt; [ version   ]  0.3.0</span>
-<span class="co">#&gt; [ open:db   ]  rds</span>
-<span class="co">#&gt; [ context   ]  60da2f59a32b4b64751bdc1b75becc05</span>
-<span class="co">#&gt; [ library   ]</span>
-<span class="co">#&gt; [ namespace ]</span>
-<span class="co">#&gt; [ source    ]</span>
-<span class="co">#&gt; [ parallel  ]  running as single core job</span>
-<span class="co">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmp6VoywS/fileb791a899aef</span>
-<span class="co">#&gt; [ context   ]  60da2f59a32b4b64751bdc1b75becc05</span>
-<span class="co">#&gt; [ task      ]  a0a4ddb5237b8f753e910f0a7460b878</span>
-<span class="co">#&gt; [ expr      ]  sin(1)</span>
-<span class="co">#&gt; [ start     ]  2021-04-15 10:44:15.183</span>
-<span class="co">#&gt; [ ok        ]</span>
-<span class="co">#&gt; [ end       ]  2021-04-15 10:44:15.256</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">callr</span><span class="fu">::</span><span class="fu"><a href="https://callr.r-lib.org/reference/rscript.html" class="external-link">rscript</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"bin"</span>, <span class="st">"task_run"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">path</span>, <span class="va">t</span><span class="op">)</span>,</span>
+<span>                      echo <span class="op">=</span> <span class="cn">TRUE</span>, show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Running /Library/Frameworks/R.framework/Resources/bin/Rscript \</span></span>
+<span><span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315/bin/task_run \</span></span>
+<span><span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315 \</span></span>
+<span><span class="co">#&gt;   c7e5b582cb65d0978cd91b054b4c69e0</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">[ hello     ]  2023-04-24 18:18:06.366454</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ wd        ]  /Users/runner/work/context/context/vignettes</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ init      ]  2023-04-24 18:18:06.375284</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ hostname  ]  Mac-1682359966264.local</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ process   ]  4573</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ version   ]  0.4.0</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ open:db   ]  rds</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ library   ]</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ namespace ]</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ source    ]</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ parallel  ]  running as single core job</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ task      ]  c7e5b582cb65d0978cd91b054b4c69e0</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ expr      ]  sin(1)</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ start     ]  2023-04-24 18:18:06.41505</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ ok        ]</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ end       ]  2023-04-24 18:18:06.422295</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; </span></span></span></code></pre></div>
 </div>
   </div>
 
@@ -226,11 +223,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Rich FitzJohn.</p>
+  <p></p>
+<p>Developed by Rich FitzJohn.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -238,6 +237,8 @@
 
   
 
+
+  
 
   </body>
 </html>
