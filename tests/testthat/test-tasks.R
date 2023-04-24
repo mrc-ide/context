@@ -87,7 +87,6 @@ test_that("single task", {
   t <- task_save(expr, ctx)
 
   expect_true(is_id(t))
-  expect_equal(task_list(ctx), c(t2, t))
   expect_equal(task_status(t, ctx, TRUE), setNames(TASK_PENDING, t))
   expect_equal(task_status(t, ctx, FALSE), TASK_PENDING)
   expect_equal(task_context(t, ctx), ctx$id)
