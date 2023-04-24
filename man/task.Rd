@@ -4,7 +4,7 @@
 \alias{task_save}
 \title{Save and reload tasks}
 \usage{
-task_save(expr, context, envir = parent.frame())
+task_save(expr, context, envir = parent.frame(), depends_on = NULL)
 }
 \arguments{
 \item{expr}{An expression to save}
@@ -13,6 +13,9 @@ task_save(expr, context, envir = parent.frame())
 
 \item{envir}{Passed through to \code{context_save} when locating
 local variables.}
+
+\item{depends_on}{Optional vector of task ids that this task
+depends on}
 }
 \value{
 An identifier that can be used to retrieve or run the task

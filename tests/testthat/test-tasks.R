@@ -53,6 +53,31 @@ test_that("tasks in empty context", {
   expect_equal(res0, res[integer(0), ])
 })
 
+test_that("dependencies must exist", {
+  path <- tempfile("cluster_")
+  on.exit(cleanup(path))
+  ctx <- context_save(path)
+
+  expr <- quote(sin(1))
+  expect_error(task_save(expr, ctx, depends_on = "123"),
+               "Failed to save as dependency 123 does not exist")
+  expect_error(task_save(expr, ctx, depends_on = c("123", "456")),
+               "Failed to save as dependencies 123, 456 do not exist")
+
+  t <- task_save(expr, ctx)
+  t2 <- task_save(expr, ctx, depends_on = t)
+  t3 <- task_save(expr, ctx, depends_on = c(t, t2))
+
+  expect_equal(task_deps(t2, ctx), t)
+  expect_length(task_deps(t, ctx), 0)
+  expect_equal(task_deps(c(t, t2), ctx), t)
+  expect_equal(task_deps(t3, ctx), c(t, t2))
+
+  expected_named <- list(t, c(t, t2))
+  names(expected_named) <- c(t2, t3)
+  expect_equal(task_deps(c(t, t2, t3), ctx, named = TRUE), expected_named)
+})
+
 test_that("single task", {
   path <- tempfile("cluster_")
   on.exit(cleanup(path))
@@ -62,7 +87,7 @@ test_that("single task", {
   t <- task_save(expr, ctx)
 
   expect_true(is_id(t))
-  expect_equal(task_list(ctx), t)
+  expect_equal(task_list(ctx), c(t2, t))
   expect_equal(task_status(t, ctx, TRUE), setNames(TASK_PENDING, t))
   expect_equal(task_status(t, ctx, FALSE), TASK_PENDING)
   expect_equal(task_context(t, ctx), ctx$id)
