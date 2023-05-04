@@ -148,9 +148,10 @@ test_that("bulk, multiple arguments", {
 
   expr <- quote(sin(1))
   t <- task_save(expr, ctx)
+  t2 <- task_save(expr, ctx)
   ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                        do_call = TRUE, use_names = FALSE, depends_on = t)
-  expect_equal(task_deps(ids, ctx), rep(t, length(ids)))
+                        do_call = TRUE, use_names = FALSE, depends_on = c(t, t2))
+  expect_equal(task_deps(ids, ctx), rep(list(c(t, t2)), length(ids)))
   expect_equal(task_expr(ids[[1]], ctx),
                quote(dgamma(1, 1, shape = 2)))
   expect_equal(task_expr(ids[[5]], ctx),

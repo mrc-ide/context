@@ -60,7 +60,7 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
             rep(list(Sys.time()), n))
   db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
   if (!is.null(depends_on)) {
-    db$mset(ids, rep(depends_on, length(ids)), "task_deps")
+    db$mset(ids, rep(list(depends_on), length(ids)), "task_deps")
   }
   setNames(ids, names(dat))
 }

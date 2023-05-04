@@ -68,10 +68,10 @@ test_that("dependencies must exist", {
   t2 <- task_save(expr, ctx, depends_on = t)
   t3 <- task_save(expr, ctx, depends_on = c(t, t2))
 
-  expect_equal(task_deps(t2, ctx), t)
+  expect_equal(task_deps(t2, ctx), list(t))
   expect_length(task_deps(t, ctx), 0)
-  expect_equal(task_deps(c(t, t2), ctx), t)
-  expect_equal(task_deps(t3, ctx), c(t, t2))
+  expect_equal(task_deps(c(t, t2), ctx), list(t))
+  expect_equal(task_deps(t3, ctx), list(c(t, t2)))
 
   expected_named <- list(t, c(t, t2))
   names(expected_named) <- c(t2, t3)

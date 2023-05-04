@@ -42,7 +42,7 @@ task_deps <- function(ids, db, named = FALSE) {
     return(if (named) setNames(character(0), character(0)) else character(0))
   }
   db <- context_db_get(db)
-  st <- mapply(identity, db$mget(ids, "task_deps", missing = NA_character_),
+  st <- mapply(list, db$mget(ids, "task_deps", missing = NA_character_),
                 USE.NAMES = FALSE)
   st <- if (named) setNames(st, ids) else st
   st[!is.na(st)]
