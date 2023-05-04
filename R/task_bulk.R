@@ -28,13 +28,17 @@ bulk_prepare_expression <- function(X, FUN, DOTS, do_call, use_names,
 ##' Save bulk tasks
 ##' @title Save bulk tasks
 ##' @param context A context
+##' @param depends_on Optional vector of task ids that this task
+##'   depends on
 ##' @inheritParams bulk_prepare_expression
 ##' @export
 bulk_task_save <- function(X, FUN, context, DOTS = NULL,
                            do_call = FALSE, use_names = TRUE,
-                           envir = parent.frame()) {
+                           envir = parent.frame(), depends_on = NULL) {
   db <- context$db
   context_id <- context$id
+
+  verify_dependencies_exist(depends_on, context)
 
   dat <- bulk_prepare_expression(X, FUN, DOTS, do_call, use_names, envir, db)
 
@@ -55,6 +59,9 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
             rep(list(context$id), n),
             rep(list(Sys.time()), n))
   db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
+  if (!is.null(depends_on)) {
+    db$mset(ids, rep(depends_on, length(ids)), "task_deps")
+  }
   setNames(ids, names(dat))
 }
 

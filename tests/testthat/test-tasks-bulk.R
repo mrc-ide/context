@@ -142,9 +142,15 @@ test_that("bulk, multiple arguments", {
 
   X <- expand.grid(x = as.numeric(1:3), rate = as.numeric(1:3),
                    KEEP.OUT.ATTRS = FALSE)
-  ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                        do_call = TRUE, use_names = FALSE)
+  expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                              do_call = TRUE, use_names = FALSE, depends_on = "123"),
+               "Failed to save as dependency 123 does not exist")
 
+  expr <- quote(sin(1))
+  t <- task_save(expr, ctx)
+  ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                        do_call = TRUE, use_names = FALSE, depends_on = t)
+  expect_equal(task_deps(ids, ctx), rep(t, length(ids)))
   expect_equal(task_expr(ids[[1]], ctx),
                quote(dgamma(1, 1, shape = 2)))
   expect_equal(task_expr(ids[[5]], ctx),
