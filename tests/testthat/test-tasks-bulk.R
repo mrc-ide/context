@@ -159,13 +159,13 @@ test_that("validates dependencies", {
                       storage_type = "environment")
   on.exit(unlink(ctx$root$path, recursive = TRUE))
 
-  X <- expand.grid(x = as.numeric(1:2), rate = as.numeric(1:3),
+  X <- expand.grid(x = as.numeric(1:1), rate = as.numeric(1:3),
                    KEEP.OUT.ATTRS = FALSE)
   expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                              do_call = TRUE, use_names = FALSE, depends_on = "123"),
+                              do_call = TRUE, use_names = FALSE, depends_on = rep("123", 3)),
                "Failed to save as dependency 123 does not exist")
   expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                              do_call = TRUE, use_names = FALSE, depends_on = list(list("123", "456"), list("124"))),
+                              do_call = TRUE, use_names = FALSE, depends_on = list(list("123", "456"), list(), list("124"))),
                "Failed to save as dependencies 123, 456, 124 do not exist")
 
   expr <- quote(sin(1))
@@ -173,18 +173,18 @@ test_that("validates dependencies", {
   t2 <- task_save(expr, ctx)
   expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
                               do_call = TRUE, use_names = FALSE, depends_on = c(t, t2)),
-               paste("Failed to save as 'depends_on' must be of length 6",
+               paste("Failed to save as 'depends_on' must be of length 3",
                      "with an element per task but was of length 2."))
 
   # can pass vector of dependencies
   ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                        do_call = TRUE, use_names = FALSE, depends_on = rep(t, 6))
-  expect_equal(task_deps(ids, ctx), rep(list(t), 6))
+                        do_call = TRUE, use_names = FALSE, depends_on = rep(t, 3))
+  expect_equal(task_deps(ids, ctx), rep(list(t), 3))
   expect_equal(task_expr(ids[[1]], ctx),
                quote(dgamma(1, 1, shape = 2)))
 
   # can pass list of lists of dependencies
-  deps <- list(list(t, t2), list(), list(), list(), t, t)
+  deps <- list(list(t, t2), list(), t)
   ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
                         do_call = TRUE, use_names = FALSE, depends_on = deps)
   expect_equal(task_deps(ids, ctx), deps)

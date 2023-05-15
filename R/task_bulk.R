@@ -40,8 +40,6 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
   db <- context$db
   context_id <- context$id
 
-  verify_dependencies_exist(unlist(depends_on), context)
-
   dat <- bulk_prepare_expression(X, FUN, DOTS, do_call, use_names, envir, db)
 
   build_task <- function(x) {
@@ -58,7 +56,9 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
       stop(sprintf(paste("Failed to save as 'depends_on' must be of",
                          "length %s with an element per task but was of length %s."), n, nd))
     }
+    verify_dependencies_exist(unlist(depends_on), context)
   }
+
   context_log("bulk", sprintf("Creating %s tasks", n))
   tasks <- lapply(dat, build_task)
   ids <- vcapply(tasks, "[[", "id")

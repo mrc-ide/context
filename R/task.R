@@ -55,7 +55,7 @@ verify_dependencies_exist <- function(depends_on, context) {
   if (!is.null(depends_on)) {
     dependencies_exist <- task_exists(depends_on, context)
     if (!all(dependencies_exist)) {
-      missing <- depends_on[!dependencies_exist]
+      missing <- unique(depends_on[!dependencies_exist])
       error_msg <- ngettext(
         length(missing),
         "Failed to save as dependency %s does not exist.",
