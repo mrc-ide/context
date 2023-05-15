@@ -172,18 +172,18 @@ test_that("validates dependencies", {
   t <- task_save(expr, ctx)
   t2 <- task_save(expr, ctx)
   expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                              do_call = TRUE, use_names = FALSE, depends_on = c(t, t2)),
-               paste("Failed to save as 'depends_on' must be of length 3",
-                     "with an element per task but was of length 2."))
+                              do_call = TRUE, use_names = FALSE, depends_on = list(t, t2)),
+               paste("'depends_on' must either be a vector or a list of length 3",
+                     "with an element per task, but was a list of length 2."))
 
-  # can pass vector of dependencies
+  # vector of dependencies
   ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
-                        do_call = TRUE, use_names = FALSE, depends_on = rep(t, 3))
-  expect_equal(task_deps(ids, ctx), rep(list(t), 3))
+                        do_call = TRUE, use_names = FALSE, depends_on = c(t, t2))
+  expect_equal(task_deps(ids, ctx), replicate(3, c(t, t2), FALSE))
   expect_equal(task_expr(ids[[1]], ctx),
                quote(dgamma(1, 1, shape = 2)))
 
-  # can pass list of lists of dependencies
+  # list of lists of dependencies
   deps <- list(list(t, t2), list(), t)
   ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
                         do_call = TRUE, use_names = FALSE, depends_on = deps)

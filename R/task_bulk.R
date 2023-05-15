@@ -29,9 +29,10 @@ bulk_prepare_expression <- function(X, FUN, DOTS, do_call, use_names,
 ##' @title Save bulk tasks
 ##' @param context A context
 ##' @param depends_on Optional task ids that this task
-##'   depends on. Should be a list of lists with an element
-##'   per task.
-##'   For example, list(list("abcde", "12345"), list(), list("12345"))
+##'   depends on. To have all tasks depend on the same id(s)
+##'   provide a vector. TO provide different dependencies for each
+##'   task provide a list of lists.
+##'   For example list(list("abcde", "12345"), list(), list("12345"))
 ##' @inheritParams bulk_prepare_expression
 ##' @export
 bulk_task_save <- function(X, FUN, context, DOTS = NULL,
@@ -52,11 +53,15 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
   n <- length(dat)
   if (!is.null(depends_on)) {
     nd <- length(depends_on)
-    if (nd < n) {
-      stop(sprintf(paste("Failed to save as 'depends_on' must be of",
-                         "length %s with an element per task but was of length %s."), n, nd))
+    is_list <- is.list(depends_on)
+    if (is_list && nd < n) {
+      stop(sprintf(paste("'depends_on' must either be a vector or a list of",
+                         "length %s with an element per task, but was a list of length %s."), n, nd))
     }
     verify_dependencies_exist(unlist(depends_on), context)
+    if (!is_list) {
+      depends_on <- rep(list(depends_on), n)
+    }
   }
 
   context_log("bulk", sprintf("Creating %s tasks", n))
