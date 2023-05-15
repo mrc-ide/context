@@ -164,6 +164,9 @@ test_that("validates dependencies", {
   expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
                               do_call = TRUE, use_names = FALSE, depends_on = "123"),
                "Failed to save as dependency 123 does not exist")
+  expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                              do_call = TRUE, use_names = FALSE, depends_on = list(list("123", "456"), list("124"))),
+               "Failed to save as dependencies 123, 456, 124 do not exist")
 
   expr <- quote(sin(1))
   t <- task_save(expr, ctx)
