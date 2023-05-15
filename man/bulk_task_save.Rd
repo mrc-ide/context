@@ -35,8 +35,10 @@ then positional matching will be used.}
 
 \item{envir}{An environment to find variables local to the expression}
 
-\item{depends_on}{Optional vector of task ids that this task
-depends on}
+\item{depends_on}{Optional task ids that this task
+depends on. Should be a list of lists with an element
+per task.
+For example, list(list("abcde", "12345"), list(), list("12345"))}
 }
 \description{
 Save bulk tasks
