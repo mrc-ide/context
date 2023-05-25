@@ -18,7 +18,7 @@ context."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/ma
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">context</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -55,7 +55,7 @@ context."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/ma
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">task_save</span><span class="op">(</span><span class="va">expr</span>, <span class="va">context</span>, envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">task_save</span><span class="op">(</span><span class="va">expr</span>, <span class="va">context</span>, envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span><span class="op">)</span>, depends_on <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -71,6 +71,11 @@ context."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/ma
 <dt>envir</dt>
 <dd><p>Passed through to <code>context_save</code> when locating
 local variables.</p></dd>
+
+
+<dt>depends_on</dt>
+<dd><p>Optional vector of task ids that this task
+depends on</p></dd>
 
 </dl></div>
     <div id="value">

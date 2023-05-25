@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">context</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -69,7 +69,7 @@
       <h1 data-toc-skip>context</h1>
                         <h4 data-toc-skip class="author">Rich FitzJohn</h4>
             
-            <h4 data-toc-skip class="date">2023-04-24</h4>
+            <h4 data-toc-skip class="date">2023-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/mrc-ide/context/blob/HEAD/vignettes/context.Rmd" class="external-link"><code>vignettes/context.Rmd</code></a></small>
       <div class="hidden name"><code>context.Rmd</code></div>
@@ -103,18 +103,18 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/context_save.html">context_save</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [ init:id   ]  2a78a5c753d56a675571f6f9f75b1fdd</span></span>
+<span><span class="co">#&gt; [ init:id   ]  7fc79fad6bfb6e3adf37878447caf1e2</span></span>
 <span><span class="co">#&gt; [ init:db   ]  rds</span></span>
-<span><span class="co">#&gt; [ init:path ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315</span></span>
-<span><span class="co">#&gt; [ save:id   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
-<span><span class="co">#&gt; [ save:name ]  reissuable_barebirdbat</span></span>
+<span><span class="co">#&gt; [ init:path ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//RtmpgA4GJC/file11943a278ce5</span></span>
+<span><span class="co">#&gt; [ save:id   ]  50bd72bb90fdb9422a0347fcb4f56b6e</span></span>
+<span><span class="co">#&gt; [ save:name ]  skarn_caiman</span></span>
 <span><span class="va">ctx</span></span>
 <span><span class="co">#&gt; &lt;context&gt;</span></span>
 <span><span class="co">#&gt;  - packages: list(attached = character(0), loaded = character(0))</span></span>
-<span><span class="co">#&gt;  - root_id: 2a78a5c753d56a675571f6f9f75b1fdd</span></span>
-<span><span class="co">#&gt;  - id: ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
-<span><span class="co">#&gt;  - name: reissuable_barebirdbat</span></span>
-<span><span class="co">#&gt;  - root: list(id = "2a78a5c753d56a675571f6f9f75b1fdd", path = "/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315", db = &lt;environment&gt;)</span></span>
+<span><span class="co">#&gt;  - root_id: 7fc79fad6bfb6e3adf37878447caf1e2</span></span>
+<span><span class="co">#&gt;  - id: 50bd72bb90fdb9422a0347fcb4f56b6e</span></span>
+<span><span class="co">#&gt;  - name: skarn_caiman</span></span>
+<span><span class="co">#&gt;  - root: list(id = "7fc79fad6bfb6e3adf37878447caf1e2", path = "/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//RtmpgA4GJC/file11943a278ce5", db = &lt;environment&gt;)</span></span>
 <span><span class="co">#&gt;  - db: &lt;environment&gt;</span></span></code></pre></div>
 <p>Typically one would use the arguments <code>packages</code> and <code>sources</code> to describe the requirements of any tasks that you’ll be running.</p>
 </div>
@@ -125,7 +125,7 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">t</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task.html">task_save</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">quote</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>, context <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span></span>
 <span><span class="va">t</span></span>
-<span><span class="co">#&gt; [1] "c7e5b582cb65d0978cd91b054b4c69e0"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2800a2d77fe5c0a89a1d14af097e0284"</span></span></code></pre></div>
 <p>The task <code>t</code> above is just a key that can be used to retrieve information about the task later.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_expr.html">task_expr</a></span><span class="op">(</span><span class="va">t</span>, <span class="va">ctx</span><span class="op">)</span></span>
@@ -133,21 +133,21 @@
 <p>Several such tasks may exist, though here only one does</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_exists.html">task_list</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "c7e5b582cb65d0978cd91b054b4c69e0"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2800a2d77fe5c0a89a1d14af097e0284"</span></span></code></pre></div>
 <p>To run a task we first need to “load” the context (this will actual load any required packages and source any scripts) then pass this through to <code>task_run</code></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/task_run.html">task_run</a></span><span class="op">(</span><span class="va">t</span>, <span class="fu">context</span><span class="fu">::</span><span class="fu"><a href="../reference/context_load.html">context_load</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
+<span><span class="co">#&gt; [ context   ]  50bd72bb90fdb9422a0347fcb4f56b6e</span></span>
 <span><span class="co">#&gt; [ library   ]</span></span>
 <span><span class="co">#&gt; [ namespace ]</span></span>
 <span><span class="co">#&gt; [ source    ]</span></span>
-<span><span class="co">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315</span></span>
-<span><span class="co">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span>
-<span><span class="co">#&gt; [ task      ]  c7e5b582cb65d0978cd91b054b4c69e0</span></span>
+<span><span class="co">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//RtmpgA4GJC/file11943a278ce5</span></span>
+<span><span class="co">#&gt; [ context   ]  50bd72bb90fdb9422a0347fcb4f56b6e</span></span>
+<span><span class="co">#&gt; [ task      ]  2800a2d77fe5c0a89a1d14af097e0284</span></span>
 <span><span class="co">#&gt; [ expr      ]  sin(1)</span></span>
-<span><span class="co">#&gt; [ start     ]  2023-04-24 18:18:05.743893</span></span>
+<span><span class="co">#&gt; [ start     ]  2023-05-25 15:02:47.937252</span></span>
 <span><span class="co">#&gt; [ ok        ]</span></span>
-<span><span class="co">#&gt; [ end       ]  2023-04-24 18:18:05.755109</span></span></code></pre></div>
+<span><span class="co">#&gt; [ end       ]  2023-05-25 15:02:47.946731</span></span></code></pre></div>
 <p>This prints the result of restoring the context and running the task:</p>
 <ul>
 <li>
@@ -186,28 +186,28 @@
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">callr</span><span class="fu">::</span><span class="fu"><a href="https://callr.r-lib.org/reference/rscript.html" class="external-link">rscript</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"bin"</span>, <span class="st">"task_run"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">path</span>, <span class="va">t</span><span class="op">)</span>,</span>
 <span>                      echo <span class="op">=</span> <span class="cn">TRUE</span>, show <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Running /Library/Frameworks/R.framework/Resources/bin/Rscript \</span></span>
-<span><span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315/bin/task_run \</span></span>
-<span><span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315 \</span></span>
-<span><span class="co">#&gt;   c7e5b582cb65d0978cd91b054b4c69e0</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">[ hello     ]  2023-04-24 18:18:06.366454</span></span></span>
+<span><span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//RtmpgA4GJC/file11943a278ce5/bin/task_run \</span></span>
+<span><span class="co">#&gt;   /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//RtmpgA4GJC/file11943a278ce5 \</span></span>
+<span><span class="co">#&gt;   2800a2d77fe5c0a89a1d14af097e0284</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">[ hello     ]  2023-05-25 15:02:48.522568</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ wd        ]  /Users/runner/work/context/context/vignettes</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ init      ]  2023-04-24 18:18:06.375284</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ hostname  ]  Mac-1682359966264.local</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ process   ]  4573</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ version   ]  0.4.0</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ init      ]  2023-05-25 15:02:48.531</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ hostname  ]  Mac-1685026763345.local</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ process   ]  4675</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ version   ]  0.5.0</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ open:db   ]  rds</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ context   ]  50bd72bb90fdb9422a0347fcb4f56b6e</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ library   ]</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ namespace ]</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ source    ]</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ parallel  ]  running as single core job</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//Rtmpz5GCGl/file11b16d22315</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ context   ]  ef2c7f3a9a056713bb9d6c72d34358d4</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ task      ]  c7e5b582cb65d0978cd91b054b4c69e0</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ root      ]  /var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T//RtmpgA4GJC/file11943a278ce5</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ context   ]  50bd72bb90fdb9422a0347fcb4f56b6e</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ task      ]  2800a2d77fe5c0a89a1d14af097e0284</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ expr      ]  sin(1)</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ start     ]  2023-04-24 18:18:06.41505</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ start     ]  2023-05-25 15:02:48.568951</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; [ ok        ]</span></span></span>
-<span><span class="co"><span style="color: #BB0000;">#&gt; [ end       ]  2023-04-24 18:18:06.422295</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt; [ end       ]  2023-05-25 15:02:48.576941</span></span></span>
 <span><span class="co"><span style="color: #BB0000;">#&gt; </span></span></span></code></pre></div>
 </div>
   </div>

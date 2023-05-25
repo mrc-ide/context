@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">context</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -60,7 +60,8 @@
 <span>  DOTS <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  do_call <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  use_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  depends_on <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,6 +98,14 @@ then positional matching will be used.</p></dd>
 
 <dt>envir</dt>
 <dd><p>An environment to find variables local to the expression</p></dd>
+
+
+<dt>depends_on</dt>
+<dd><p>Optional task ids that this task
+depends on. To have all tasks depend on the same id(s)
+provide a vector. TO provide different dependencies for each
+task provide a list of lists.
+For example list(list("abcde", "12345"), list(), list("12345"))</p></dd>
 
 </dl></div>
 
