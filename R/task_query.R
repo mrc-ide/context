@@ -30,6 +30,24 @@ task_status <- function(ids, db, named = FALSE) {
   if (named) setNames(st, ids) else st
 }
 
+##' Task dependencies
+##' @title Task dependencies
+##' @param ids Vector of task ids
+##' @param db Something that can be converted to a context db object
+##'   (a database, root or context).
+##' @param named Name the output with the task ids?
+##' @export
+task_deps <- function(ids, db, named = FALSE) {
+  if (length(ids) == 0L) {
+    return(if (named) setNames(character(0), character(0)) else character(0))
+  }
+  db <- context_db_get(db)
+  st <- mapply(list, db$mget(ids, "task_deps", missing = NA_character_),
+                USE.NAMES = FALSE)
+  st <- if (named) setNames(st, ids) else st
+  st[!is.na(st)]
+}
+
 ##' Fetch result from completed task.
 ##' @title Fetch task result
 ##'

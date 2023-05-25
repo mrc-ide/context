@@ -76,7 +76,7 @@ test_that("prepare; error cases", {
   ## Zero length
   df <- data.frame(a = 1:5, b = runif(5))
   expect_error(
-    bulk_prepare_expression(df[integer(0), ], quote(foo), NULL, FALSE, TRUE),
+    bulk_prepare_expression(df[integer(0),], quote(foo), NULL, FALSE, TRUE),
     "'X' must have at least one row", fixed = TRUE)
   expect_error(
     bulk_prepare_expression(df[, integer(0)], quote(foo), NULL, FALSE, TRUE),
@@ -142,13 +142,52 @@ test_that("bulk, multiple arguments", {
 
   X <- expand.grid(x = as.numeric(1:3), rate = as.numeric(1:3),
                    KEEP.OUT.ATTRS = FALSE)
+
+  expr <- quote(sin(1))
+  t <- task_save(expr, ctx)
+  t2 <- task_save(expr, ctx)
   ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
                         do_call = TRUE, use_names = FALSE)
-
   expect_equal(task_expr(ids[[1]], ctx),
                quote(dgamma(1, 1, shape = 2)))
   expect_equal(task_expr(ids[[5]], ctx),
                bquote(dgamma(.(X[[c(1, 5)]]), .(X[[c(2, 5)]]), shape = 2)))
+})
+
+test_that("validates dependencies", {
+  ctx <- context_save(tempfile(),
+                      storage_type = "environment")
+  on.exit(unlink(ctx$root$path, recursive = TRUE))
+
+  X <- expand.grid(x = as.numeric(1:1), rate = as.numeric(1:3),
+                   KEEP.OUT.ATTRS = FALSE)
+  expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                              do_call = TRUE, use_names = FALSE, depends_on = rep("123", 3)),
+               "Failed to save as dependency 123 does not exist")
+  expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                              do_call = TRUE, use_names = FALSE, depends_on = list(list("123", "456"), list(), list("124"))),
+               "Failed to save as dependencies 123, 456, 124 do not exist")
+
+  expr <- quote(sin(1))
+  t <- task_save(expr, ctx)
+  t2 <- task_save(expr, ctx)
+  expect_error(bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                              do_call = TRUE, use_names = FALSE, depends_on = list(t, t2)),
+               paste("'depends_on' must either be a vector or a list of length 3",
+                     "with an element per task, but was a list of length 2."))
+
+  # vector of dependencies
+  ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                        do_call = TRUE, use_names = FALSE, depends_on = c(t, t2))
+  expect_equal(task_deps(ids, ctx), replicate(3, c(t, t2), FALSE))
+  expect_equal(task_expr(ids[[1]], ctx),
+               quote(dgamma(1, 1, shape = 2)))
+
+  # list of lists of dependencies
+  deps <- list(list(t, t2), list(), t)
+  ids <- bulk_task_save(X, quote(dgamma), ctx, DOTS = list(shape = 2),
+                        do_call = TRUE, use_names = FALSE, depends_on = deps)
+  expect_equal(task_deps(ids, ctx), deps)
 })
 
 test_that("local variables", {
@@ -211,7 +250,7 @@ test_that("invalid function", {
   db <- storr::storr_environment()
   expect_error(
     bulk_prepare_expression(1:4, NULL, NULL, TRUE, FALSE, .GlobalEnv, db),
-      "Expected 'FUN' to be a symbol, fully qualified name or function")
+    "Expected 'FUN' to be a symbol, fully qualified name or function")
 })
 
 test_that("factors", {

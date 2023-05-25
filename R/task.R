@@ -20,18 +20,23 @@ TASK_CANCELLED <- "CANCELLED"
 ##' @param envir Passed through to \code{context_save} when locating
 ##'   local variables.
 ##'
+##' @param depends_on Optional vector of task ids that this task
+##'   depends on
+##'
 ##' @return An identifier that can be used to retrieve or run the task
 ##'   later.  This is simply a short string.
 ##'
 ##' @export
 ##' @rdname task
-task_save <- function(expr, context, envir = parent.frame()) {
+task_save <- function(expr, context, envir = parent.frame(), depends_on = NULL) {
   ## NOTE: until updated, this requires a single expression now.  I'll
   ## get support for a series of related tasks in in another update, I
   ## think.  With more than one task we can either do 3 mset updates,
   ## n updates or or one massive one.
   assert_is(context, "context")
   assert_is(expr, "call")
+  verify_dependencies_exist(depends_on, context)
+
   db <- context_db_get(context)
   dat <- prepare_expression(expr, envir, db)
   dat$id <- ids::random_id()
@@ -40,7 +45,24 @@ task_save <- function(expr, context, envir = parent.frame()) {
   db$mset(dat$id,
           list(dat, TASK_PENDING, context$id, Sys.time()),
           c("tasks", "task_status", "task_context", "task_time_sub"))
+  if (!is.null(depends_on)) {
+    db$set(dat$id, depends_on, "task_deps")
+  }
   dat$id
+}
+
+verify_dependencies_exist <- function(depends_on, context) {
+  if (!is.null(depends_on)) {
+    dependencies_exist <- task_exists(depends_on, context)
+    if (!all(dependencies_exist)) {
+      missing <- unique(depends_on[!dependencies_exist])
+      error_msg <- ngettext(
+        length(missing),
+        "Failed to save as dependency %s does not exist.",
+        "Failed to save as dependencies %s do not exist.")
+      stop(sprintf(error_msg, paste0(missing, collapse = ", ")))
+    }
+  }
 }
 
 ##' Delete a task, including its results.

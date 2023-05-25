@@ -1,6 +1,6 @@
 Package: context
 Title: Contexts for evaluating R expressions
-Version: 0.4.0
+Version: 0.5.0
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
                     email = "rich.fitzjohn@gmail.com"),
              person("Imperial College of Science, Technology and Medicine",

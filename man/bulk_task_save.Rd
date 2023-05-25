@@ -11,7 +11,8 @@ bulk_task_save(
   DOTS = NULL,
   do_call = FALSE,
   use_names = TRUE,
-  envir = parent.frame()
+  envir = parent.frame(),
+  depends_on = NULL
 )
 }
 \arguments{
@@ -33,6 +34,12 @@ as argument names when using \code{do_call}.  If \code{FALSE}
 then positional matching will be used.}
 
 \item{envir}{An environment to find variables local to the expression}
+
+\item{depends_on}{Optional task ids that this task
+depends on. To have all tasks depend on the same id(s)
+provide a vector. TO provide different dependencies for each
+task provide a list of lists.
+For example list(list("abcde", "12345"), list(), list("12345"))}
 }
 \description{
 Save bulk tasks

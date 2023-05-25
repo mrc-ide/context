@@ -28,11 +28,16 @@ bulk_prepare_expression <- function(X, FUN, DOTS, do_call, use_names,
 ##' Save bulk tasks
 ##' @title Save bulk tasks
 ##' @param context A context
+##' @param depends_on Optional task ids that this task
+##'   depends on. To have all tasks depend on the same id(s)
+##'   provide a vector. TO provide different dependencies for each
+##'   task provide a list of lists.
+##'   For example list(list("abcde", "12345"), list(), list("12345"))
 ##' @inheritParams bulk_prepare_expression
 ##' @export
 bulk_task_save <- function(X, FUN, context, DOTS = NULL,
                            do_call = FALSE, use_names = TRUE,
-                           envir = parent.frame()) {
+                           envir = parent.frame(), depends_on = NULL) {
   db <- context$db
   context_id <- context$id
 
@@ -46,6 +51,19 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
   }
 
   n <- length(dat)
+  if (!is.null(depends_on)) {
+    nd <- length(depends_on)
+    is_list <- is.list(depends_on)
+    if (is_list && nd < n) {
+      stop(sprintf(paste("'depends_on' must either be a vector or a list of",
+                         "length %s with an element per task, but was a list of length %s."), n, nd))
+    }
+    verify_dependencies_exist(unlist(depends_on), context)
+    if (!is_list) {
+      depends_on <- rep(list(depends_on), n)
+    }
+  }
+
   context_log("bulk", sprintf("Creating %s tasks", n))
   tasks <- lapply(dat, build_task)
   ids <- vcapply(tasks, "[[", "id")
@@ -55,6 +73,9 @@ bulk_task_save <- function(X, FUN, context, DOTS = NULL,
             rep(list(context$id), n),
             rep(list(Sys.time()), n))
   db$mset(rep(ids, length(ns)), send, rep(ns, each = n))
+  if (!is.null(depends_on)) {
+    db$mset(ids, depends_on, "task_deps")
+  }
   setNames(ids, names(dat))
 }
 
